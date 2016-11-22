@@ -3,6 +3,7 @@ MBR\(Master Boot Recorder\)
 
 MBR is part of grub2, it installed in the first sector of disk image. After BIOS initialization, MBR loaded to memory at address 0x7c00
 
+
 ```shell 
 0x7c00          +----------------------+
    446 bytes    | Boot Loader          |
@@ -17,7 +18,7 @@ MBR is part of grub2, it installed in the first sector of disk image. After BIOS
                 +----------------------+
 ```
 
-grub-core/boot/i386/pc/boot.S
+**grub-core/boot/i386/pc/boot.S**
 ```assembly
 .globl _start, start;
 _start:
@@ -55,7 +56,7 @@ start:
 
 ```
 
-include/grub/i386/pc/boot.h
+**include/grub/i386/pc/boot.h**
 ```
 GRUB_BOOT_MACHINE_PART_START = 0x1be
 GRUB_BOOT_MACHINE_PART_END   = 0x1fe
