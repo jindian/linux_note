@@ -64,3 +64,5 @@ start:
 #define GRUB_BOOT_MACHINE_PART_END   0x1fe
 ```
 
+What MBR do?
+-------------------------------
