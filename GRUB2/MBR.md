@@ -16,3 +16,12 @@ MBR is part of grub2, it installed in the first sector of disk image. After BIOS
    2 bytes      | Magic Signature      |
                 +----------------------+
 ```
+
+```assembly
+.globl _start, start;
+
+_start:
+
+start:
+
+```
