@@ -58,7 +58,7 @@ start:
 
 **include/grub/i386/pc/boot.h**
 ```
-GRUB_BOOT_MACHINE_PART_START 0x1be
-GRUB_BOOT_MACHINE_PART_END   0x1fe
+#define GRUB_BOOT_MACHINE_PART_START 0x1be
+#define GRUB_BOOT_MACHINE_PART_END   0x1fe
 ```
 
