@@ -1,8 +1,10 @@
 MBR\(Master Boot Recorder\)
-===========================
+===============================
 
 MBR is part of grub2, it installed in the first sector of disk image. After BIOS initialization, MBR loaded to memory at address 0x7c00
 
+Memory deloyment of MBR
+-------------------------------
 
 ```shell 
 0x7c00          +----------------------+
