@@ -1,2 +1,2 @@
 # linux_note
-some note when read linux
+Debug linux startup with gdb
