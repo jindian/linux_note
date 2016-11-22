@@ -1,4 +1,4 @@
 # Summary
 
-* [MBR](mbr.md)
+* MBR
 
