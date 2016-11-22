@@ -1,4 +1,4 @@
 # Summary
 
-* MBR
+* Grub2 Grand Universal Bootloader
 
