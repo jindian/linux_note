@@ -54,3 +54,9 @@ start:
  .word GRUB_BOOT_MACHINE_SIGNATURE
 
 ```
+
+include/grub/i386/pc/boot.h
+GRUB_BOOT_MACHINE_PART_START = 0x1be
+GRUB_BOOT_MACHINE_PART_END   = 0x1fe
+
+
