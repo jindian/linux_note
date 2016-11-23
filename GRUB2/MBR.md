@@ -222,3 +222,17 @@ real_start:
         je      1f
         movb    %al, %dl
 ```
+
+```assembly
+   0x7c8c:	push   %dx
+   0x7c8d:	mov    $0x7d80,%si
+   0x7c90:	call   0x7daa
+   0x7c93:	mov    $0x7c05,%si
+   0x7c96:	mov    $0x41,%ah
+   0x7c98:	mov    $0x55aa,%bx
+   0x7c9b:	int    $0x13
+   0x7c9d:	pop    %dx
+   0x7c9e:	push   %dx
+   0x7c9f:	jb     0x7cde
+
+```
