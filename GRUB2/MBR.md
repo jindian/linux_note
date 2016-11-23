@@ -166,3 +166,16 @@ boot_drive_check:
         ljmp    $0, $real_start
 
 ```
+
+```assembly
+   0x7c74:	ljmp   $0xc031,$0x7c79
+   0x7c7b:	mov    %eax,%ds
+   0x7c7d:	mov    %eax,%ss
+   0x7c7f:	mov    $0xa0fb2000,%esp
+   0x7c84:	fs
+   0x7c85:	jl     0x7cc3
+   0x7c87:	pushl  -0x78(%edx,%eax,1)
+   0x7c8b:	ret    $0xbe52
+   0x7c8e:	cmpb   $0x17,-0x18(%ebp)
+   0x7c92:	add    %edi,0x41b47c05(%esi)
+```
