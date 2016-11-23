@@ -183,14 +183,14 @@ grub-core/boot/i386/pc/boot.S:123
 ```
 
 ```assembly
-   0x7c79:	xor    %eax,%eax
-   0x7c7b:	mov    %eax,%ds
-   0x7c7d:	mov    %eax,%ss
-   0x7c7f:	mov    $0xa0fb2000,%esp
-   0x7c84:	fs
-   0x7c85:	jl     0x7cc3
-   0x7c87:	pushl  -0x78(%edx,%eax,1)
-   0x7c8b:	ret    $0xbe52
-   0x7c8e:	cmpb   $0x17,-0x18(%ebp)
-   0x7c92:	add    %edi,0x41b47c05(%esi)
+   0x7c79:	xor    %ax,%ax
+   0x7c7b:	mov    %ax,%ds
+   0x7c7d:	mov    %ax,%ss
+   0x7c7f:	mov    $0x2000,%sp
+   0x7c82:	sti    
+   0x7c83:	mov    0x7c64,%al
+   0x7c86:	cmp    $0xff,%al
+   0x7c88:	je     0x7c8c
+   0x7c8a:	mov    %al,%dl
+   0x7c8c:	push   %dx
 ```
