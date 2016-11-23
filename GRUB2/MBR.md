@@ -223,7 +223,7 @@ real_start:
         movb    %al, %dl
 ```
 
-Save driver reference and print notification message. Check Extensions Present using BIOS interrupt and check the result. The result shown in debug information.
+Save driver reference and print notification message. Check Extensions Present using BIOS interrupt and check the result. The result shown in debug information. We come to lba_mode finally.
 
 Check Extensions Present as follow:
 ![](Screenshot from 2016-11-23 15:35:32.png)
