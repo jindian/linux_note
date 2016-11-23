@@ -83,27 +83,33 @@ BIOS reads MBR into memory at address 0x7c00, the first instruction is jump to 0
    0x7c1c:	ljmp   $0xbebe,$0x621
 
 ----------------------------------------------------------------------
-grub-core/boot/i386/pc/boot.S 
-   /*
-    * _start is loaded at 0x7c00 and is jumped to with CS:IP 0:0x7c00
-    */
 
-   /*
-    * Beginning of the sector is compatible with the FAT/HPFS BIOS
-    * parameter block.
-    */
+grub-core/boot/i386/pc/boot.S
 
-    jmp     LOCAL(after_BPB)
-    nop     /* do I care about this ??? */
+.globl _start, start;
+_start:
+start:
+        /*
+         * _start is loaded at 0x7c00 and is jumped to with CS:IP 0:0x7c00
+         */
 
-    /*
-     * This space is for the BIOS parameter block!!!!  Don't change
-     * the first jump, nor start the code anywhere but right after
-     * this area.
-     */
+        /*
+         * Beginning of the sector is compatible with the FAT/HPFS BIOS
+         * parameter block.
+         */
 
-    . = _start + GRUB_BOOT_MACHINE_BPB_START
-    . = _start + 4
+        jmp     LOCAL(after_BPB)
+        nop     /* do I care about this ??? */
+
+        /*
+         * This space is for the BIOS parameter block!!!!  Don't change
+         * the first jump, nor start the code anywhere but right after
+         * this area.
+         */
+
+        . = _start + GRUB_BOOT_MACHINE_BPB_START
+        . = _start + 4
+
 
 ```
 
