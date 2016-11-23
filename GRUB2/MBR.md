@@ -84,7 +84,7 @@ BIOS reads MBR into memory at address 0x7c00, the first instruction is jump to 0
 
 ----------------------------------------------------------------------
 
-grub-core/boot/i386/pc/boot.S
+grub-core/boot/i386/pc/boot.S:39
 
 .globl _start, start;
 _start:
