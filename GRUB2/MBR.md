@@ -66,4 +66,4 @@ start:
 
 What MBR do?
 -------------------------------
-TODO
+Copy part of grub2 kernel from the second sector
