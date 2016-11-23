@@ -73,14 +73,14 @@ BIOS reads MBR into memory at address 0x7c00, the first instruction is jump to 0
 ```assembly
    0x7c00:	jmp    0x7c65
    0x7c02:	nop
-   0x7c03:	adc    %cl,-0x4fff4330(%esi)
-   0x7c09:	mov    $0xd88e0000,%eax
-   0x7c0e:	mov    %eax,%es
-   0x7c10:	sti    
-   0x7c11:	mov    $0xbf7c00,%esi
-   0x7c16:	push   %es
-   0x7c17:	mov    $0xa4f30200,%ecx
-   0x7c1c:	ljmp   $0xbebe,$0x621
+   0x7c03:	adc    %cl,-0x4330(%bp)
+   0x7c07:	add    %dh,0xb8(%bx,%si)
+   0x7c0b:	add    %cl,-0x7128(%bp)
+   0x7c0f:	sar    $0xbe,%bl
+   0x7c12:	add    %bh,-0x41(%si)
+   0x7c15:	add    %al,0xb9
+   0x7c19:	add    %bl,%dh
+   0x7c1b:	movsb  %ds:(%si),%es:(%di)
 
 ----------------------------------------------------------------------
 
