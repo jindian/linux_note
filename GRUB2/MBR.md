@@ -270,5 +270,36 @@ gs             0x0	0
 
 ----------------------------------------------------------------------
 
+grub-core/boot/i386/pc/boot.S:149
+
+1:
+        /* save drive reference first thing! */
+        pushw   %dx
+
+        /* print a notification message on the screen */
+        MSG(notification_string)
+
+        /* set %si to the disk address packet */
+        movw    $disk_address_packet, %si
+
+        /* check if LBA is supported */
+        movb    $0x41, %ah
+        movw    $0x55aa, %bx
+        int     $0x13
+
+        /*
+         *  %dl may have been clobbered by INT 13, AH=41H.
+         *  This happens, for example, with AST BIOS 1.04.
+         */
+        popw    %dx
+        pushw   %dx
+
+        /* use CHS if fails */
+        jc      LOCAL(chs_mode)
+        cmpw    $0xaa55, %bx
+        jne     LOCAL(chs_mode)
+
+        andw    $1, %cx
+        jz      LOCAL(chs_mode)
 
 ```
