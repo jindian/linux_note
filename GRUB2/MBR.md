@@ -183,7 +183,7 @@ grub-core/boot/i386/pc/boot.S:123
         ljmp    $0, $real_start
 ```
 
-Initialize data section register and set up stack for real mode code
+Initialize data section register and set up stack for real mode code, check if we have forced disk reference. Value stored in address 0x7c64 is 0xff as follow, we have no force disk referencem, jump to 0x7c8c
 ```assembly
    0x7c79:	xor    %ax,%ax
    0x7c7b:	mov    %ax,%ds
