@@ -221,5 +221,4 @@ real_start:
         cmpb    $0xff, %al
         je      1f
         movb    %al, %dl
-
 ```
