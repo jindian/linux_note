@@ -126,5 +126,35 @@ dl             0x80	-128
 
 ----------------------------------------------------------------------
 
+LOCAL(after_BPB):
+
+/* general setup */
+        cli             /* we're not safe here! */
+
+        /*
+         * This is a workaround for buggy BIOSes which don't pass boot
+         * drive correctly. If GRUB is installed into a HDD, check if
+         * DL is masked correctly. If not, assume that the BIOS passed
+         * a bogus value and set DL to 0x80, since this is the only
+         * possible boot drive. If GRUB is installed into a floppy,
+         * this does nothing (only jump).
+         */
+        . = _start + GRUB_BOOT_MACHINE_DRIVE_CHECK
+boot_drive_check:
+        jmp     3f      /* grub-setup may overwrite this jump */
+        testb   $0x80, %dl
+        jz      2f
+3:
+        /* Ignore %dl different from 0-0x0f and 0x80-0x8f.  */
+        testb   $0x70, %dl
+        jz      1f
+2:
+        movb    $0x80, %dl
+1:
+        /*
+         * ljmp to the next instruction because some bogus BIOSes
+         * jump to 07C0:0000 instead of 0000:7C00.
+         */
+        ljmp    $0, $real_start
 
 ```
