@@ -223,7 +223,7 @@ real_start:
         movb    %al, %dl
 ```
 
-Save driver reference and print notification message.
+Save driver reference and print notification message. Check Extensions Present result shown in debug information.
 ```assembly
    0x7c8c:	push   %dx
    0x7c8d:	mov    $0x7d80,%si
@@ -234,6 +234,23 @@ Save driver reference and print notification message.
    0x7c96:	mov    $0x41,%ah
    0x7c98:	mov    $0x55aa,%bx
    0x7c9b:	int    $0x13
+(gdb) info registers 
+eax            0x3000	12288
+ecx            0x7	7
+edx            0x80	128
+ebx            0xaa55	43605
+esp            0x1ffe	0x1ffe
+ebp            0x0	0x0
+esi            0x7c05	31749
+edi            0x0	0
+eip            0x7c9d	0x7c9d
+eflags         0x246	[ PF ZF IF ]
+cs             0x0	0
+ss             0x0	0
+ds             0x0	0
+es             0x0	0
+fs             0x0	0
+gs             0x0	0
    0x7c9d:	pop    %dx
    0x7c9e:	push   %dx
    0x7c9f:	jb     0x7cde
