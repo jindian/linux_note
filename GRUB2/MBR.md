@@ -116,7 +116,6 @@ start:
 BIOS saves boot device type in register dl, for HDD dl set as 0x80
 Value of register dl(0x80) shown in following debug information, jump to 0x7c74 after bitwise AND with 0x70 with result of ZF set as 0.
 ```assembly
-
    0x7c65:	cli    
    0x7c66:	nop
    0x7c67:	nop
@@ -127,8 +126,9 @@ dl             0x80	-128
    0x7c6d:	test   $0x70,%dl
    0x7c70:	je     0x7c74
    0x7c72:	mov    $0x80,%dl
-   0x7c74:	ljmp   $0xc031,$0x7c79
-   0x7c7b:	mov    %eax,%ds
+   0x7c74:	ljmp   $0x0,$0x7c79
+   0x7c79:	xor    %ax,%ax
+
 
 ----------------------------------------------------------------------
 
