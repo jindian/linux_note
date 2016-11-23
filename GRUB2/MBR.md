@@ -131,7 +131,7 @@ dl             0x80	-128
 
 ----------------------------------------------------------------------
 
-grub-core/boot/i386/pc/boot.S
+grub-core/boot/i386/pc/boot.S:99
 
 LOCAL(after_BPB):
 
