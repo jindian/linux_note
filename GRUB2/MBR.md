@@ -200,5 +200,26 @@ Initialize data section register and set up stack for real mode code, check if w
 
 ----------------------------------------------------------------------
 
-grub-core/boot/i386/pc/boot.S:123
+grub-core/boot/i386/pc/boot.S:130
+
+real_start:
+
+        /* set up %ds and %ss as offset from 0 */
+        xorw    %ax, %ax
+        movw    %ax, %ds
+        movw    %ax, %ss
+
+        /* set up the REAL stack */
+        movw    $GRUB_BOOT_MACHINE_STACK_SEG, %sp
+
+        sti             /* we're safe again */
+
+        /*
+         *  Check if we have a forced disk reference here
+         */
+        movb   boot_drive, %al
+        cmpb    $0xff, %al
+        je      1f
+        movb    %al, %dl
+
 ```
