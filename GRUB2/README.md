@@ -1,2 +1,0 @@
-#GRUB2
-GRUB2 part
