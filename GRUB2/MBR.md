@@ -227,6 +227,8 @@ real_start:
 ```assembly
    0x7c8c:	push   %dx
    0x7c8d:	mov    $0x7d80,%si
+(gdb) x/s 0x7d80
+0x7d80:	"GRUB "
    0x7c90:	call   0x7daa
    0x7c93:	mov    $0x7c05,%si
    0x7c96:	mov    $0x41,%ah
