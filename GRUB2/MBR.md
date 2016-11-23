@@ -304,6 +304,7 @@ grub-core/boot/i386/pc/boot.S:149
 
 ```
 
+Initialize disk_address_packet
 ```assembly
    0x7cac:	xor    %ax,%ax
    0x7cae:	mov    %ax,0x4(%si)
