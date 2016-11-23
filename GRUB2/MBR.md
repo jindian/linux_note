@@ -193,7 +193,6 @@ Initialize data section register and set up stack for real mode code
    0x7c83:	mov    0x7c64,%al
 (gdb) x/b 0x7c64
 0x7c64:	0xff
-
    0x7c86:	cmp    $0xff,%al
    0x7c88:	je     0x7c8c
    0x7c8a:	mov    %al,%dl
