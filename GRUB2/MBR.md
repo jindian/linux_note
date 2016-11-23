@@ -183,7 +183,7 @@ grub-core/boot/i386/pc/boot.S:123
         ljmp    $0, $real_start
 ```
 
-Initialise data section register and set up stack for real mode code
+Initialize data section register and set up stack for real mode code
 ```assembly
    0x7c79:	xor    %ax,%ax
    0x7c7b:	mov    %ax,%ds
@@ -191,6 +191,9 @@ Initialise data section register and set up stack for real mode code
    0x7c7f:	mov    $0x2000,%sp
    0x7c82:	sti    
    0x7c83:	mov    0x7c64,%al
+(gdb) x/b 0x7c64
+0x7c64:	0xff
+
    0x7c86:	cmp    $0xff,%al
    0x7c88:	je     0x7c8c
    0x7c8a:	mov    %al,%dl
