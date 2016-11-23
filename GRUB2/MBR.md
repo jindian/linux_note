@@ -83,7 +83,7 @@ BIOS reads MBR into memory at address 0x7c00, the first instruction is jump to 0
    0x7c1c:	ljmp   $0xbebe,$0x621
 
 ----------------------------------------------------------------------
-
+grub-core/boot/i386/pc/boot.S
    /*
     * _start is loaded at 0x7c00 and is jumped to with CS:IP 0:0x7c00
     */
