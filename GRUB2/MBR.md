@@ -113,7 +113,7 @@ start:
 
 ```
 
-BIOS saves boot device type in register dl, for HDD dl set as 0x80
+BIOS saves boot device type in register dl, for HDD dl set as 0x80.
 Value of register dl(0x80) shown in following debug information, jump to 0x7c74 after bitwise AND with 0x70 with result of ZF set as 0.
 ```assembly
    0x7c65:	cli    
@@ -181,6 +181,7 @@ grub-core/boot/i386/pc/boot.S:123
          */
         ljmp    $0, $real_start
 ```
+
 
 ```assembly
    0x7c79:	xor    %ax,%ax
