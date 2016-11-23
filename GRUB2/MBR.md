@@ -225,6 +225,8 @@ real_start:
 
 Save driver reference and print notification message. Check Extensions Present result shown in debug information.
 
+Check Extensions Present as follow:
+![](Screenshot from 2016-11-23 15:35:32.png)
 ```assembly
    0x7c8c:	push   %dx
    0x7c8d:	mov    $0x7d80,%si
