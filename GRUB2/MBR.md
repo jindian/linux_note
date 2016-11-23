@@ -303,3 +303,16 @@ grub-core/boot/i386/pc/boot.S:149
         jz      LOCAL(chs_mode)
 
 ```
+
+```assembly
+   0x7cac:	xor    %ax,%ax
+   0x7cae:	mov    %ax,0x4(%si)
+   0x7cb1:	inc    %ax
+   0x7cb2:	mov    %al,-0x1(%si)
+   0x7cb5:	mov    %ax,0x2(%si)
+   0x7cb8:	movw   $0x10,(%si)
+   0x7cbc:	mov    0x7c5c,%ebx
+   0x7cc1:	mov    %ebx,0x8(%si)
+   0x7cc5:	mov    0x7c60,%ebx
+   0x7cca:	mov    %ebx,0xc(%si)
+```
