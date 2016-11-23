@@ -1,4 +1,5 @@
 # Summary
-*GRUB2
-    *MBR
+
+* [Introduction](README.md)
+* GRUB2
 
