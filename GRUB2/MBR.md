@@ -81,6 +81,7 @@ BIOS reads MBR into memory at address 0x7c00, the first instruction is jump to 0
    0x7c16:	push   %es
    0x7c17:	mov    $0xa4f30200,%ecx
    0x7c1c:	ljmp   $0xbebe,$0x621
+
 ----------------------------------------------------------------------
 
    /*
