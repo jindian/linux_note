@@ -183,7 +183,7 @@ grub-core/boot/i386/pc/boot.S:123
         ljmp    $0, $real_start
 ```
 
-
+Initialise data section register and stack
 ```assembly
    0x7c79:	xor    %ax,%ax
    0x7c7b:	mov    %ax,%ds
