@@ -223,6 +223,7 @@ real_start:
         movb    %al, %dl
 ```
 
+
 ```assembly
    0x7c8c:	push   %dx
    0x7c8d:	mov    $0x7d80,%si
