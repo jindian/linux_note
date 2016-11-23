@@ -68,6 +68,7 @@ What MBR do?
 -------------------------------
 Copy part of grub2 kernel from the second sector
 
+
 BIOS reads MBR into memory at address 0x7c00, the first instruction is jump to 0x7c65
 
 ```assembly
