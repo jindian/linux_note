@@ -167,6 +167,7 @@ boot_drive_check:
 
 ```
 
+In address 0x7c74, long jump to next instruction
 ```assembly
    0x7c74:	ljmp   $0xc031,$0x7c79
    0x7c7b:	mov    %eax,%ds
