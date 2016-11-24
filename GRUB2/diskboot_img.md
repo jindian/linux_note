@@ -1,6 +1,23 @@
 Disk boot image
 ================================
-Disk boot image is used as the first sector of the core image when booting from a hard disk. It reads the rest of the core image into memory and starts the kernel.
+Disk boot image is used as the first sector of the core image when booting from a hard disk. It reads the rest of the core image into memory and starts the kernel. Size of boot image is 512 bytes.
+
+Parameters of read rest grub kernel from disk start from 0x81f4.
+```
+0x8000          +-------------------------+
+                | Disk image main body    |
+                |                         |
+                |                         |
+                |                         |
+0x81f4          +-------------------------+
+                | sector start parameter  |
+                |                         |
+0x81f4 + 0x8    +-------------------------+
+                |number of sector to read |
+0x81f4 + 0xa    +-------------------------+
+                |rest kernel dst addresss |
+                +-------------------------+
+```
 
 Continue the boot process after MBR copied boot disk image to address 0x8000 and jumped to the address.
 
@@ -200,5 +217,137 @@ LOCAL(setup_sectors):
 
         movw    $GRUB_BOOT_MACHINE_BUFFER_SEG, %bx
         jmp     LOCAL(copy_buffer)
+
+```
+Copy data(60*512 bytes) in buffer to address start at 0x8200, jump to bootloop again. In bootloop, now all grub kernel already read from disk image and copy completed, jump to bootit(0x80f9)
+```assembly
+   0x80c9:	mov    0xa(%di),%es
+   0x80cc:	pop    %ax
+   0x80cd:	shl    $0x5,%ax
+   0x80d0:	add    %ax,0xa(%di)
+   0x80d3:	pusha  
+   0x80d4:	push   %ds
+   0x80d5:	shl    $0x3,%ax
+   0x80d8:	mov    %ax,%cx
+   0x80da:	xor    %di,%di
+   0x80dc:	xor    %si,%si
+   0x80de:	mov    %bx,%ds
+   0x80e0:	cld    
+   0x80e1:	rep movsw %ds:(%si),%es:(%di)
+   0x80e3:	pop    %ds
+   0x80e4:	mov    $0x8123,%si
+(gdb) x/s 0x8123
+0x8123:	"."
+   0x80e7:	call   0x8141
+   0x80ea:	popa   
+   0x80eb:	cmpw   $0x0,0x8(%di)
+   0x80ef:	jne    0x8017
+   0x80f3:	sub    $0xc,%di
+   0x80f6:	jmp    0x800f
+   0x80f9:	mov    $0x8125,%si
+   0x80fc:	call   0x8141
+   0x80ff:	pop    %dx
+   0x8100:	ljmp   $0x0,$0x8200
+   0x8105:	mov    $0x8128,%si
+   0x8108:	call   0x8141
+   0x810b:	jmp    0x8113
+   0x810d:	mov    $0x812d,%si
+   0x8110:	call   0x8141
+
+-----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/diskboot.S:247
+
+LOCAL(copy_buffer):
+
+        /* load addresses for copy from disk buffer to destination */
+        movw    10(%di), %es    /* load destination segment */
+
+        /* restore %ax */
+        popw    %ax
+
+        /* determine the next possible destination address (presuming
+                512 byte sectors!) */
+        shlw    $5, %ax         /* shift %ax five bits to the left */
+        addw    %ax, 10(%di)    /* add the corrected value to the destination
+                                   address for next time */
+
+        /* save addressing regs */
+        pusha
+        pushw   %ds
+
+        /* get the copy length */
+        shlw    $3, %ax
+        movw    %ax, %cx
+
+        xorw    %di, %di        /* zero offset of destination addresses */
+        xorw    %si, %si        /* zero offset of source addresses */
+        movw    %bx, %ds        /* restore the source segment */
+
+        cld             /* sets the copy direction to forward */
+
+        /* perform copy */
+        rep             /* sets a repeat */
+        movsw           /* this runs the actual copy */
+
+        /* restore addressing regs and print a dot with correct DS
+           (MSG modifies SI, which is saved, and unused AX and BX) */
+        popw    %ds
+        MSG(notification_step)
+        popa
+
+        /* check if finished with this dataset */
+        cmpw    $0, 8(%di)
+        jne     LOCAL(setup_sectors)
+
+        /* update position to load from */
+        subw    $GRUB_BOOT_MACHINE_LIST_SIZE, %di
+
+        /* jump to bootloop */
+        jmp     LOCAL(bootloop)
+
+```
+
+In bootit, print new line and jump to the start of rest kernel image code(0x8200).
+```assembly
+   0x80f9:	mov    $0x8125,%si
+(gdb) x/s 0x8125
+0x8125:	"\r\n"
+   0x80fc:	call   0x8141
+   0x80ff:	pop    %dx
+(gdb) info registers 
+eax            0xe00	3584
+ecx            0x0	0
+edx            0x80	128
+ebx            0x1	1
+esp            0x1ffe	0x1ffe
+ebp            0x2	0x2
+esi            0x8127	33063
+edi            0x81e8	33256
+eip            0x8100	0x8100
+eflags         0x246	[ PF ZF IF ]
+cs             0x0	0
+ss             0x0	0
+ds             0x0	0
+es             0x820	2080
+fs             0x0	0
+gs             0x0	0
+   0x8100:	ljmp   $0x0,$0x8200
+   0x8105:	mov    $0x8128,%si
+   0x8108:	call   0x8141
+   0x810b:	jmp    0x8113
+   0x810d:	mov    $0x812d,%si
+   0x8110:	call   0x8141
+   0x8113:	mov    $0x8132,%si
+
+-----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/diskboot.S:297
+
+LOCAL(bootit):
+        /* print a newline */
+        MSG(notification_done)
+        popw    %dx     /* this makes sure %dl is our "boot" drive */
+        ljmp    $0, $(GRUB_BOOT_MACHINE_KERNEL_ADDR + 0x200)
 
 ```
