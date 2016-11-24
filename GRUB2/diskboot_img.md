@@ -4,7 +4,7 @@ Disk boot image is used as the first sector of the core image when booting from 
 
 Continue the boot process after MBR copied boot disk image to address 0x8000 and jumped to the address.
 
-Save drive type and DAP, print notification message
+Save drive type and DAP, print notification message and enter bootloop.
 ```assembly
    0x8000:	push   %dx
    0x8001:	push   %si
@@ -21,5 +21,40 @@ si             0x7c05	31749
    0x800f:	cmpw   $0x0,0x8(%di)
    0x8013:	je     0x80f9
    0x8017:	cmpb   $0x0,-0x1(%si)
+
+------------------------------------------------------------------------
+
+grub-core/boot/i386/pc/diskboot.S:37
+
+start:
+_start:
+        /*
+         * _start is loaded at 0x2000 and is jumped to with
+         * CS:IP 0:0x2000 in kernel.
+         */
+
+        /*
+         * we continue to use the stack for boot.img and assume that
+         * some registers are set to correct values. See boot.S
+         * for more information.
+         */
+
+        /* save drive reference first thing! */
+        pushw   %dx
+
+        /* print a notification message on the screen */
+        pushw   %si
+        MSG(notification_string)
+        popw    %si
+
+        /* this sets up for the first run through "bootloop" */
+        movw    $LOCAL(firstlist), %di
+
+        /* save the sector number of the second sector in %ebp */
+        movl    (%di), %ebp
+
+```
+
+```assembly
 
 ```
