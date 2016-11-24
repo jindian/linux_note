@@ -304,7 +304,8 @@ grub-core/boot/i386/pc/boot.S:149
 
 ```
 
-Prepare DAP(disk address packet) and read source from drive
+Prepare DAP(disk address packet) and read source from drive. Carry flag doesn't set, read successfully. Jump to 0x7d54, copy buff.
+![](INT13H_AH42H.png)
 ```assembly
    0x7cac:	xor    %ax,%ax
    0x7cae:	mov    %ax,0x4(%si)
@@ -319,6 +320,8 @@ Prepare DAP(disk address packet) and read source from drive
    0x7cce:	movw   $0x7000,0x6(%si)
    0x7cd3:	mov    $0x42,%ah
    0x7cd5:	int    $0x13
+(gdb) info registers eflags
+eflags         0x202	[ IF ]
    0x7cd7:	jb     0x7cde
    0x7cd9:	mov    $0x7000,%bx
    0x7cdc:	jmp    0x7d54
