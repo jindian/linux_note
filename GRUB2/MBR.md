@@ -376,7 +376,7 @@ lba_mode:
         jmp     LOCAL(copy_buffer)
 
 ```
-Copy grub kernel to address 0x8000, jump to 0x8000
+Copy 512 bytes grub kernel to address 0x8000, jump to 0x8000
 ```assembly
    0x7d54:	pusha  
    0x7d55:	push   %ds
