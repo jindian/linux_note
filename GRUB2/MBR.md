@@ -1,10 +1,10 @@
 MBR\(Master Boot Recorder\)
-===============================
+==============================================================
 
 MBR is part of grub2, it installed in the first sector of disk image. After BIOS initialization, MBR loaded to memory at address 0x7c00
 
 Memory deloyment of MBR
--------------------------------
+----------------------------------------------------------------------
 
 ```shell 
 0x7c00          +----------------------+
@@ -62,11 +62,12 @@ start:
 ```
 #define GRUB_BOOT_MACHINE_PART_START 0x1be
 #define GRUB_BOOT_MACHINE_PART_END   0x1fe
+#define GRUB_BOOT_MACHINE_SIGNATURE  0xaa55
 ```
 
 What MBR do?
 -------------------------------
-Copy part of grub2 kernel from the second sector
+Copy grub kernel and jump to it continue the boot process
 
 
 BIOS reads MBR into memory at address 0x7c00, the first instruction is jump to 0x7c65
@@ -330,4 +331,109 @@ eflags         0x202	[ IF ]
    0x7ce2:	jae    0x7cf1
    0x7ce4:	test   $0x80,%dl
 
+----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/boot.S:179
+
+lba_mode:
+        xorw    %ax, %ax
+        movw    %ax, 4(%si)
+
+        incw    %ax
+        /* set the mode to non-zero */
+        movb    %al, -1(%si)
+
+        /* the blocks */
+        movw    %ax, 2(%si)
+
+        /* the size and the reserved byte */
+        movw    $0x0010, (%si)
+
+        /* the absolute address */
+        movl    kernel_sector, %ebx
+        movl    %ebx, 8(%si)
+        movl    kernel_sector + 4, %ebx
+        movl    %ebx, 12(%si)
+        /* the segment of buffer address */
+        movw    $GRUB_BOOT_MACHINE_BUFFER_SEG, 6(%si)
+
+/*
+ * BIOS call "INT 0x13 Function 0x42" to read sectors from disk into memory
+ *      Call with       %ah = 0x42
+ *                      %dl = drive number
+ *                      %ds:%si = segment:offset of disk address packet
+ *      Return:
+ *                      %al = 0x0 on success; err code on failure
+ */
+
+        movb    $0x42, %ah
+        int     $0x13
+
+        /* LBA read is not supported, so fallback to CHS.  */
+        jc      LOCAL(chs_mode)
+
+        movw    $GRUB_BOOT_MACHINE_BUFFER_SEG, %bx
+        jmp     LOCAL(copy_buffer)
+
 ```
+Copy grub kernel to address 0x8000, jump to 0x8000
+```assembly
+   0x7d54:	pusha  
+   0x7d55:	push   %ds
+   0x7d56:	mov    $0x100,%cx
+   0x7d59:	mov    %bx,%ds
+   0x7d5b:	xor    %si,%si
+   0x7d5d:	mov    $0x8000,%di
+   0x7d60:	mov    %si,%es
+   0x7d62:	cld    
+   0x7d63:	rep movsw %ds:(%si),%es:(%di)
+   0x7d65:	pop    %ds
+   0x7d66:	popa   
+(gdb) x/h 0x7c5a
+0x7c5a:	0x8000
+   0x7d67:	jmp    *0x7c5a
+   0x7d6b:	mov    $0x7d86,%si
+   0x7d6e:	jmp    0x7d73
+   0x7d70:	mov    $0x7d95,%si
+   0x7d73:	call   0x7daa
+   0x7d76:	mov    $0x7d9a,%si
+   0x7d79:	call   0x7daa
+   0x7d7c:	int    $0x18
+   0x7d7e:	jmp    0x7d7e
+
+----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/boot.S:332
+
+LOCAL(copy_buffer):
+        /*
+         * We need to save %cx and %si because the startup code in
+         * kernel uses them without initializing them.
+         */
+        pusha
+        pushw   %ds
+
+        movw    $0x100, %cx
+        movw    %bx, %ds
+        xorw    %si, %si
+        movw    $GRUB_BOOT_MACHINE_KERNEL_ADDR, %di
+        movw    %si, %es
+
+        cld
+
+        rep
+        movsw
+
+        popw    %ds
+        popa
+
+        /* boot kernel */
+        jmp     *(kernel_address)
+
+/* END OF MAIN LOOP */
+```
+
+Links:
+----------------------------------------------------------------------
+  * [BIOS interrupt INT13H](https://en.wikipedia.org/wiki/INT_13H)
+  * [LBA and CHS](https://en.wikipedia.org/wiki/Logical_block_addressing)
