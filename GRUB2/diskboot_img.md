@@ -1,0 +1,25 @@
+Disk boot image
+================================
+Disk boot image is used as the first sector of the core image when booting from a hard disk. It reads the rest of the core image into memory and starts the kernel.
+
+Continue the boot process after MBR copied boot disk image to address 0x8000 and jumped to the address.
+
+Save drive type and DAP, print notification message
+```assembly
+   0x8000:	push   %dx
+   0x8001:	push   %si
+(gdb) info registers dx si
+dx             0x80	128
+si             0x7c05	31749
+   0x8002:	mov    $0x811b,%si
+(gdb) x/s 0x811b
+0x811b:	"loading"
+   0x8005:	call   0x8141
+   0x8008:	pop    %si
+   0x8009:	mov    $0x81f4,%di
+   0x800c:	mov    (%di),%ebp
+   0x800f:	cmpw   $0x0,0x8(%di)
+   0x8013:	je     0x80f9
+   0x8017:	cmpb   $0x0,-0x1(%si)
+
+```
