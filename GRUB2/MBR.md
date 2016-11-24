@@ -304,7 +304,7 @@ grub-core/boot/i386/pc/boot.S:149
 
 ```
 
-Initialize disk_address_packet
+Prepare DAP(disk address packet) and read source from drive
 ```assembly
    0x7cac:	xor    %ax,%ax
    0x7cae:	mov    %ax,0x4(%si)
@@ -316,4 +316,15 @@ Initialize disk_address_packet
    0x7cc1:	mov    %ebx,0x8(%si)
    0x7cc5:	mov    0x7c60,%ebx
    0x7cca:	mov    %ebx,0xc(%si)
+   0x7cce:	movw   $0x7000,0x6(%si)
+   0x7cd3:	mov    $0x42,%ah
+   0x7cd5:	int    $0x13
+   0x7cd7:	jb     0x7cde
+   0x7cd9:	mov    $0x7000,%bx
+   0x7cdc:	jmp    0x7d54
+   0x7cde:	mov    $0x8,%ah
+   0x7ce0:	int    $0x13
+   0x7ce2:	jae    0x7cf1
+   0x7ce4:	test   $0x80,%dl
+
 ```
