@@ -55,10 +55,22 @@ _start:
 
 ```
 
+Check the number of sector to read, in my environment its value is 60, Enter setup-sectors. Setup DAP and read rest of kernel with BIOS interrupt, jump to copy buffer.
+
 ```assembly
    0x800f:	cmpw   $0x0,0x8(%di)
+(gdb) info registers di
+di             0x81f4	-32268
+(gdb) x/h 0x81f4+0x8
+0x81fc:	0x003c
+(gdb) p 0x3c
+$2 = 60
    0x8013:	je     0x80f9
    0x8017:	cmpb   $0x0,-0x1(%si)
+(gdb) info registers si
+si             0x7c05	31749
+(gdb) x/b 0x7c05-0x1
+0x7c04:	0x01
    0x801b:	je     0x8063
    0x801d:	mov    (%di),%ebx
    0x8020:	mov    0x4(%di),%ecx
@@ -66,5 +78,127 @@ _start:
    0x8027:	mov    $0x7f,%al
    0x8029:	cmp    %ax,0x8(%di)
    0x802c:	jg     0x8031
+   0x802e:	mov    0x8(%di),%ax
+   0x8031:	sub    %ax,0x8(%di)
+(gdb) x/h 0x81f4+0x8
+0x81fc:	0x0000
+   0x8034:	add    %eax,(%di)
+   0x8037:	adcl   $0x0,0x4(%di)
+   0x803c:	movw   $0x10,(%si)
+   0x8040:	mov    %ax,0x2(%si)
+   0x8043:	mov    %ebx,0x8(%si)
+   0x8047:	mov    %ecx,0xc(%si)
+   0x804b:	movw   $0x7000,0x6(%si)
+   0x8050:	push   %ax
+   0x8051:	movw   $0x0,0x4(%si)
+   0x8056:	mov    $0x42,%ah
+   0x8058:	int    $0x13
+(gdb) info registers 
+eax            0x3c	60
+ecx            0x0	0
+edx            0x80	128
+ebx            0x2	2
+esp            0x1ffa	0x1ffa
+ebp            0x2	0x2
+esi            0x7c05	31749
+edi            0x81f4	33268
+eip            0x805a	0x805a
+eflags         0x246	[ PF ZF IF ]
+cs             0x0	0
+ss             0x0	0
+ds             0x0	0
+es             0x0	0
+fs             0x0	0
+gs             0x0	0
+   0x805a:	jb     0x810d
+   0x805e:	mov    $0x7000,%bx
+   0x8061:	jmp    0x80c9
+   0x8063:	mov    0x4(%di),%eax
+   0x8067:	or     %eax,%eax
+   0x806a:	jne    0x8105
+   0x806e:	mov    (%di),%eax
+
+-----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/diskboot.S:64
+
+       /* this is the loop for reading the rest of the kernel in */
+LOCAL(bootloop):
+
+        /* check the number of sectors to read */
+        cmpw    $0, 8(%di)
+
+        /* if zero, go to the start function */
+        je      LOCAL(bootit)
+
+LOCAL(setup_sectors):
+        /* check if we use LBA or CHS */
+        cmpb    $0, -1(%si)
+
+        /* use CHS if zero, LBA otherwise */
+        je      LOCAL(chs_mode)
+
+        /* load logical sector start */
+        movl    (%di), %ebx
+        movl    4(%di), %ecx
+
+        /* the maximum is limited to 0x7f because of Phoenix EDD */
+        xorl    %eax, %eax
+        movb    $0x7f, %al
+
+        /* how many do we really want to read? */
+        cmpw    %ax, 8(%di)     /* compare against total number of sectors */
+
+        /* which is greater? */
+        jg      1f
+
+        /* if less than, set to total */
+        movw    8(%di), %ax
+
+1:
+        /* subtract from total */
+        subw    %ax, 8(%di)
+
+        /* add into logical sector start */
+        addl    %eax, (%di)
+        adcl    $0, 4(%di)
+
+        /* set up disk address packet */
+
+        /* the size and the reserved byte */
+        movw    $0x0010, (%si)
+
+        /* the number of sectors */
+        movw    %ax, 2(%si)
+
+        /* the absolute address */
+        movl    %ebx, 8(%si)
+        movl    %ecx, 12(%si)
+
+        /* the segment of buffer address */
+        movw    $GRUB_BOOT_MACHINE_BUFFER_SEG, 6(%si)
+
+        /* save %ax from destruction! */
+        pushw   %ax
+
+        /* the offset of buffer address */
+        movw    $0, 4(%si)
+
+/*
+ * BIOS call "INT 0x13 Function 0x42" to read sectors from disk into memory
+ *      Call with       %ah = 0x42
+ *                      %dl = drive number
+ *                      %ds:%si = segment:offset of disk address packet
+ *      Return:
+ *                      %al = 0x0 on success; err code on failure
+ */
+
+        movb    $0x42, %ah
+        int     $0x13
+
+        jc      LOCAL(read_error)
+
+        movw    $GRUB_BOOT_MACHINE_BUFFER_SEG, %bx
+        jmp     LOCAL(copy_buffer)
 
 ```
