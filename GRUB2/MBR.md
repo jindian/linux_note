@@ -227,7 +227,7 @@ real_start:
 Save driver reference and print notification message. Check Extensions Present using BIOS interrupt and check the result. The result shown in debug information. We come to lba_mode finally.
 
 INT 13h AH=41h: Check Extensions Present:
-![](INIT13H_AH41.png)
+![](INT13H_AH41H.png)
 ```assembly
    0x7c8c:	push   %dx
    0x7c8d:	mov    $0x7d80,%si
