@@ -55,7 +55,7 @@ _start:
 
 ```
 
-Check the number of sector to read, in my environment its value is 60, Enter setup-sectors. Setup DAP and read rest of kernel with BIOS interrupt, jump to copy buffer.
+Check the number of sector to read, in my environment its value is 60, Enter setup-sectors. Setup DAP and read rest of kernel with BIOS interrupt, jump to copy buffer(0x80c9).
 
 ```assembly
    0x800f:	cmpw   $0x0,0x8(%di)
