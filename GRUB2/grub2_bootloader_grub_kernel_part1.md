@@ -421,7 +421,7 @@ gate_a20_test_current_state:
         ret
 ```
 
-Check if the a20 line was already enable by BIOS. Boot loader set less value at 0x8000, obtain the value at 0x108000 which is 1 MiB higher than 0x8000, values store in above two adresses is different, a20 line already enabled by BIOS. Return to codestart finally.
+Check if the a20 line was already enable by BIOS. Boot loader set less value at 0x8000, obtain the value at 0x108000 which is 1 MiB higher than 0x8000, values store in above two adresses is different, a20 line already enabled by BIOS. Return to codestart(0x8245) finally.
 ```assembly
    0x8930:	mov    $0x64,%cx
    0x8935:	call   0x8941
@@ -516,6 +516,21 @@ gate_a20_check_state:
         popl    %ebx
         ret
 ```
+
+```assembly
+   0x8245:	mov    0x8208,%edx
+   0x824b:	add    $0x3bd,%edx
+   0x8251:	mov    0x8210,%ecx
+   0x8257:	lea    0x8973,%eax
+   0x825d:	cld    
+   0x825e:	call   0x85a7
+   0x8263:	jmp    0x89ce
+   0x8268:	lock incl (%edi)
+   0x826b:	add    %ch,%bl
+   0x826d:	adc    -0x6f6f6f70(%eax),%dl
+
+```
+
 Links:
 ------------------------------------
   * [Real mode](https://en.wikipedia.org/wiki/Real_mode)
