@@ -320,7 +320,7 @@ protcseg:
         ret
 ```
 
-Continue previous codestart, call routine grub_gate_a20 at address 0x88a5 to enable address line 20 for high memory, the input parameter stored in ax(After step in grub_gate_a20, actual address of the first instruction is 0x88a7).
+Continue previous codestart, call routine grub_gate_a20 at address 0x88a5 to enable address line 20 for high memory, the input parameter stored in ax.
 ```assembly
    0x823e:	inc    %ax
    0x823f:	cld    
@@ -365,8 +365,27 @@ grub-core/boot/i386/pc/startup_raw.S:100
 
 ```
 
-Let's step into grub_gate_a20, how grub kernel enable address line 20.
+Actually the first instruction after step in grub_gate_a20 locate at address 0x88a7. I checked register information, address of next instruction after routine grub_gate_a20 complete stored at the top of stack as below. Let's step into grub_gate_a20, how grub kernel enable address line 20. First of all, it check the state of a20 line with routine gate_a20_check_state at address 0x892e.
 ```assembly
+(gdb) info registers 
+eax            0x1	1
+ecx            0x0	0
+edx            0x80	128
+ebx            0x1	1
+esp            0x7fff0	0x7fff0
+ebp            0x7fff0	0x7fff0
+esi            0x8127	33063
+edi            0x81e8	33256
+eip            0x88a7	0x88a7
+eflags         0x2	[ ]
+cs             0x8	8
+ss             0x10	16
+ds             0x10	16
+es             0x10	16
+fs             0x10	16
+gs             0x10	16
+(gdb) x/w 0x7fff0
+0x7fff0:	0x00008245
    0x88a7:	mov    %ax,%dx
    0x88a9:	call   0x892e
    0x88ac:	add    %al,(%bx,%si)
@@ -377,6 +396,71 @@ Let's step into grub_gate_a20, how grub kernel enable address line 20.
    0x88b4:	call   0x8328
    0x88b7:	(bad)  
    0x88b8:	(bad)  
+
+-----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/startup_raw.S:126
+
+/*
+ * grub_gate_a20(int on)
+ *
+ * Gate address-line 20 for high memory.
+ *
+ * This routine is probably overconservative in what it does, but so what?
+ *
+ * It also eats any keystrokes in the keyboard buffer.  :-(
+ */
+
+grub_gate_a20:
+        movl    %eax, %edx
+
+gate_a20_test_current_state:
+        /* first of all, test if already in a good state */
+        call    gate_a20_check_state
+```
+
+
+```assembly
+   0x8930:	mov    $0x64,%cx
+   0x8935:	call   0x893f
+   --------------------------------------------------------------------
+       |(gdb) info registers esp
+       |esp            0x7ffe8	0x7ffe8
+       |(gdb) x/w 0x7ffe8
+       |0x7ffe8:	0x0000893a
+       |   0x8941:	push   %ebx
+       |   0x8942:	push   %ecx
+       |   0x8943:	xor    %eax,%eax
+       |   0x8945:	mov    $0x8000,%ebx
+       |   0x894a:	push   %ebx
+       |   0x894b:	mov    (%ebx),%cl
+       |   0x894d:	add    $0x100000,%ebx
+       |   0x8953:	mov    (%ebx),%al
+       |   0x8955:	pop    %ebx
+       |(gdb) info registers cl al
+       |cl             0x52	82
+       |al             0x0	0
+       |   0x8956:	mov    %al,%ch
+       |(gdb) info registers ch
+       |ch             0x0	0
+       |   0x8958:	dec    %ch
+       |info registers ch
+       |ch             0xff	-1
+       |   0x895a:	mov    %ch,(%ebx)
+       |   0x895c:	out    %al,$0x80
+       |   0x895e:	out    %al,$0x80
+       |   0x8960:	push   %ebx
+       |   0x8961:	add    $0x100000,%ebx
+       |   0x8967:	mov    (%ebx),%ch
+       |   0x8969:	sub    %ch,%al
+       |   0x896b:	xor    $0x1,%al
+       |   0x896d:	pop    %ebx
+   0x893a:	cmp    %al,%dl
+   0x893c:	je     0x8940
+   0x893e:	loop   0x8935
+   0x8940:	ret    
+   0x8941:	push   %bx
+   0x8942:	push   %cx
 
 ```
 Links:
