@@ -365,9 +365,24 @@ grub-core/boot/i386/pc/startup_raw.S:100
 
 ```
 
+Let's step into grub_gate_a20, how grub kernel enable address line 20.
+```assembly
+   0x88a7:	mov    %ax,%dx
+   0x88a9:	call   0x892e
+   0x88ac:	add    %al,(%bx,%si)
+   0x88ae:	cmp    %al,%dl
+   0x88b0:	jne    0x88b3
+   0x88b2:	ret    
+   0x88b3:	push   %bp
+   0x88b4:	call   0x8328
+   0x88b7:	(bad)  
+   0x88b8:	(bad)  
+
+```
 Links:
 ------------------------------------
   * [Real mode](https://en.wikipedia.org/wiki/Real_mode)
   * [Protected mode](https://en.wikipedia.org/wiki/Protected_mode)
   * [Instruction Prefixes: addr32](http://www.delorie.com/gnu/docs/binutils/as_265.html)
   * [Global Descriptor Table](https://en.wikipedia.org/wiki/Global_Descriptor_Table)
+  * [A20 line](https://en.wikipedia.org/wiki/A20_line)
