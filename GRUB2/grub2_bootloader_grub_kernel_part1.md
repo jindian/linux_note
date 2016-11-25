@@ -517,6 +517,7 @@ gate_a20_check_state:
         ret
 ```
 
+Prepare parameters for routine grub_reed_solomon_recover located at address 0x85a7. grub_reed_solomon_recover written in C(grub-core/lib/reed_solomon.c), compile result is rs_decoder.S which included by startup_raw.S. I will ignore this routine, jump to post_reed_solomon(located at 0x89ce).
 ```assembly
    0x8245:	mov    0x8208,%edx
    0x824b:	add    $0x3bd,%edx
@@ -529,6 +530,22 @@ gate_a20_check_state:
    0x826b:	add    %ch,%bl
    0x826d:	adc    -0x6f6f6f70(%eax),%dl
 
+-----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/startup_raw.S:107
+
+       movl    LOCAL(compressed_size), %edx
+#ifdef __APPLE__
+        addl    $decompressor_end, %edx
+        subl    $(LOCAL(reed_solomon_part)), %edx
+#else
+        addl    $(LOCAL(decompressor_end) - LOCAL(reed_solomon_part)), %edx
+#endif
+        movl    reed_solomon_redundancy, %ecx
+        leal    LOCAL(reed_solomon_part), %eax
+        cld
+        call    EXT_C (grub_reed_solomon_recover)
+        jmp     post_reed_solomon
 ```
 
 Links:
