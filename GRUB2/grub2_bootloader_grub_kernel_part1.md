@@ -365,7 +365,7 @@ grub-core/boot/i386/pc/startup_raw.S:100
 
 ```
 
-Actually the first instruction after step in grub_gate_a20 locate at address 0x88a7. I checked register information, address of next instruction after routine grub_gate_a20 complete stored at the top of stack as below. Let's step into grub_gate_a20, how grub kernel enable address line 20. First of all, it check the state of a20 line with routine gate_a20_check_state at address 0x892e.
+Actually the first instruction after step in grub_gate_a20 locate at address 0x88a7(It's because I set architecture in gdb as 8086 for real mode code debug, set as i386 could correct it). I checked register information, address of next instruction after routine grub_gate_a20 complete stored at the top of stack as below. Let's step into grub_gate_a20, how grub kernel enable address line 20. First of all, it check the state of a20 line with routine gate_a20_check_state at address 0x8930.
 ```assembly
 (gdb) info registers 
 eax            0x1	1
@@ -387,13 +387,12 @@ gs             0x10	16
 (gdb) x/w 0x7fff0
 0x7fff0:	0x00008245
    0x88a7:	mov    %ax,%dx
-   0x88a9:	call   0x892e
-   0x88ac:	add    %al,(%bx,%si)
+   0x88a9:	call   0x8930
    0x88ae:	cmp    %al,%dl
    0x88b0:	jne    0x88b3
    0x88b2:	ret    
    0x88b3:	push   %bp
-   0x88b4:	call   0x8328
+   0x88b4:	call   0x832a
    0x88b7:	(bad)  
    0x88b8:	(bad)  
 
@@ -417,51 +416,105 @@ grub_gate_a20:
 gate_a20_test_current_state:
         /* first of all, test if already in a good state */
         call    gate_a20_check_state
+        cmpb    %al, %dl
+        jnz     gate_a20_try_bios
+        ret
 ```
 
-
+Check if the a20 line was already enable by BIOS. Boot loader set less value at 0x8000, obtain the value at 0x108000 which is 1 MiB higher than 0x8000, values store in above two adresses is different, a20 line already enabled by BIOS. Return to codestart finally.
 ```assembly
    0x8930:	mov    $0x64,%cx
-   0x8935:	call   0x893f
-   --------------------------------------------------------------------
-       |(gdb) info registers esp
-       |esp            0x7ffe8	0x7ffe8
-       |(gdb) x/w 0x7ffe8
-       |0x7ffe8:	0x0000893a
-       |   0x8941:	push   %ebx
-       |   0x8942:	push   %ecx
-       |   0x8943:	xor    %eax,%eax
-       |   0x8945:	mov    $0x8000,%ebx
-       |   0x894a:	push   %ebx
-       |   0x894b:	mov    (%ebx),%cl
-       |   0x894d:	add    $0x100000,%ebx
-       |   0x8953:	mov    (%ebx),%al
-       |   0x8955:	pop    %ebx
-       |(gdb) info registers cl al
-       |cl             0x52	82
-       |al             0x0	0
-       |   0x8956:	mov    %al,%ch
-       |(gdb) info registers ch
-       |ch             0x0	0
-       |   0x8958:	dec    %ch
-       |info registers ch
-       |ch             0xff	-1
-       |   0x895a:	mov    %ch,(%ebx)
-       |   0x895c:	out    %al,$0x80
-       |   0x895e:	out    %al,$0x80
-       |   0x8960:	push   %ebx
-       |   0x8961:	add    $0x100000,%ebx
-       |   0x8967:	mov    (%ebx),%ch
-       |   0x8969:	sub    %ch,%al
-       |   0x896b:	xor    $0x1,%al
-       |   0x896d:	pop    %ebx
+   0x8935:	call   0x8941
    0x893a:	cmp    %al,%dl
+(gdb) info registers al dl
+al             0x1	1
+dl             0x1	1
    0x893c:	je     0x8940
    0x893e:	loop   0x8935
    0x8940:	ret    
-   0x8941:	push   %bx
-   0x8942:	push   %cx
+(gdb) info registers esp
+esp            0x7ffe8	0x7ffe8
+(gdb) x/w 0x7ffe8
+0x7ffe8:	0x0000893a
+   0x8941:	push   %ebx
+   0x8942:	push   %ecx
+   0x8943:	xor    %eax,%eax
+   0x8945:	mov    $0x8000,%ebx
+   0x894a:	push   %ebx
+   0x894b:	mov    (%ebx),%cl
+   0x894d:	add    $0x100000,%ebx
+   0x8953:	mov    (%ebx),%al
+   0x8955:	pop    %ebx
+(gdb) info registers cl al
+cl             0x52	82
+al             0x0	0
+   0x8956:	mov    %al,%ch
+(gdb) info registers ch
+ch             0x0	0
+   0x8958:	dec    %ch
+info registers ch
+ch             0xff	-1
+   0x895a:	mov    %ch,(%ebx)
+   0x895c:	out    %al,$0x80
+   0x895e:	out    %al,$0x80
+   0x8960:	push   %ebx
+   0x8961:	add    $0x100000,%ebx
+   0x8967:	mov    (%ebx),%ch
+   0x8969:	sub    %ch,%al
+   0x896b:	xor    $0x1,%al
+   0x896d:	pop    %ebx
+   0x896e:	mov    %cl,(%ebx)
+   0x8970:	pop    %ecx
+   0x8971:	pop    %ebx
+   0x8972:	ret  
 
+-----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/startup_raw.S:232
+
+gate_a20_check_state:
+        /* iterate the checking for a while */
+        movl    $100, %ecx
+1:
+        call    3f
+        cmpb    %al, %dl
+        jz      2f
+        loop    1b
+2:
+        ret
+3:
+        pushl   %ebx
+        pushl   %ecx
+        xorl    %eax, %eax
+        /* compare the byte at 0x8000 with that at 0x108000 */
+        movl    $GRUB_BOOT_MACHINE_KERNEL_ADDR, %ebx
+        pushl   %ebx
+        /* save the original byte in CL */
+        movb    (%ebx), %cl
+        /* store the value at 0x108000 in AL */
+        addl    $0x100000, %ebx
+        movb    (%ebx), %al
+        /* try to set one less value at 0x8000 */
+        popl    %ebx
+        movb    %al, %ch
+        decb    %ch
+        movb    %ch, (%ebx)
+        /* serialize */
+        outb    %al, $0x80
+        outb    %al, $0x80
+        /* obtain the value at 0x108000 in CH */
+        pushl   %ebx
+        addl    $0x100000, %ebx
+        movb    (%ebx), %ch
+        /* this result is 1 if A20 is on or 0 if it is off */
+        subb    %ch, %al
+        xorb    $1, %al
+        /* restore the original */
+        popl    %ebx
+        movb    %cl, (%ebx)
+        popl    %ecx
+        popl    %ebx
+        ret
 ```
 Links:
 ------------------------------------
@@ -470,3 +523,4 @@ Links:
   * [Instruction Prefixes: addr32](http://www.delorie.com/gnu/docs/binutils/as_265.html)
   * [Global Descriptor Table](https://en.wikipedia.org/wiki/Global_Descriptor_Table)
   * [A20 line](https://en.wikipedia.org/wiki/A20_line)
+  * [Test A20 line](http://wiki.osdev.org/A20_Line)
