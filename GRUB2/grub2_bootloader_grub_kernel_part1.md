@@ -268,7 +268,7 @@ gs             0x10	16
 
 -----------------------------------------------------------------------
 
-grub-core/boot/i386/pc/startup_raw.S:133
+grub-core/kern/i386/realmode.S:133
 
 real_to_prot:
         .code16
@@ -355,6 +355,14 @@ gs             0x10	16
 -----------------------------------------------------------------------
 
 grub-core/boot/i386/pc/startup_raw.S:100
+
+        /* The ".code32" directive takes GAS out of 16-bit mode. */
+        .code32
+
+        incl    %eax
+        cld
+        call    grub_gate_a20
+
 ```
 
 Links:
