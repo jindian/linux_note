@@ -237,6 +237,124 @@ In real_to_prot, it loads gdt descriptor, enables protected mode, saves real mod
    0x8308:	mov    0x8268,%ax
    0x830b:	add    %al,(%bx,%si)
    0x830d:	mov    %ax,%sp
+   0x830f:	mov    %ax,%bp
+   0x8311:	mov    0x1ff0,%ax
+   0x8314:	add    %al,(%bx,%si)
+   0x8316:	mov    %ax,(%si)
+   0x8319:	xor    %ax,%ax
+   0x831b:	sidtw  (%di)
+   0x8322:	lidtw  (%di)
+(gdb) info registers 
+eax            0x0	0
+ecx            0x0	0
+edx            0x80	128
+ebx            0x1	1
+esp            0x7fff0	0x7fff0
+ebp            0x7fff0	0x7fff0
+esi            0x8127	33063
+edi            0x81e8	33256
+eip            0x8329	0x8329
+eflags         0x46	[ PF ZF ]
+cs             0x8	8
+ss             0x10	16
+ds             0x10	16
+es             0x10	16
+fs             0x10	16
+gs             0x10	16
+(gdb) x/w 0x7fff0
+0x7fff0:	0x0000823e
+(gdb) 
+   0x8329:	ret
+
+-----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/startup_raw.S:133
+
+real_to_prot:
+        .code16
+        cli
+
+        /* load the GDT register */
+        xorw    %ax, %ax
+        movw    %ax, %ds
+        DATA32  ADDR32  lgdt    gdtdesc
+
+        /* turn on protected mode */
+        movl    %cr0, %eax
+        orl     $GRUB_MEMORY_CPU_CR0_PE_ON, %eax
+        movl    %eax, %cr0
+
+        /* jump to relocation, flush prefetch queue, and reload %cs */
+        DATA32  ljmp    $GRUB_MEMORY_MACHINE_PROT_MODE_CSEG, $protcseg
+
+        .code32
+protcseg:
+        /* reload other segment registers */
+        movw    $GRUB_MEMORY_MACHINE_PROT_MODE_DSEG, %ax
+        movw    %ax, %ds
+        movw    %ax, %es
+        movw    %ax, %fs
+        movw    %ax, %gs
+        movw    %ax, %ss
+
+        /* put the return address in a known safe location */
+        movl    (%esp), %eax
+        movl    %eax, GRUB_MEMORY_MACHINE_REAL_STACK
+
+        /* get protected mode stack */
+        movl    protstack, %eax
+        movl    %eax, %esp
+        movl    %eax, %ebp
+
+        /* get return address onto the right stack */
+        movl    GRUB_MEMORY_MACHINE_REAL_STACK, %eax
+        movl    %eax, (%esp)
+
+        /* zero %eax */
+        xorl    %eax, %eax
+
+        sidt LOCAL(realidt)
+        lidt protidt
+
+        /* return on the old (or initialized) stack! */
+        ret
+```
+
+Continue previous codestart, call routine grub_gate_a20 at address 0x88a5 to enable address line 20 for high memory, the input parameter stored in ax(After step in grub_gate_a20, actual address of the first instruction is 0x88a7).
+```assembly
+   0x823e:	inc    %ax
+   0x823f:	cld    
+(gdb) info registers 
+eax            0x1	1
+ecx            0x0	0
+edx            0x80	128
+ebx            0x1	1
+esp            0x7fff4	0x7fff4
+ebp            0x7fff0	0x7fff0
+esi            0x8127	33063
+edi            0x81e8	33256
+eip            0x8240	0x8240
+eflags         0x2	[ ]
+cs             0x8	8
+ss             0x10	16
+ds             0x10	16
+es             0x10	16
+fs             0x10	16
+gs             0x10	16
+(gdb) x/w 0x7fff4
+0x7fff4:	0x00000000
+   0x8240:	call   0x88a5
+   0x8243:	add    %al,(%bx,%si)
+   0x8245:	mov    (%di),%dx
+   0x8247:	or     %al,0x0(%bp,%si)
+   0x824b:	add    $0x3bd,%dx
+   0x824f:	add    %al,(%bx,%si)
+   0x8251:	mov    (%di),%cx
+   0x8253:	adc    %al,0x0(%bp,%si)
+
+-----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/startup_raw.S:100
 ```
 
 Links:
