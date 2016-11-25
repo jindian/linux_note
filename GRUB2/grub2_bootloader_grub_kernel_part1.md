@@ -77,7 +77,7 @@ include/grub/offset.h
 
 ```
 
-The first instruction is jump to codestart(0x821c), let's start at codestart, In it after set up data sections, real mode stack, save boot drive and reset disk system(INT13H_AH0H), operating mode changed from real mode to protect mode(call 0x82d2).
+The first instruction in grub kernel is jump to codestart(0x821c), we  go to codestart directly, it set up data sections, real mode stack, save boot drive and reset disk system(INT13H_AH0H), operating mode changed from real mode to protect mode(call 0x82d2).
 ```assembly
    0x821c:	cli    
    0x821d:	xor    %ax,%ax
@@ -130,7 +130,92 @@ LOCAL (codestart):
         DATA32  call real_to_prot
 ```
 
-In real_to_prot
+Before step into real_to_prot function, here are some special variables we need pay attention. In which gdt is a simple structure describing real mode and protected mode memory area.
+```assembly
+grub-core/kern/i386/realmode.S:45
+/*
+ *  This is the area for all of the special variables.
+ */
+
+protstack:
+        .long   GRUB_MEMORY_MACHINE_PROT_STACK
+
+        .macro PROT_TO_REAL
+        call    prot_to_real
+        .endm
+
+        .macro REAL_TO_PROT
+        DATA32  call    real_to_prot
+        .endm
+
+/*
+ * This is the Global Descriptor Table
+ *
+ *  An entry, a "Segment Descriptor", looks like this:
+ *
+ * 31          24         19   16                 7           0
+ * ------------------------------------------------------------
+ * |             | |B| |A|       | |   |1|0|E|W|A|            |
+ * | BASE 31..24 |G|/|L|V| LIMIT |P|DPL|  TYPE   | BASE 23:16 |  4
+ * |             | |D| |L| 19..16| |   |1|1|C|R|A|            |
+ * ------------------------------------------------------------
+ * |                             |                            |
+ * |        BASE 15..0           |       LIMIT 15..0          |  0
+ * |                             |                            |
+ * ------------------------------------------------------------
+ *
+ *  Note the ordering of the data items is reversed from the above
+ *  description.
+ */
+
+        .p2align        5       /* force 4-byte alignment */
+gdt:
+        .word   0, 0
+        .byte   0, 0, 0, 0
+
+        /* -- code segment --
+         * base = 0x00000000, limit = 0xFFFFF (4 KiB Granularity), present
+         * type = 32bit code execute/read, DPL = 0
+         */
+        .word   0xFFFF, 0
+        .byte   0, 0x9A, 0xCF, 0
+
+        /* -- data segment --
+         * base = 0x00000000, limit 0xFFFFF (4 KiB Granularity), present
+         * type = 32 bit data read/write, DPL = 0
+         */
+        .word   0xFFFF, 0
+        .byte   0, 0x92, 0xCF, 0
+
+        /* -- 16 bit real mode CS --
+         * base = 0x00000000, limit 0x0FFFF (1 B Granularity), present
+         * type = 16 bit code execute/read only/conforming, DPL = 0
+         */
+        .word   0xFFFF, 0
+        .byte   0, 0x9E, 0, 0
+
+        /* -- 16 bit real mode DS --
+         * base = 0x00000000, limit 0x0FFFF (1 B Granularity), present
+         * type = 16 bit data read/write, DPL = 0
+         */
+        .word   0xFFFF, 0
+        .byte   0, 0x92, 0, 0
+
+
+        .p2align 5
+/* this is the GDT descriptor */
+gdtdesc:
+        .word   0x27                    /* limit */
+        .long   gdt                     /* addr */
+LOCAL(realidt):
+        .word 0x400
+        .long 0
+protidt:
+        .word 0
+        .long 0
+```
+
+In real_to_prot, it loads gdt descriptor, enables protected mode, saves real mode stack, set stack registers with protected mode stack, stores real mode idt(interrupt descriptor table) and load protected mode idt instead.
 ```assembly
    0x82d2:	cli    
    0x82d3:	xor    %ax,%ax
@@ -142,7 +227,16 @@ In real_to_prot
    0x82ea:	ljmpl  $0x8,$0x82f2
    0x82f2:	mov    $0xd88e0010,%eax
    0x82f8:	mov    %ax,%es
-
+   0x82fa:	mov    %ax,%fs
+   0x82fc:	mov    %ax,%gs
+   0x82fe:	mov    %ax,%ss
+   0x8300:	mov    (%si),%ax
+   0x8302:	and    $0xa3,%al
+   0x8304:	lock pop %ds
+   0x8306:	add    %al,(%bx,%si)
+   0x8308:	mov    0x8268,%ax
+   0x830b:	add    %al,(%bx,%si)
+   0x830d:	mov    %ax,%sp
 ```
 
 Links:
@@ -150,3 +244,4 @@ Links:
   * [Real mode](https://en.wikipedia.org/wiki/Real_mode)
   * [Protected mode](https://en.wikipedia.org/wiki/Protected_mode)
   * [Instruction Prefixes: addr32](http://www.delorie.com/gnu/docs/binutils/as_265.html)
+  * [Global Descriptor Table](https://en.wikipedia.org/wiki/Global_Descriptor_Table)
