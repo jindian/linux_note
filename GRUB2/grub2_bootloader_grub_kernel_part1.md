@@ -655,6 +655,8 @@ eax            0xffffffff	-1
    0x8b01:	lods   %ds:(%esi),%al
    0x8b02:	loop   0x8afe
    0x8b04:	mov    %eax,-0x10(%ebp)
+(gdb) info registers eax
+eax            0x44a383df	1151566815
    0x8b07:	mov    -0x4(%ebp),%eax
 (gdb) info registers ebp
 ebp            0x7ffe4	0x7ffe4
@@ -801,7 +803,65 @@ lzma_decode_loop:
         jc      1f
 ```
 
-
+Let's step into RangeDecoderBitDecode routine to continue grub kernel decompress process.
+```assembly
+(gdb) info registers 
+eax            0x0	0
+ecx            0x0	0
+edx            0x0	0
+ebx            0x10b7d0	1095632
+esp            0x7ffb4	0x7ffb4
+ebp            0x7ffe4	0x7ffe4
+esi            0x8d35	36149
+edi            0x100000	1048576
+eip            0x8a01	0x8a01
+eflags         0x46	[ PF ZF ]
+cs             0x8	8
+ss             0x10	16
+ds             0x10	16
+es             0x10	16
+fs             0x10	16
+gs             0x10	16
+   0x8a01:	lea    (%ebx,%eax,4),%eax
+   0x8a04:	mov    %eax,%ecx
+   0x8a06:	mov    (%ecx),%eax
+   0x8a08:	mov    -0xc(%ebp),%edx
+   0x8a0b:	shr    $0xb,%edx
+(gdb) info registers edx
+edx            0x1fffff	2097151
+(gdb) info registers eax
+eax            0x400	1024
+   0x8a0e:	mul    %edx
+(gdb) info registers eax
+eax            0x7ffffc00	2147482624
+   0x8a10:	cmp    -0x10(%ebp),%eax
+(gdb) info registers eflags
+eflags         0x16	[ PF AF ]
+   0x8a13:	jbe    0x8a3d
+   0x8a15:	mov    %eax,-0xc(%ebp)
+   0x8a18:	mov    $0x800,%edx
+   0x8a1d:	sub    (%ecx),%edx
+(gdb) info registers edx
+edx            0x400	1024
+   0x8a1f:	shr    $0x5,%edx
+(gdb) info registers edx
+edx            0x20	32
+   0x8a22:	add    %edx,(%ecx)
+(gdb) info registers ecx
+ecx            0x10b7d0	1095632
+(gdb) x/w 0x10b7d0
+0x10b7d0:	0x00000420
+   0x8a24:	clc    
+   0x8a25:	pushf  
+   0x8a26:	cmpl   $0x1000000,-0xc(%ebp)
+   0x8a2d:	jae    0x8a3b
+   0x8a2f:	shll   $0x8,-0x10(%ebp)
+   0x8a33:	lods   %ds:(%esi),%al
+   0x8a34:	mov    %al,-0x10(%ebp)
+   0x8a37:	shll   $0x8,-0xc(%ebp)
+   0x8a3b:	popf   
+   0x8a3c:	ret    
+```
 
 Links:
 ------------------------------------
