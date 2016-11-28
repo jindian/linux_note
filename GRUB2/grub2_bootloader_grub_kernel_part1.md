@@ -548,6 +548,44 @@ grub-core/boot/i386/pc/startup_raw.S:107
         jmp     post_reed_solomon
 ```
 
+Set destination address and size of grub kernel decompressed area, call _LzmaDecodeA to do the decompression.
+```assembly
+   0x89ce:	mov    $0x100000,%edi
+   0x89d3:	mov    $0x8d30,%esi
+   0x89d8:	push   %edi
+   0x89d9:	mov    0x820c,%ecx
+   0x89df:	lea    (%edi,%ecx,1),%ebx
+   0x89e2:	push   %ecx
+   0x89e3:	call   0x8ac7
+   0x89e8:	pop    %ecx
+   0x89e9:	pop    %esi
+   0x89ea:	mov    0x8218,%edx
+
+-----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/startup_raw.S:340
+
+post_reed_solomon:
+
+#ifdef ENABLE_LZMA
+        movl    $GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR, %edi
+#ifdef __APPLE__
+        movl    $decompressor_end, %esi
+#else
+        movl    $LOCAL(decompressor_end), %esi
+#endif
+        pushl   %edi
+        movl    LOCAL (uncompressed_size), %ecx
+        leal    (%edi, %ecx), %ebx
+        /* Don't remove this push: it's an argument.  */
+        push    %ecx
+        call    _LzmaDecodeA
+```
+
+
+
+
+
 Links:
 ------------------------------------
   * [Real mode](https://en.wikipedia.org/wiki/Real_mode)
