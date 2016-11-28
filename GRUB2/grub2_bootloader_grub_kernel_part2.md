@@ -443,3 +443,18 @@ grub-core/boot/i386/pc/lzma_decode.S:357
         cmpb    $kNumLitStates, state
         jb      5f
 ```
+
+```assembly
+   0x8b87:	cmp    $0x100,%edx
+(gdb) info registers edx
+edx            0x1	1
+   0x8b8d:	jae    0x8ba0
+   0x8b8f:	push   %edx
+   0x8b90:	mov    %edx,%eax
+   0x8b92:	add    0x8(%esp),%eax
+   0x8b96:	call   0x8a01
+   0x8b9b:	pop    %edx
+   0x8b9c:	adc    %edx,%edx
+   0x8b9e:	jmp    0x8b87
+   0x8ba0:	add    $0x10,%esp
+```
