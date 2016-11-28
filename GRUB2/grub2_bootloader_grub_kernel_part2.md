@@ -135,7 +135,7 @@ ebp            0x7ffe4	0x7ffe4
 
 -----------------------------------------------------------------------
 
-grub-core/boot/i386/pc/lzma_decode.S
+grub-core/boot/i386/pc/lzma_decode.S:197
 
 /*
  * int LzmaDecode(CLzmaDecoderState *vs,
@@ -256,7 +256,7 @@ lzma_decode_loop:
         jc      1f
 ```
 
-Let's step into RangeDecoderBitDecode routine to continue grub kernel decompress process.
+Let's step into RangeDecoderBitDecode routine to continue grub kernel decompress process for the first time.
 ```assembly
 (gdb) info registers 
 eax            0x0	0
@@ -318,4 +318,128 @@ ebp            0x7ffe4	0x7ffe4
    0x8a37:	shll   $0x8,-0xc(%ebp)
    0x8a3b:	popf   
    0x8a3c:	ret    
+
+-----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/lzma_decode.S:117
+
+RangeDecoderBitDecode:
+#ifdef FIXED_PROPS
+        leal    (%ebx, %eax, 4), %eax
+#else
+        shll    $2, %eax
+        addl    probs, %eax
+#endif
+
+        movl    %eax, %ecx
+        movl    (%ecx), %eax
+
+        movl    range, %edx
+        shrl    $kNumBitModelTotalBits, %edx
+        mull    %edx
+
+        cmpl    code, %eax
+        jbe     1f
+
+        movl    %eax, range
+        movl    $kBitModelTotal, %edx
+        subl    (%ecx), %edx
+        shrl    $kNumMoveBits, %edx
+        addl    %edx, (%ecx)
+        clc
+3:
+        pushf
+        cmpl    $kTopValue, range
+        jnc     2f
+        shll    $8, code
+        lodsb
+        movb    %al, code
+        shll    $8, range
+2:
+        popf
+        ret
+```
+
+After returned from RangeDecoderBitDecode, now we are in _LzmaDecodeA routine again. Jump to 5f at location 0x8b87
+```assembly
+(gdb) info registers eflags
+eflags         0x2	[ ]
+   0x8b25:	jb     0x8bc5
+   0x8b2b:	mov    -0x4(%ebp),%eax
+(gdb) info registers eax
+eax            0x0	0
+   0x8b2e:	and    $0x0,%eax
+   0x8b31:	shl    $0x3,%eax
+   0x8b34:	mov    -0x8(%ebp),%edx
+(gdb) info registers edx
+edx            0x0	0
+   0x8b37:	shr    $0x5,%edx
+   0x8b3a:	add    %edx,%eax
+   0x8b3c:	mov    $0x300,%edx
+   0x8b41:	mul    %edx
+   0x8b43:	add    $0x736,%eax
+   0x8b48:	push   %eax
+   0x8b49:	inc    %edx
+   0x8b4a:	mov    -0x18(%ebp),%eax
+(gdb) info registers eax
+eax            0x1	1
+   0x8b4d:	neg    %eax
+(gdb) info registers esp
+esp            0x7ffb4	0x7ffb4
+   0x8b4f:	pushl  (%edi,%eax,1)
+(gdb) x/w 0x100000 + 0xffffffff*1
+0xfffff:	0x0402016e
+(gdb) info registers esp
+esp            0x7ffb0	0x7ffb0
+(gdb) x/w 0x7ffb0
+0x7ffb0:	0x0402016e
+(gdb) x/w 0x7ffb4
+0x7ffb4:	0x00000736
+   0x8b52:	cmpb   $0x7,-0x14(%ebp)
+(gdb) info registers ebp
+ebp            0x7ffe4	0x7ffe4
+(gdb) x/b 0x7ffe4-0x14
+0x7ffd0:	0x00
+   0x8b56:	jb     0x8b87
+   0x8b58:	cmp    $0x100,%edx
+   0x8b5e:	jae    0x8ba0
+   0x8b60:	xor    %eax,%eax
+
+-----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/lzma_decode.S:357
+
+        jc      1f
+
+        movl    now_pos, %eax
+
+#ifdef FIXED_PROPS
+        andl    $LIT_POS_MASK, %eax
+        shll    $FIXED_LC, %eax
+        movl    prev_byte, %edx
+        shrl    $(8 - FIXED_LC), %edx
+#else
+        andl    lit_pos_mask, %eax
+        movb    lc, %cl
+        shll    %cl, %eax
+        negb    %cl
+        addb    $8, %cl
+        movl    prev_byte, %edx
+        shrl    %cl, %edx
+#endif
+
+        addl    %edx, %eax
+        movl    $LZMA_LIT_SIZE, %edx
+        mull    %edx
+        addl    $Literal, %eax
+        pushl   %eax
+
+        incl    %edx                    /* edx = 1 */
+
+        movl    rep0, %eax
+        negl    %eax
+        pushl   (%edi, %eax)            /* matchByte */
+
+        cmpb    $kNumLitStates, state
+        jb      5f
 ```
