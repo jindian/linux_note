@@ -444,6 +444,7 @@ grub-core/boot/i386/pc/lzma_decode.S:357
         jb      5f
 ```
 
+
 ```assembly
    0x8b87:	cmp    $0x100,%edx
 (gdb) info registers edx
@@ -457,4 +458,23 @@ edx            0x1	1
    0x8b9c:	adc    %edx,%edx
    0x8b9e:	jmp    0x8b87
    0x8ba0:	add    $0x10,%esp
+
+-----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/lzma_decode.S:417
+
+5:
+
+        /* LzmaLiteralDecode */
+
+        cmpl    $0x100, %edx
+        jae     4f
+
+        pushl   %edx
+        movl    %edx, %eax
+        addl    8(%esp), %eax
+        call    RangeDecoderBitDecode
+        popl    %edx
+        adcl    %edx, %edx
+        jmp     5b
 ```
