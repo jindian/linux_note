@@ -468,7 +468,7 @@ grub-core/boot/i386/pc/lzma_decode.S:417
         /* LzmaLiteralDecode */
 
         cmpl    $0x100, %edx
-        jae     4f
+        jae     4fc
 
         pushl   %edx
         movl    %edx, %eax
