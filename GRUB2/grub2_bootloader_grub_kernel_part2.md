@@ -1,5 +1,6 @@
 Decompress grub kernel
 ================================
+Default compression algorithm of grub is lzma, its compression ratio is reasonable. With compressed grub kernel image it has better efficiency in grub initialization.
 
 Set destination address and size of grub kernel decompressed area, call _LzmaDecodeA to do the decompression.
 ```assembly
