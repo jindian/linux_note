@@ -2,7 +2,7 @@ Decompress grub kernel
 ================================
 Default compression algorithm of grub is lzma, its compression ratio is reasonable. With compressed grub kernel image it has better efficiency in grub initialization.
 
-We are at the first instruction after label post_reed_solomon, here it saves destination address(0x100000)to edi, decompressed end(0xb7d0) to ecx and address after grub kernel decompressed region(0x10b7d0) to ebx? call _LzmaDecodeA to do the decompression.
+We are at the first instruction after label post_reed_solomon, here it saves destination address(0x100000)to edi, decompressed end(0xb7d0) to ecx and address after grub kernel decompressed region(0x10b7d0) to ebx. Values of all registers before calling _LzmaDecodeA list in following debug context, next call _LzmaDecodeA(0x8ac7) to do the decompression.
 ```assembly
    0x89ce:	mov    $0x100000,%edi
    0x89d3:	mov    $0x8d30,%esi
@@ -10,6 +10,23 @@ We are at the first instruction after label post_reed_solomon, here it saves des
    0x89d9:	mov    0x820c,%ecx
    0x89df:	lea    (%edi,%ecx,1),%ebx
    0x89e2:	push   %ecx
+(gdb) info registers 
+eax            0x616f	24943
+ecx            0xb7d0	47056
+edx            0xffffff90	-112
+ebx            0x10b7d0	1095632
+esp            0x7fff0	0x7fff0
+ebp            0x7fff0	0x7fff0
+esi            0x8d30	36144
+edi            0x100000	1048576
+eip            0x89e2	0x89e2
+eflags         0x2	[ ]
+cs             0x8	8
+ss             0x10	16
+ds             0x10	16
+es             0x10	16
+fs             0x10	16
+gs             0x10	16
    0x89e3:	call   0x8ac7
    0x89e8:	pop    %ecx
    0x89e9:	pop    %esi
