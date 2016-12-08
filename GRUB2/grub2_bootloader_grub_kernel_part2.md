@@ -53,10 +53,31 @@ post_reed_solomon:
         call    _LzmaDecodeA
 ```
 
-Initialize uncompressed area and parameters used in decompress process. Call RangeDecoderBitDecode located at address 0x8a01.
+Initialize stack, reserve data area used in decompress procedure.
+```assembly
+grub-core/boot/i386/pc/lzma_decode.S:82
+#define now_pos         -4(%ebp)
+#define prev_byte       -8(%ebp)
+#define range           -12(%ebp)
+#define code            -16(%ebp)
+#define state           -20(%ebp)
+#define rep0            -24(%ebp)
+#define rep1            -28(%ebp)
+#define rep2            -32(%ebp)
+#define rep3            -36(%ebp)
+```
+uncompressed area and parameters used in decompress process. Call RangeDecoderBitDecode located at address 0x8a01.
 ```assembly
    0x8ac7:	push   %ebp
+(gdb) info registers ebp
+ebp            0x7fff0	0x7fff0
+(gdb) x/w 0x7fff0
+0x7fff0:	0x00100000
    0x8ac8:	mov    %esp,%ebp
+(gdb) info registers esp
+esp            0x7ffe8	0x7ffe8
+(gdb) x/w 0x7ffe8
+0x7ffe8:	0x000089e8
    0x8aca:	sub    $0x24,%esp
    0x8acd:	push   %edi
    0x8ace:	cld    
