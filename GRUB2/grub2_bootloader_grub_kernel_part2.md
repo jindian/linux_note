@@ -2,7 +2,7 @@ Decompress grub kernel
 ================================
 Default compression algorithm of grub is lzma, its compression ratio is reasonable. With compressed grub kernel image it has better efficiency in grub initialization.
 
-We are at the first instruction after label post_reed_solomon, here it saves destination address(0x100000)to edi, decompressed end address to esi, size of decompressed grub kernel to ecx and address after grub kernel decompressed region to ebx? call _LzmaDecodeA to do the decompression.
+We are at the first instruction after label post_reed_solomon, here it saves destination address(0x100000)to edi, decompressed end(0xb7d0) to ecx and address after grub kernel decompressed region(0x10b7d0) to ebx? call _LzmaDecodeA to do the decompression.
 ```assembly
    0x89ce:	mov    $0x100000,%edi
    0x89d3:	mov    $0x8d30,%esi
