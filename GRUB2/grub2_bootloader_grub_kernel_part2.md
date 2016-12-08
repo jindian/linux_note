@@ -321,7 +321,7 @@ grub-core/boot/i386/pc/lzma_decode.S:344
 Let's step into RangeDecoderBitDecode routine, grub initialized 0x1f36 words with 0x400 from memory address 0x10b7d0.
 
 ```assembly
-=> 0x8a01:	lea    (%ebx,%eax,4),%eax
+   0x8a01:	lea    (%ebx,%eax,4),%eax
    0x8a04:	mov    %eax,%ecx
    0x8a06:	mov    (%ecx),%eax
    0x8a08:	mov    -0xc(%ebp),%edx
