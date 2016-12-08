@@ -472,6 +472,8 @@ grub-core/boot/i386/pc/lzma_decode.S:357
 ```
 
 
+Followed instructions will be executed not only once, same with RangeDecoderBitDecode routine.
+
 ```assembly
    0x8b87:	cmp    $0x100,%edx
 (gdb) info registers edx
