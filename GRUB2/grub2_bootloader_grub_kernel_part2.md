@@ -2,7 +2,7 @@ Decompress grub kernel
 ================================
 Default compression algorithm of grub is lzma, its compression ratio is reasonable. With compressed grub kernel image it has better efficiency in grub initialization.
 
-We are at the first instruction after label post_reed_solomon, here it saves destination address(0x100000)to edi, decompressed end(0xb7d0) to ecx and address after grub kernel decompressed region(0x10b7d0) to ebx. Values of all registers before calling _LzmaDecodeA list in following debug context, next call _LzmaDecodeA(0x8ac7) to do the decompression.
+We are at the first instruction after label post_reed_solomon, here it saves decompressed grub core image destination address(0x100000) to edi, decompressed end(0x8d30) to esi, decompressed core image size(0xb7d0) to ecx and address after grub kernel decompressed region(0x10b7d0) to ebx. Values of all registers before calling _LzmaDecodeA list in following debug context, next call _LzmaDecodeA(0x8ac7) to do the decompression.
 ```assembly
    0x89ce:	mov    $0x100000,%edi
    0x89d3:	mov    $0x8d30,%esi
@@ -66,7 +66,8 @@ grub-core/boot/i386/pc/lzma_decode.S:82
 #define rep2            -32(%ebp)
 #define rep3            -36(%ebp)
 ```
-uncompressed area and parameters used in decompress process. Call RangeDecoderBitDecode located at address 0x8a01.
+Initialize every word with value saved in eax(0x400), address from edi(0x10b7d0), size of words stored in ecx(0x1f36), this area will be used soon in followed process. Next initialize now_pos, prev_byte, state with 0, rep0, rep1, rep2, rep3 with 1, range with 0xffffffff, code is initialized with bytes in the beginning of grub core code,  rest of grub kernel code followed LOCAL(decompressor_end) label.
+After above all completed, next get into lzma_decode_loop located at address 0x8b07.
 ```assembly
    0x8ac7:	push   %ebp
 (gdb) info registers ebp
@@ -79,8 +80,12 @@ esp            0x7ffe8	0x7ffe8
 (gdb) x/w 0x7ffe8
 0x7ffe8:	0x000089e8
    0x8aca:	sub    $0x24,%esp
+(gdb) info registers edi
+edi            0x100000	1048576
    0x8acd:	push   %edi
    0x8ace:	cld    
+(gdb) info registers ebx
+ebx            0x10b7d0	1095632
    0x8acf:	mov    %ebx,%edi
    0x8ad1:	mov    $0x1f36,%ecx
    0x8ad6:	mov    $0x400,%eax
@@ -102,30 +107,9 @@ es             0x10	16
 fs             0x10	16
 gs             0x10	16
    0x8adb:	rep stos %eax,%es:(%edi)
-(gdb) info registers 
-eax            0x400	1024
-ecx            0x0	0
-edx            0xffffff90	-112
-ebx            0x10b7d0	1095632
-esp            0x7ffbc	0x7ffbc
-ebp            0x7ffe4	0x7ffe4
-esi            0x8d30	36144
-edi            0x1134a8	1127592
-eip            0x8add	0x8add
-eflags         0x6	[ PF ]
-cs             0x8	8
-ss             0x10	16
-ds             0x10	16
-es             0x10	16
-fs             0x10	16
-gs             0x10	16
-(gdb) x/w 0x8d30
-0x8d30:	0x83a34400
-(gdb) x/w 0x4400+0x10b7d0
-0x10fbd0:	0x00000400
-(gdb) x/w 0x4400+0x10b7d0+4
-0x10fbd4:	0x00000400
    0x8add:	pop    %edi
+(gdb) info registers edi
+edi            0x100000	1048576
    0x8ade:	xor    %eax,%eax
    0x8ae0:	mov    %eax,-0x4(%ebp)
    0x8ae3:	mov    %eax,-0x8(%ebp)
@@ -142,7 +126,11 @@ eax            0x1	1
 eax            0xffffffff	-1
    0x8af8:	mov    %eax,-0xc(%ebp)
    0x8afb:	inc    %eax
+(gdb) info registers eax
+eax            0x0	0
    0x8afc:	mov    $0x5,%cl
+(gdb) x/g 0x8d30
+0x8d30:	0x4db30cdf83a34400
    0x8afe:	shl    $0x8,%eax
    0x8b01:	lods   %ds:(%esi),%al
    0x8b02:	loop   0x8afe
@@ -150,12 +138,6 @@ eax            0xffffffff	-1
 (gdb) info registers eax
 eax            0x44a383df	1151566815
    0x8b07:	mov    -0x4(%ebp),%eax
-(gdb) info registers ebp
-ebp            0x7ffe4	0x7ffe4
-(gdb) x/w 0x7ffe4-0x4
-0x7ffe0:	0x00000000
-(gdb) x/w 0x7ffe4+0x8
-0x7ffec:	0x0000b7d0
    0x8b0a:	cmp    0x8(%ebp),%eax
    0x8b0d:	jb     0x8b13
    0x8b0f:	mov    %ebp,%esp
