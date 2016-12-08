@@ -244,6 +244,8 @@ grub-core/boot/i386/pc/lzma_decode.S:80
 
 #define out_size        8(%ebp)
 ```
+
+In lzma_decode_loop it first check whether now_pos exceeds out_size, if yes, it means decompress procedure completed, return and continue next step of grub intialization, if not, continue the decompress loop.
 ```assembly
    0x8b07:	mov    -0x4(%ebp),%eax
 (gdb) info registers ebp
