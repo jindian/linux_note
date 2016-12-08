@@ -318,9 +318,15 @@ grub-core/boot/i386/pc/lzma_decode.S:344
 ```
 
 
-Let's step into RangeDecoderBitDecode routine, grub initialized 0x1f36 words with 0x400 from memory address 0x10b7d0. Decompression won't use this routine until complete, I will save context every time routine excution complete.
-1. address: 0x10b7d0 400 -> 420, range: 0xffffffff -> 7ffffc00, code: 0x44a383df, without carry flag
-2. 
+Let's step into RangeDecoderBitDecode routine, grub initialized 0x1f36 words with 0x400 from memory address 0x10b7d0. Decompression won't use this routine until complete, I will save context every time routine execution complete.
+
+1. eax: 0x0, address: 0x10b7d0 0x400 -> 0x420, range: 0xffffffff -> 0x7ffffc00, code: 0x44a383df, CF: 0
+2. eax: 0x737, address: 0x10d4ac 0x400 -> 0x3e0, range: 0x7ffffc00 -> 0x40000000, code: 0x04a387df, CF: 1
+3. eax: 0x739, address: 0x10d4b4 0x400 -> 0x420, range: 0x40000000 -> 0x20000000, code: 0x04a387df, CF: 0
+4. eax: 0x73c, address: 0x10d4c0 0x400 -> 0x420, range: 0x20000000 -> 0x10000000, code: 0x04a387df, CF: 0
+5. eax: 0x742, address: 0x10d4d8 0x400 -> 0x420, range: 0x10000000 -> 0x8000000, code: 0x04a387df, CF: 0
+6. eax: 0x74e, address: 0x10d508 0x400 -> 0x3e0, range: 0x8000000 -> 0x4000000, code: 0x00a387df, CF: 1
+7. eax: 0x767, address: 0x10d56c 0x400 -> 0x420, range: 0x4000000 -> 0x2000000, code: 0x00a387df, CF: 0
 
 ```assembly
    0x8a01:	lea    (%ebx,%eax,4),%eax
@@ -386,6 +392,14 @@ RangeDecoderBitDecode:
 2:
         popf
         ret
+1:
+        subl    %eax, range
+        subl    %eax, code
+        movl    (%ecx), %edx
+        shrl    $kNumMoveBits, %edx
+        subl    %edx, (%ecx)
+        stc
+        jmp     3b
 ```
 
 After returned from RangeDecoderBitDecode, now we are in _LzmaDecodeA routine again. Carry flag not set in RangeDecoderBitDecode, grub executes next instructions until jumps to 5f which located at address 0x8b87.
@@ -472,7 +486,14 @@ grub-core/boot/i386/pc/lzma_decode.S:357
 ```
 
 
-Followed instructions will be executed not only once, same with RangeDecoderBitDecode routine.
+Followed instructions will be executed not only once, same with RangeDecoderBitDecode routine. I will save contexts before calling RangeDecoderBitDecode, carry flag is the result from routine RangeDecoderBitDecode.
+
+1. edx: 0x1, 0x8(%esp): 0x736(result of eax added $Literal), eax: 0x737, CF: 1
+2. edx: 0x3, 0x8(%esp): 0x736, eax: 0x739, CF: 0
+3. edx: 0x6, 0x8(%esp): 0x736, eax: 0x73c, CF: 0
+4. edx: 0xc, 0x8(%esp): 0x736, eax: 0x742, CF: 0
+5. edx: 0x18, 0x8(%esp): 0x736, eax: 0x74e, CF: 1
+6. edx: 0x31, 0x8(%esp): 0x736, eax: 0x767, CF: 0
 
 ```assembly
    0x8b87:	cmp    $0x100,%edx
