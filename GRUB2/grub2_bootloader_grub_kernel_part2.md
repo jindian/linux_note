@@ -57,7 +57,7 @@ post_reed_solomon:
         call    _LzmaDecodeA
 ```
 
-Initialize stack, reserve data area used in decompress procedure.
+Initialize stack, reserve data area used in decompress procedure as follow, let's name these parameters with decompress parameters in the rest of this chapter.
 ```assembly
 grub-core/boot/i386/pc/lzma_decode.S:82
 #define now_pos         -4(%ebp)
@@ -245,7 +245,7 @@ grub-core/boot/i386/pc/lzma_decode.S:80
 #define out_size        8(%ebp)
 ```
 
-In lzma_decode_loop it first check whether now_pos exceeds out_size, if yes, it means decompress procedure completed, return and continue next step of grub intialization, if not, continue the decompress loop.
+In lzma_decode_loop it first check whether now_pos exceeds out_size, if yes, it means decompress procedure completed, return and continue next step of grub intialization, if not, continue the decompress loop, jump to address 0x8b13.
 ```assembly
    0x8b07:	mov    -0x4(%ebp),%eax
 (gdb) info registers ebp
@@ -254,19 +254,6 @@ ebp            0x7ffe4	0x7ffe4
 0x7ffec:	0x0000b7d0
    0x8b0a:	cmp    0x8(%ebp),%eax
    0x8b0d:	jb     0x8b13
-   0x8b0f:	mov    %ebp,%esp
-   0x8b11:	pop    %ebp
-   0x8b12:	ret    
-   0x8b13:	and    $0x3,%eax
-   0x8b16:	push   %eax
-   0x8b17:	mov    -0x14(%ebp),%edx
-   0x8b1a:	shl    $0x4,%edx
-   0x8b1d:	add    %edx,%eax
-   0x8b1f:	push   %eax
-   0x8b20:	call   0x8a01
-   0x8b25:	jb     0x8bc5
-   0x8b2b:	mov    -0x4(%ebp),%eax
-   0x8b2e:	and    $0x0,%eax
 
 -----------------------------------------------------------------------
 
@@ -277,18 +264,43 @@ lzma_decode_loop:
         cmpl    out_size, %eax
 
         jb      1f
+```
 
-#ifndef ASM_FILE
-        xorl    %eax, %eax
 
-        popl    %ebx
-        popl    %edi
-        popl    %esi
-#endif
+With all initial values of decompress parameters, next we will get to RangeDecoderBitDecode for the first time.
 
-        movl    %ebp, %esp
-        popl    %ebp
-        ret
+```assembly
+   0x8b13:	and    $0x3,%eax
+   0x8b16:	push   %eax
+   0x8b17:	mov    -0x14(%ebp),%edx
+   0x8b1a:	shl    $0x4,%edx
+   0x8b1d:	add    %edx,%eax
+   0x8b1f:	push   %eax
+(gdb) info registers 
+eax            0x0	0
+ecx            0x0	0
+edx            0x0	0
+ebx            0x10b7d0	1095632
+esp            0x7ffb8	0x7ffb8
+ebp            0x7ffe4	0x7ffe4
+esi            0x8d35	36149
+edi            0x100000	1048576
+eip            0x8b20	0x8b20
+eflags         0x46	[ PF ZF ]
+cs             0x8	8
+ss             0x10	16
+ds             0x10	16
+es             0x10	16
+fs             0x10	16
+gs             0x10	16
+   0x8b20:	call   0x8a01
+   0x8b25:	jb     0x8bc5
+   0x8b2b:	mov    -0x4(%ebp),%eax
+   0x8b2e:	and    $0x0,%eax
+
+-----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/lzma_decode.S:344
 
 1:
 #ifdef FIXED_PROPS
@@ -303,12 +315,10 @@ lzma_decode_loop:
         pushl   %eax                            /* (state << kNumPosBitsMax) + posState */
 
         call    RangeDecoderBitDecode
-        jc      1f
 ```
 
 
 Let's step into RangeDecoderBitDecode routine to continue grub kernel decompress process for the first time.
-
 
 ```assembly
 (gdb) info registers 
