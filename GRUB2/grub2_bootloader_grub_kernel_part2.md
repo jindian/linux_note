@@ -137,22 +137,6 @@ eax            0x0	0
    0x8b04:	mov    %eax,-0x10(%ebp)
 (gdb) info registers eax
 eax            0x44a383df	1151566815
-   0x8b07:	mov    -0x4(%ebp),%eax
-   0x8b0a:	cmp    0x8(%ebp),%eax
-   0x8b0d:	jb     0x8b13
-   0x8b0f:	mov    %ebp,%esp
-   0x8b11:	pop    %ebp
-   0x8b12:	ret    
-   0x8b13:	and    $0x3,%eax
-   0x8b16:	push   %eax
-   0x8b17:	mov    -0x14(%ebp),%edx
-   0x8b1a:	shl    $0x4,%edx
-   0x8b1d:	add    %edx,%eax
-   0x8b1f:	push   %eax
-   0x8b20:	call   0x8a01
-   0x8b25:	jb     0x8bc5
-   0x8b2b:	mov    -0x4(%ebp),%eax
-   0x8b2e:	and    $0x0,%eax
 
 -----------------------------------------------------------------------
 
@@ -243,6 +227,29 @@ _LzmaDecodeA:
         loop    1b
 
         movl    %eax, code
+```
+```assembly
+   0x8b07:	mov    -0x4(%ebp),%eax
+   0x8b0a:	cmp    0x8(%ebp),%eax
+   0x8b0d:	jb     0x8b13
+   0x8b0f:	mov    %ebp,%esp
+   0x8b11:	pop    %ebp
+   0x8b12:	ret    
+   0x8b13:	and    $0x3,%eax
+   0x8b16:	push   %eax
+   0x8b17:	mov    -0x14(%ebp),%edx
+   0x8b1a:	shl    $0x4,%edx
+   0x8b1d:	add    %edx,%eax
+   0x8b1f:	push   %eax
+   0x8b20:	call   0x8a01
+   0x8b25:	jb     0x8bc5
+   0x8b2b:	mov    -0x4(%ebp),%eax
+   0x8b2e:	and    $0x0,%eax
+
+-----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/lzma_decode.S:197
+
 lzma_decode_loop:
         movl    now_pos, %eax
         cmpl    out_size, %eax
@@ -278,6 +285,7 @@ lzma_decode_loop:
 ```
 
 Let's step into RangeDecoderBitDecode routine to continue grub kernel decompress process for the first time.
+
 ```assembly
 (gdb) info registers 
 eax            0x0	0
