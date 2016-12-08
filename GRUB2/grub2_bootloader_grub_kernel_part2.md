@@ -388,7 +388,7 @@ RangeDecoderBitDecode:
         ret
 ```
 
-After returned from RangeDecoderBitDecode, now we are in _LzmaDecodeA routine again. Jump to 5f at location 0x8b87
+After returned from RangeDecoderBitDecode, now we are in _LzmaDecodeA routine again. Carry flag not set in RangeDecoderBitDecode, grub executes next instructions until jumps to 5f which located at address 0x8b87.
 ```assembly
 (gdb) info registers eflags
 eflags         0x2	[ ]
@@ -405,16 +405,19 @@ edx            0x0	0
    0x8b3a:	add    %edx,%eax
    0x8b3c:	mov    $0x300,%edx
    0x8b41:	mul    %edx
+(gdb) info registers eax edx
+eax            0x0	0
+edx            0x0	0
    0x8b43:	add    $0x736,%eax
+(gdb) info registers eax
+eax            0x736	1846
    0x8b48:	push   %eax
    0x8b49:	inc    %edx
    0x8b4a:	mov    -0x18(%ebp),%eax
 (gdb) info registers eax
 eax            0x1	1
    0x8b4d:	neg    %eax
-(gdb) info registers esp
-esp            0x7ffb4	0x7ffb4
-   0x8b4f:	pushl  (%edi,%eax,1)
+   0x8b4f:	pushl  (%edi,%eax,1)                  //What is matchByte//
 (gdb) x/w 0x100000 + 0xffffffff*1
 0xfffff:	0x0402016e
 (gdb) info registers esp
@@ -424,10 +427,6 @@ esp            0x7ffb0	0x7ffb0
 (gdb) x/w 0x7ffb4
 0x7ffb4:	0x00000736
    0x8b52:	cmpb   $0x7,-0x14(%ebp)
-(gdb) info registers ebp
-ebp            0x7ffe4	0x7ffe4
-(gdb) x/b 0x7ffe4-0x14
-0x7ffd0:	0x00
    0x8b56:	jb     0x8b87
    0x8b58:	cmp    $0x100,%edx
    0x8b5e:	jae    0x8ba0
