@@ -238,9 +238,18 @@ _LzmaDecodeA:
 ```
 
 
+Before continue decompress process, let's check the value of out_size which defined together with now_pos etc... I didn't list it before because no assignment in grub source code, from debug information we can find the address of out_size located at 0x7ffec, yes, in the beginning of this chapter grub push ecx to stack, it stored decompressed size of core image(0xb7d0), defination of out_size as follow:
+```assembly
+grub-core/boot/i386/pc/lzma_decode.S:80
 
+#define out_size        8(%ebp)
+```
 ```assembly
    0x8b07:	mov    -0x4(%ebp),%eax
+(gdb) info registers ebp
+ebp            0x7ffe4	0x7ffe4
+(gdb) x/w 0x7ffe4+0x8
+0x7ffec:	0x0000b7d0
    0x8b0a:	cmp    0x8(%ebp),%eax
    0x8b0d:	jb     0x8b13
    0x8b0f:	mov    %ebp,%esp
