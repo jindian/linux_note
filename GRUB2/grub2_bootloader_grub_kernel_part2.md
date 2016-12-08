@@ -15,11 +15,11 @@ eax            0x616f	24943
 ecx            0xb7d0	47056
 edx            0xffffff90	-112
 ebx            0x10b7d0	1095632
-esp            0x7fff0	0x7fff0
+esp            0x7ffec	0x7ffec
 ebp            0x7fff0	0x7fff0
 esi            0x8d30	36144
 edi            0x100000	1048576
-eip            0x89e2	0x89e2
+eip            0x89e3	0x89e3
 eflags         0x2	[ ]
 cs             0x8	8
 ss             0x10	16
