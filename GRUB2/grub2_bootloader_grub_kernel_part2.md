@@ -1,8 +1,12 @@
 Decompress grub kernel
 ================================
+
 Default compression algorithm of grub is lzma, its compression ratio is reasonable. With compressed grub kernel image it has better efficiency in grub initialization.
 
+
 We are at the first instruction after label post_reed_solomon, here it saves decompressed grub core image destination address(0x100000) to edi, decompressed end(0x8d30) to esi, decompressed core image size(0xb7d0) to ecx and address after grub kernel decompressed region(0x10b7d0) to ebx. Values of all registers before calling _LzmaDecodeA list in following debug context, next call _LzmaDecodeA(0x8ac7) to do the decompression.
+
+
 ```assembly
    0x89ce:	mov    $0x100000,%edi
    0x89d3:	mov    $0x8d30,%esi
@@ -66,8 +70,12 @@ grub-core/boot/i386/pc/lzma_decode.S:82
 #define rep2            -32(%ebp)
 #define rep3            -36(%ebp)
 ```
+
+
 Initialize every word with value saved in eax(0x400), address from edi(0x10b7d0), size of words stored in ecx(0x1f36), this area will be used soon in followed process. Next initialize now_pos, prev_byte, state with 0, rep0, rep1, rep2, rep3 with 1, range with 0xffffffff, code is initialized with bytes in the beginning of grub core code,  rest of grub kernel code followed LOCAL(decompressor_end) label.
 After above all completed, next get into lzma_decode_loop located at address 0x8b07.
+
+
 ```assembly
    0x8ac7:	push   %ebp
 (gdb) info registers ebp
@@ -228,6 +236,9 @@ _LzmaDecodeA:
 
         movl    %eax, code
 ```
+
+
+
 ```assembly
    0x8b07:	mov    -0x4(%ebp),%eax
    0x8b0a:	cmp    0x8(%ebp),%eax
@@ -248,7 +259,7 @@ _LzmaDecodeA:
 
 -----------------------------------------------------------------------
 
-grub-core/boot/i386/pc/lzma_decode.S:197
+grub-core/boot/i386/pc/lzma_decode.S:326
 
 lzma_decode_loop:
         movl    now_pos, %eax
@@ -284,7 +295,9 @@ lzma_decode_loop:
         jc      1f
 ```
 
+
 Let's step into RangeDecoderBitDecode routine to continue grub kernel decompress process for the first time.
+
 
 ```assembly
 (gdb) info registers 
