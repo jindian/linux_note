@@ -318,7 +318,9 @@ grub-core/boot/i386/pc/lzma_decode.S:344
 ```
 
 
-Let's step into RangeDecoderBitDecode routine, grub initialized 0x1f36 words with 0x400 from memory address 0x10b7d0.
+Let's step into RangeDecoderBitDecode routine, grub initialized 0x1f36 words with 0x400 from memory address 0x10b7d0. Decompression won't use this routine until complete, I will save context every time routine excution complete.
+1. address: 0x10b7d0 400 -> 420, range: 0xffffffff -> 7ffffc00, code: 0x44a383df, without carry flag
+2. 
 
 ```assembly
    0x8a01:	lea    (%ebx,%eax,4),%eax
@@ -331,7 +333,19 @@ Let's step into RangeDecoderBitDecode routine, grub initialized 0x1f36 words wit
    0x8a13:	jbe    0x8a3d
    0x8a15:	mov    %eax,-0xc(%ebp)
    0x8a18:	mov    $0x800,%edx
-
+   0x8a1d:	sub    (%ecx),%edx
+   0x8a1f:	shr    $0x5,%edx
+   0x8a22:	add    %edx,(%ecx)
+   0x8a24:	clc    
+   0x8a25:	pushf  
+   0x8a26:	cmpl   $0x1000000,-0xc(%ebp)
+   0x8a2d:	jae    0x8a3b
+   0x8a2f:	shll   $0x8,-0x10(%ebp)
+   0x8a33:	lods   %ds:(%esi),%al
+   0x8a34:	mov    %al,-0x10(%ebp)
+   0x8a37:	shll   $0x8,-0xc(%ebp)
+   0x8a3b:	popf   
+   0x8a3c:	ret    
 
 -----------------------------------------------------------------------
 
