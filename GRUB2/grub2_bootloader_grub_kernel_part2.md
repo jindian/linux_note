@@ -72,7 +72,7 @@ grub-core/boot/i386/pc/lzma_decode.S:82
 ```
 
 
-Initialize every word with value saved in eax(0x400), address from edi(0x10b7d0), size of words stored in ecx(0x1f36), this area will be used soon in followed process. Next initialize now_pos, prev_byte, state with 0, rep0, rep1, rep2, rep3 with 1, range with 0xffffffff, code is initialized with bytes in the beginning of grub core code,  rest of grub kernel code followed LOCAL(decompressor_end) label.
+Initialize every word with value saved in eax(0x400), address from edi(0x10b7d0), size of words stored in ecx(0x1f36), this area will be used soon in followed process. Next initialize now_pos, prev_byte, state with 0, rep0, rep1, rep2, rep3 with 1, range with 0xffffffff, code is initialized with bytes followed LOCAL(decompressor_end) label.
 After above all completed, next get into lzma_decode_loop located at address 0x8b07.
 
 
@@ -318,7 +318,7 @@ grub-core/boot/i386/pc/lzma_decode.S:344
 ```
 
 
-Let's step into RangeDecoderBitDecode routine, grub initialized 0x1f36 words with 0x400 from memory address 0x10b7d0. Decompression won't use this routine until complete, I will save context every time routine execution complete.
+Let's step into RangeDecoderBitDecode routine, grub initialized 0x1f36 words with 0x400 from memory address 0x10b7d0. Decompression will use this routine until complete, I will save context every time routine execution complete. Every bytes after LOCAL(decompressor_end) label are part of grub core code length, for example in the 9th record, when range is below 0x1000000, load one byte pointed by esi and update range.
 
 1. eax: 0x0, address: 0x10b7d0 0x400 -> 0x420, range: 0xffffffff -> 0x7ffffc00, code: 0x44a383df, CF: 0
 2. eax: 0x737, address: 0x10d4ac 0x400 -> 0x3e0, range: 0x7ffffc00 -> 0x40000000, code: 0x04a387df, CF: 1
@@ -328,7 +328,7 @@ Let's step into RangeDecoderBitDecode routine, grub initialized 0x1f36 words wit
 6. eax: 0x74e, address: 0x10d508 0x400 -> 0x3e0, range: 0x8000000 -> 0x4000000, code: 0x00a387df, CF: 1
 7. eax: 0x767, address: 0x10d56c 0x400 -> 0x420, range: 0x4000000 -> 0x2000000, code: 0x00a387df, CF: 0
 8. eax: 0x798, address: 0x10d630 0x400 -> 0x420, range: 0x2000000 -> 0x1000000, code: 0x00a387df, CF: 0
-9. eax: 0x7fa, address: 0x10d7b8 0x400 -> 0x3e0, range: 0x1000000 -> 0x800000, code: 0x002387df????????, CF: 1
+9. eax: 0x7fa, address: 0x10d7b8 0x400 -> 0x3e0, range: 0x1000000 -> 0x800000 -> 0x80000000, code: 0x002387df -> 0x2387df0c , CF: 1
 
 ```assembly
    0x8a01:	lea    (%ebx,%eax,4),%eax
@@ -488,7 +488,7 @@ grub-core/boot/i386/pc/lzma_decode.S:357
 ```
 
 
-Followed instructions will be executed not only once, same with RangeDecoderBitDecode routine. I will save contexts before calling RangeDecoderBitDecode, carry flag is the result from routine RangeDecoderBitDecode.
+Followed instructions will be executed not only once, same with RangeDecoderBitDecode routine. I will save contexts before calling RangeDecoderBitDecode, carry flag is the result from routine RangeDecoderBitDecode. When edx over 0x100, grub initialization jumps to 5f at address 0x8ba0,
 
 1. edx: 0x1, 0x8(%esp): 0x736(result of eax added $Literal), eax: 0x737, CF: 1
 2. edx: 0x3, 0x8(%esp): 0x736, eax: 0x739, CF: 0
@@ -497,12 +497,11 @@ Followed instructions will be executed not only once, same with RangeDecoderBitD
 5. edx: 0x18, 0x8(%esp): 0x736, eax: 0x74e, CF: 1
 6. edx: 0x31, 0x8(%esp): 0x736, eax: 0x767, CF: 0
 7. edx: 0x62, 0x8(%esp): 0x736, eax: 0x798, CF: 0
-8. edx: 0xc4, 0x8(%esp): 0x736, eax: 0x7fa, CF: ?
+8. edx: 0xc4, 0x8(%esp): 0x736, eax: 0x7fa, CF: 1
+9. edx: 0x189, 0x8(%esp): ?, eax: ?, CF: ?
 
 ```assembly
    0x8b87:	cmp    $0x100,%edx
-(gdb) info registers edx
-edx            0x1	1
    0x8b8d:	jae    0x8ba0
    0x8b8f:	push   %edx
    0x8b90:	mov    %edx,%eax
@@ -531,4 +530,72 @@ grub-core/boot/i386/pc/lzma_decode.S:417
         popl    %edx
         adcl    %edx, %edx
         jmp     5b
+```
+
+
+Reserve new stack area for next stage decompression, write byte(0x8abf), not know the meaning of each state value. This block of instructions will be executed again and again in future, I record context of every time we get into following instructions.
+
+
+1. esp: 0x7ffb0 -> 0x7ffc0, 0x7ffb4: 0x736, edx: 0x189, dl: 0x89, state: 0x00, jump to lzma_decode_loop
+
+
+```assembly
+   0x8ba0:	add    $0x10,%esp
+   0x8ba3:	mov    %dl,%al
+   0x8ba5:	call   0x8abf
+   0x8baa:	mov    -0x14(%ebp),%al
+   0x8bad:	cmp    $0x4,%al
+   0x8baf:	jae    0x8bb5
+   0x8bb1:	xor    %al,%al
+   0x8bb3:	jmp    0x8bbd
+   0x8bb5:	sub    $0x3,%al
+   0x8bb7:	cmp    $0x7,%al
+   0x8bb9:	jb     0x8bbd
+   0x8bbb:	sub    $0x3,%al
+   0x8bbd:	mov    %al,-0x14(%ebp)
+   0x8bc0:	jmp    0x8b07
+
+-----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/lzma_decode.S:432
+
+4:
+        addl    $16, %esp
+
+        movb    %dl, %al
+        call    WriteByte
+
+        movb    state, %al
+        cmpb    $4, %al
+        jae     2f
+        xorb    %al, %al
+        jmp     3f
+2:
+        subb    $3, %al
+        cmpb    $7, %al
+        jb      3f
+        subb    $3, %al
+3:
+        movb    %al, state
+        jmp     lzma_decode_loop
+```
+
+The context of WriteByte as follow
+
+1. al: 0x89, prev_byte: 0x0 -> 0x89, 0x100000: 0x89, edi: 0x100000 -> 0x100001, now_pos: 0x00000000 -> 0x00000001
+```assembly
+   0x8abf:	mov    %al,-0x8(%ebp)
+   0x8ac2:	stos   %al,%es:(%edi)
+   0x8ac3:	incl   -0x4(%ebp)
+   0x8ac6:	ret
+
+-----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/lzma_decode.S:234
+
+WriteByte:
+        movb    %al, prev_byte
+        stosb
+        incl    now_pos
+        ret
 ```
