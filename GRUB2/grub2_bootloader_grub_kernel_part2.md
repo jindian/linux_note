@@ -246,6 +246,8 @@ grub-core/boot/i386/pc/lzma_decode.S:80
 ```
 
 In lzma_decode_loop it first check whether now_pos exceeds out_size, if yes, it means decompress procedure completed, return and continue next step of grub intialization, if not, continue the decompress loop, jump to address 0x8b13.
+
+
 ```assembly
    0x8b07:	mov    -0x4(%ebp),%eax
 (gdb) info registers ebp
@@ -267,7 +269,11 @@ lzma_decode_loop:
 ```
 
 
-With all initial values of decompress parameters, next we will get to RangeDecoderBitDecode for the first time.
+The context before calling RangeDecoderBitDecode of below instructions block as follow, :
+
+1. eax: 0x0, state: 0x00000000
+2. eax: 0x1, state: 0x00000000
+
 
 ```assembly
    0x8b13:	and    $0x3,%eax
@@ -276,23 +282,6 @@ With all initial values of decompress parameters, next we will get to RangeDecod
    0x8b1a:	shl    $0x4,%edx
    0x8b1d:	add    %edx,%eax
    0x8b1f:	push   %eax
-(gdb) info registers 
-eax            0x0	0
-ecx            0x0	0
-edx            0x0	0
-ebx            0x10b7d0	1095632
-esp            0x7ffb8	0x7ffb8
-ebp            0x7ffe4	0x7ffe4
-esi            0x8d35	36149
-edi            0x100000	1048576
-eip            0x8b20	0x8b20
-eflags         0x46	[ PF ZF ]
-cs             0x8	8
-ss             0x10	16
-ds             0x10	16
-es             0x10	16
-fs             0x10	16
-gs             0x10	16
    0x8b20:	call   0x8a01
    0x8b25:	jb     0x8bc5
    0x8b2b:	mov    -0x4(%ebp),%eax
@@ -329,6 +318,7 @@ Let's step into RangeDecoderBitDecode routine, grub initialized 0x1f36 words wit
 7. eax: 0x767, address: 0x10d56c 0x400 -> 0x420, range: 0x4000000 -> 0x2000000, code: 0x00a387df, CF: 0
 8. eax: 0x798, address: 0x10d630 0x400 -> 0x420, range: 0x2000000 -> 0x1000000, code: 0x00a387df, CF: 0
 9. eax: 0x7fa, address: 0x10d7b8 0x400 -> 0x3e0, range: 0x1000000 -> 0x800000 -> 0x80000000, code: 0x002387df -> 0x2387df0c , CF: 1
+10. eax: 0x1, address: 0x10b7d4 0x400 -> 0x420, range: 0x80000000 -> 0x40000000, code: 0x2387df0c, CF: 0
 
 ```assembly
    0x8a01:	lea    (%ebx,%eax,4),%eax
