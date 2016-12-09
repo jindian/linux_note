@@ -273,6 +273,7 @@ The context before calling RangeDecoderBitDecode of below instructions block as 
 
 1. eax: 0x0, state: 0x00000000
 2. eax: 0x1, state: 0x00000000
+3. eax: 0x2, state: 0x00000000
 
 
 ```assembly
@@ -327,6 +328,7 @@ Let's step into RangeDecoderBitDecode routine, grub initialized 0x1f36 words wit
 16. eax: 0x1367, address: 0x11056c 0x400 -> 0x3e0, range: 0x2000000 -> 0x1000000, code: 0x0187df0c -> 0x0087df0c, CF: 1
 17. eax: 0x1399, address: 0x110634 0x400 -> 0x3e0, range: 0x1000000 -> 0x800000 -> 0x80000000, code: 0x0087df0c -> 0x0007df0c -> 0x07df0cb3, CF: 1
 18. eax: 0x13fd, address: 0x1107c4 0x400 -> 0x420, range: 0x80000000 -> 0x40000000, code: 0x07df0cb3, CF: 0
+19. eax: 0x1, address: 0x10b7d8 0x400 -> 0x420, range: 0x40000000 -> 0x20000000, code: 0x07df0cb3, CF: 0
 
 ```assembly
    0x8a01:	lea    (%ebx,%eax,4),%eax
@@ -404,8 +406,9 @@ RangeDecoderBitDecode:
 
 After returned from RangeDecoderBitDecode, now we are in _LzmaDecodeA routine again. Grub executes next instructions until jumps to 5f which located at address 0x8b87.
 
-1. eflags: [ ], now_pos: 0x00000000, prev_byte: 0x00000000, eax: 0x736 pushed to stack, it's the value 0x8(%esp), rep0: 0x1, edi: 0x100000, matchByte: (0xfffff)0x0402016e value in address 0xfffff pushed to stack, state: 0x00
-2. eflags: [ ], now_pos: 0x00000001, prev_byte: 0x00000089, eax: 0x1336, rep0: 0x1, matchByte: (0x100000)0x89, state: 0x00
+1. eflags: [ ], now_pos: 0x00000000, prev_byte: 0x00, eax: 0x736 pushed to stack, it's the value 0x8(%esp), rep0: 0x1, edi: 0x100000, matchByte: (0xfffff)0x0402016e value in address 0xfffff pushed to stack, state: 0x00
+2. eflags: [ ], now_pos: 0x00000001, prev_byte: 0x89, eax: 0x1336, rep0: 0x1, edi: 0x100001, matchByte: (0x100000)0x89, state: 0x00
+3. eflags: [ ], now_pos: 0x00000002, prev_byte: 0x8e, eax: 0x1336, rep0: 0x1, edi: 0x100002, matchByte: (0x100001)0x8e, state: 0x00
 
 ```assembly
    0x8b25:	jb     0x8bc5
@@ -526,8 +529,8 @@ grub-core/boot/i386/pc/lzma_decode.S:417
 Reserve new stack area for next stage decompression, write byte(0x8abf), not know the meaning of each state value. This block of instructions will be executed again and again in future, I record context of every time we get into following instructions.
 
 
-1. esp: 0x7ffb0 -> 0x7ffc0, 0x7ffb4: 0x736, edx: 0x189, state: 0x00, jump to lzma_decode_loop
-2. esp: 0x7ffb0 -> 0x7ffc0, 0x7ffb4: 0x1336, edx: 0x18e, state: 0x00, jump to lzma_decode_loop
+1. esp: 0x7ffb0 -> 0x7ffc0, 0x7ffb4: 0x736, edx: 0x189, state: 0x00, jump to lzma_decode_loop(0x8b07)
+2. esp: 0x7ffb0 -> 0x7ffc0, 0x7ffb4: 0x1336, edx: 0x18e, state: 0x00, jump to lzma_decode_loop(0x8b07)
 
 
 ```assembly
