@@ -394,44 +394,27 @@ RangeDecoderBitDecode:
         jmp     3b
 ```
 
-After returned from RangeDecoderBitDecode, now we are in _LzmaDecodeA routine again. Carry flag not set in RangeDecoderBitDecode, grub executes next instructions until jumps to 5f which located at address 0x8b87.
+After returned from RangeDecoderBitDecode, now we are in _LzmaDecodeA routine again. Grub executes next instructions until jumps to 5f which located at address 0x8b87.
+
+1. eflags: [ ], now_pos: 0x00000000, prev_byte: 0x00000000, eax: 0x736 pushed to stack, it's the value 0x8(%esp), rep0: 0x1, edi: 0x100000, matchByte: (0xfffff)0x0402016e value in address 0xfffff pushed to stack, state: 0x00
+2. eflags: [ ], now_pos: 0x00000001, prev_byte: 0x00000089, eax: 0x1336, rep0: 0x1, matchByte: (0x100000)0x89, state: 0x00
+
 ```assembly
-(gdb) info registers eflags
-eflags         0x2	[ ]
    0x8b25:	jb     0x8bc5
    0x8b2b:	mov    -0x4(%ebp),%eax
-(gdb) info registers eax
-eax            0x0	0
    0x8b2e:	and    $0x0,%eax
    0x8b31:	shl    $0x3,%eax
    0x8b34:	mov    -0x8(%ebp),%edx
-(gdb) info registers edx
-edx            0x0	0
    0x8b37:	shr    $0x5,%edx
    0x8b3a:	add    %edx,%eax
    0x8b3c:	mov    $0x300,%edx
    0x8b41:	mul    %edx
-(gdb) info registers eax edx
-eax            0x0	0
-edx            0x0	0
    0x8b43:	add    $0x736,%eax
-(gdb) info registers eax
-eax            0x736	1846
    0x8b48:	push   %eax
    0x8b49:	inc    %edx
    0x8b4a:	mov    -0x18(%ebp),%eax
-(gdb) info registers eax
-eax            0x1	1
    0x8b4d:	neg    %eax
    0x8b4f:	pushl  (%edi,%eax,1)                  //What is matchByte//
-(gdb) x/w 0x100000 + 0xffffffff*1
-0xfffff:	0x0402016e
-(gdb) info registers esp
-esp            0x7ffb0	0x7ffb0
-(gdb) x/w 0x7ffb0
-0x7ffb0:	0x0402016e
-(gdb) x/w 0x7ffb4
-0x7ffb4:	0x00000736
    0x8b52:	cmpb   $0x7,-0x14(%ebp)
    0x8b56:	jb     0x8b87
    0x8b58:	cmp    $0x100,%edx
