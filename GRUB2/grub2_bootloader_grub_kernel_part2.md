@@ -350,9 +350,10 @@ Let's step into RangeDecoderBitDecode routine, grub initialized 0x1f36 words wit
 35. eax: 0xd76, address: 0x10eda8 0x400 -> 0x420, range: 0x3e000000 -> 0x1f000000, code: 0x0cb34d0d, CF: 0
 36. eax: 0xdb6, address: 0x10eea8 0x400 -> 0x420, range: 0x1f000000 -> 0xf800000, code: 0x0cb34d0d, CF: 0
 37. eax: 0x0, address: 0x10b7d0 0x420 -> 0x3ff, range: 0xf800000 -> 0x7820000, code: 0x04b54d0d, CF: 1
-38. eax: 0xc0, address: 0x10bad0 0x420 -> 0x3e0, range: 0x7820000 -> 0x3c10000, code: 0x00f44d0d, CF: 1
-39. eax: 0xcc, address: 0x10bb00 0x420 -> 0x420, range: 0x3c10000 -> 0x1e08000, code: 0x00f44d0d, CF: 0
-40. eax: 0xf0, address: 0x10bb90 0x420 -> 0x3e0, range: 0x1e08000 -> 0xf04000 -> 0xf0400000, code: 0x00040d0d -> 0x040d0dcf, CF: 1
+38. eax: 0xc0, address: 0x10bad0 0x400 -> 0x3e0, range: 0x7820000 -> 0x3c10000, code: 0x00f44d0d, CF: 1
+39. eax: 0xcc, address: 0x10bb00 0x400 -> 0x420, range: 0x3c10000 -> 0x1e08000, code: 0x00f44d0d, CF: 0
+40. eax: 0xf0, address: 0x10bb90 0x400 -> 0x3e0, range: 0x1e08000 -> 0xf04000 -> 0xf0400000, code: 0x00040d0d -> 0x040d0dcf, CF: 1
+41. eax: 0x534, address: 0x10cca0 0x400 -> 0x420, range: 0xf0400000 -> 0x78200000, code: 0x040d0dcf, CF: 0
 
 
 ```assembly
@@ -881,3 +882,78 @@ grub-core/boot/i386/pc/lzma_decode.S:452
 
 ```
 
+
+1. [0x8c5a:	call   0x8a79] eax: 0x534, call 0x8a01 at 0x8a7d retured eflags: [ ], esp: 0x7ffb0 -> 0x7ffb0+0xc = 0x0, 
+
+```assembly
+   0x8a79:	push   %eax
+   0x8a7a:	add    $0x0,%eax
+   0x8a7d:	call   0x8a01
+   0x8a82:	pop    %eax
+   0x8a83:	jb     0x8a9d
+   0x8a85:	push   $0x0
+   0x8a87:	mov    $0x3,%cl
+   0x8a89:	add    $0x2,%eax
+   0x8a8c:	mov    0xc(%esp),%edx
+   0x8a90:	shl    %cl,%edx
+   0x8a92:	add    %edx,%eax
+   0x8a94:	call   0x8a4d
+   0x8a99:	pop    %eax
+   0x8a9a:	add    %eax,%edx
+   0x8a9c:	ret    
+   0x8a9d:	push   %eax
+   0x8a9e:	add    $0x1,%eax
+   0x8aa1:	call   0x8a01
+   0x8aa6:	pop    %eax
+   0x8aa7:	jb     0x8ab4
+   0x8aa9:	push   $0x8
+(gdb) 
+   0x8aab:	mov    $0x3,%cl
+   0x8aad:	add    $0x82,%eax
+   0x8ab2:	jmp    0x8a8c
+   0x8ab4:	push   $0x10
+   0x8ab6:	add    $0x102,%eax
+   0x8abb:	mov    $0x8,%cl
+   0x8abd:	jmp    0x8a94
+
+-----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/lzma_decode.S:197
+
+LzmaLenDecode:
+        pushl   %eax
+        addl    $LenChoice, %eax
+        call    RangeDecoderBitDecode
+        popl    %eax
+        jc      1f
+        pushl   $0
+        movb    $kLenNumLowBits, %cl
+        addl    $LenLow, %eax
+2:
+        movl    12(%esp), %edx
+        shll    %cl, %edx
+        addl    %edx, %eax
+3:
+
+        call    RangeDecoderBitTreeDecode
+        popl    %eax
+        addl    %eax, %edx
+        ret
+
+1:
+        pushl   %eax
+        addl    $LenChoice2, %eax
+        call    RangeDecoderBitDecode
+        popl    %eax
+        jc      1f
+        pushl   $kLenNumLowSymbols
+        movb    $kLenNumMidBits, %cl
+        addl    $LenMid, %eax
+        jmp     2b
+1:
+        pushl   $(kLenNumLowSymbols + kLenNumMidSymbols)
+        addl    $LenHigh, %eax
+        movb    $kLenNumHighBits, %cl
+        jmp     3b
+
+````
