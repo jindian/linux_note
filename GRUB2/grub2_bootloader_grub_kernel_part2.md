@@ -350,6 +350,9 @@ Let's step into RangeDecoderBitDecode routine, grub initialized 0x1f36 words wit
 35. eax: 0xd76, address: 0x10eda8 0x400 -> 0x420, range: 0x3e000000 -> 0x1f000000, code: 0x0cb34d0d, CF: 0
 36. eax: 0xdb6, address: 0x10eea8 0x400 -> 0x420, range: 0x1f000000 -> 0xf800000, code: 0x0cb34d0d, CF: 0
 37. eax: 0x0, address: 0x10b7d0 0x420 -> 0x3ff, range: 0xf800000 -> 0x7820000, code: 0x04b54d0d, CF: 1
+38. eax: 0xc0, address: 0x10bad0 0x420 -> 0x3e0, range: 0x7820000 -> 0x3c10000, code: 0x00f44d0d, CF: 1
+39. eax: 0xcc, address: 0x10bb00 0x420 -> 0x420, range: 0x3c10000 -> 0x1e08000, code: 0x00f44d0d, CF: 0
+40. eax: 0xf0, address: 0x10bb90 0x420 -> 0x3e0, range: 0x1e08000 -> 0xf04000 -> 0xf0400000, code: 0x00040d0d -> 0x040d0dcf, CF: 1
 
 
 ```assembly
@@ -431,6 +434,8 @@ After returned from RangeDecoderBitDecode, now we are in _LzmaDecodeA routine ag
 1. eflags: [ ], now_pos: 0x00000000, prev_byte: 0x00, eax: 0x736 pushed to stack, it's the value 0x8(%esp), rep0: 0x1, edi: 0x100000, matchByte: (0xfffff)0x0402016e value in address 0xfffff pushed to stack, state: 0x00
 2. eflags: [ ], now_pos: 0x00000001, prev_byte: 0x89, eax: 0x1336, rep0: 0x1, edi: 0x100001, matchByte: (0x100000)0x89, state: 0x00
 3. eflags: [ ], now_pos: 0x00000002, prev_byte: 0x8e, eax: 0x1336, rep0: 0x1, edi: 0x100002, matchByte: (0x100001)0x8e, state: 0x00
+4. eflags: [ ], now_pos: 0x00000003, prev_byte: 0x41, eax: 0xd36, rep0: 0x1, edi: 0x100003, matchByte: (0x100002)0x41, state: 0x01
+5. eflags: [ CF PF AF ] ... jump to 1f address 0x8bc5
 
 ```assembly
    0x8b25:	jb     0x8bc5
@@ -640,3 +645,239 @@ WriteByte:
         incl    now_pos
         ret
 ```
+
+It's a big block of instructions in lzma_decode.S, only context listed every time we get to here.
+
+1. state: 0x0, call 0x8a01 at 0x8bcd retured eflags: [ CF ], call 0x8a01 at 0x8be0 returned eflags: [ ], esp: 0x7ffb8 0x00000000, call 0x8a01 at 0x8bef returned eflags: [ CF ], 
+
+```assembly
+   0x8bc5:	mov    -0x14(%ebp),%eax
+   0x8bc8:	add    $0xc0,%eax
+   0x8bcd:	call   0x8a01
+   0x8bd2:	jae    0x8c72
+   0x8bd8:	mov    -0x14(%ebp),%eax
+   0x8bdb:	add    $0xcc,%eax
+   0x8be0:	call   0x8a01
+   0x8be5:	jb     0x8c1f
+   0x8be7:	mov    (%esp),%eax
+   0x8bea:	add    $0xf0,%eax
+   0x8bef:	call   0x8a01
+   0x8bf4:	jb     0x8c55
+   0x8bf6:	cmpb   $0x7,-0x14(%ebp)
+   0x8bfa:	movb   $0x9,-0x14(%ebp)
+   0x8bfe:	jb     0x8c04
+   0x8c00:	addb   $0x2,-0x14(%ebp)
+   0x8c04:	mov    $0x1,%ecx
+   0x8c09:	mov    -0x18(%ebp),%edx
+   0x8c0c:	neg    %edx
+   0x8c0e:	mov    (%edi,%edx,1),%al
+   0x8c11:	call   0x8abf
+   0x8c16:	loop   0x8c0e
+   0x8c18:	pop    %eax
+   0x8c19:	pop    %eax
+   0x8c1a:	jmp    0x8b07
+   0x8c1f:	mov    -0x14(%ebp),%eax
+   0x8c22:	add    $0xd8,%eax
+   0x8c27:	call   0x8a01
+   0x8c2c:	mov    -0x1c(%ebp),%edx
+   0x8c2f:	jae    0x8c4f
+   0x8c31:	mov    -0x14(%ebp),%eax
+   0x8c34:	add    $0xe4,%eax
+   0x8c39:	call   0x8a01
+   0x8c3e:	mov    -0x20(%ebp),%edx
+   0x8c41:	jae    0x8c49
+   0x8c43:	mov    -0x20(%ebp),%edx
+   0x8c46:	xchg   %edx,-0x24(%ebp)
+   0x8c49:	pushl  -0x1c(%ebp)
+   0x8c4c:	popl   -0x20(%ebp)
+   0x8c4f:	xchg   %edx,-0x18(%ebp)
+   0x8c52:	mov    %edx,-0x1c(%ebp)
+   0x8c55:	mov    $0x534,%eax
+   0x8c5a:	call   0x8a79
+   0x8c5f:	cmpb   $0x7,-0x14(%ebp)
+   0x8c63:	movb   $0x8,-0x14(%ebp)
+   0x8c67:	jb     0x8c6d
+   0x8c69:	addb   $0x3,-0x14(%ebp)
+   0x8c6d:	jmp    0x8d20
+   0x8c72:	mov    -0x18(%ebp),%eax
+   0x8c75:	xchg   %eax,-0x1c(%ebp)
+   0x8c78:	xchg   %eax,-0x20(%ebp)
+   0x8c7b:	mov    %eax,-0x24(%ebp)
+   0x8c7e:	cmpb   $0x7,-0x14(%ebp)
+   0x8c82:	movb   $0x7,-0x14(%ebp)
+   0x8c86:	jb     0x8c8c
+   0x8c88:	addb   $0x3,-0x14(%ebp)
+   0x8c8c:	mov    $0x332,%eax
+   0x8c91:	call   0x8a79
+   0x8c96:	push   %edx
+
+-----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/lzma_decode.S:452
+
+1:
+        movl    state, %eax
+        addl    $IsRep, %eax
+        call    RangeDecoderBitDecode
+        jnc     1f
+
+        movl    state, %eax
+        addl    $IsRepG0, %eax
+        call    RangeDecoderBitDecode
+        jc      10f
+
+        movl    (%esp), %eax
+        addl    $IsRep0Long, %eax
+        call    RangeDecoderBitDecode
+        jc      20f
+
+        cmpb    $7, state
+        movb    $9, state
+        jb      100f
+        addb    $2, state
+100:
+
+        movl    $1, %ecx
+
+3:
+        movl    rep0, %edx
+        negl    %edx
+
+4:
+        movb    (%edi, %edx), %al
+        call    WriteByte
+        loop    4b
+
+        popl    %eax
+        popl    %eax
+        jmp     lzma_decode_loop
+
+10:
+        movl    state, %eax
+        addl    $IsRepG1, %eax
+        call    RangeDecoderBitDecode
+        movl    rep1, %edx
+        jnc     100f
+
+        movl    state, %eax
+        addl    $IsRepG2, %eax
+        call    RangeDecoderBitDecode
+        movl    rep2, %edx
+        jnc     1000f
+        movl    rep2, %edx
+        xchgl   rep3, %edx
+1000:
+        pushl   rep1
+        popl    rep2
+100:
+        xchg    rep0, %edx
+        movl    %edx, rep1
+20:
+
+        movl    $RepLenCoder, %eax
+        call    LzmaLenDecode
+
+        cmpb    $7, state
+        movb    $8, state
+        jb      100f
+        addb    $3, state
+100:
+        jmp     2f
+
+1:
+        movl    rep0, %eax
+        xchgl   rep1, %eax
+        xchgl   rep2, %eax
+        movl    %eax, rep3
+
+        cmpb    $7, state
+        movb    $7, state
+        jb      10f
+        addb    $3, state
+10:
+
+        movl    $LenCoder, %eax
+        call    LzmaLenDecode
+        pushl   %edx
+
+        movl    $(kNumLenToPosStates - 1), %eax
+        cmpl    %eax, %edx
+        jbe     100f
+        movl    %eax, %edx
+100:
+        movb    $kNumPosSlotBits, %cl
+        shll    %cl, %edx
+        leal    PosSlot(%edx), %eax
+        call    RangeDecoderBitTreeDecode
+
+        movl    %edx, rep0
+        cmpl    $kStartPosModelIndex, %edx
+        jb      100f
+
+        movl    %edx, %ecx
+        shrl    $1, %ecx
+        decl    %ecx
+
+        movzbl  %dl, %eax
+        andb    $1, %al
+        orb     $2, %al
+        shll    %cl, %eax
+        movl    %eax, rep0
+
+        cmpl    $kEndPosModelIndex, %edx
+        jae     200f
+        movl    rep0, %eax
+        addl    $(SpecPos - 1), %eax
+        subl    %edx, %eax
+        jmp     300f
+200:
+
+        subb    $kNumAlignBits, %cl
+
+        /* RangeDecoderDecodeDirectBits */
+        xorl    %edx, %edx
+
+1000:
+        shrl    $1, range
+        shll    $1, %edx
+
+        movl    range, %eax
+        cmpl    %eax, code
+        jb      2000f
+        subl    %eax, code
+        orb     $1, %dl
+2000:
+
+        cmpl    $kTopValue, %eax
+        jae     3000f
+        shll    $8, range
+        shll    $8, code
+        lodsb
+        movb    %al, code
+
+3000:
+        loop    1000b
+
+        movb    $kNumAlignBits, %cl
+        shll    %cl, %edx
+        addl    %edx, rep0
+
+        movl    $Align, %eax
+
+300:
+        call    RangeDecoderReverseBitTreeDecode
+        addl    %ecx, rep0
+
+100:
+        incl    rep0
+        popl    %edx
+
+2:
+
+        addl    $kMatchMinLen, %edx
+        movl    %edx, %ecx
+
+        jmp     3b
+
+```
+
