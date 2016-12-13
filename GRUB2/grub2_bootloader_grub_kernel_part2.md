@@ -247,6 +247,7 @@ grub-core/boot/i386/pc/lzma_decode.S:80
 
 In lzma_decode_loop it first check whether now_pos exceeds out_size, if yes, it means decompress procedure completed, return and continue next step of grub intialization, if not, continue the decompress loop, jump to address 0x8b13.
 
+1. [0x8c1a:0x8b0d]
 
 ```assembly
    0x8b07:	mov    -0x4(%ebp),%eax
@@ -276,6 +277,7 @@ The context before calling RangeDecoderBitDecode of below instructions block as 
 3. eax: 0x2, state: 0x00000000
 4. eax: 0x3, state: 0x00000000
 5. eax: 0x4, state: 0x00000000
+6. [0x8b0d:0x8b20] eax: 0x6, state: 0x00000008
 
 
 
@@ -357,7 +359,8 @@ Let's step into RangeDecoderBitDecode routine, grub initialized 0x1f36 words wit
 42. eax: 0x537, address: 0x10ccac 0x400 -> 0x420, range: 0x78200000 -> 0x3c100000, code: 0x040d0dcf, CF: 0
 43. eax: 0x538, address: 0x10ccb0 0x400 -> 0x420, range: 0x3c100000 -> 0x1e080000, code: 0x040d0dcf, CF: 0
 44. eax: 0x53a, address: 0x10ccb8 0x400 -> 0x420, range: 0x1e080000 -> 0xf040000, code: 0x040d0dcf, CF: 0
-
+45. [0x8b20:0x8a2d^0x8a3b:0x8a3c] eax: 0x82, address: 0x10b9d8 0x400 -> 0x420, range: 0xf040000 -> 0x7820000, code: 0x040d0dcf, CF: 0
+46. [0x8b77:0x8a13^0x8a3d:0x8a4b^0x8a25:0x8a2d^0x8a3b:0x8a3c] eax: 0x837, address: 0x10d8ac 0x400 -> 0x3e0, range: 0x7820000 -> 0x3c10000, code: 0x040d0dcf -> 0x004c0dcf, CF: 1
 
 ```assembly
    0x8a01:	lea    (%ebx,%eax,4),%eax
@@ -383,6 +386,13 @@ Let's step into RangeDecoderBitDecode routine, grub initialized 0x1f36 words wit
    0x8a37:	shll   $0x8,-0xc(%ebp)
    0x8a3b:	popf   
    0x8a3c:	ret    
+   0x8a3d:	sub    %eax,-0xc(%ebp)
+   0x8a40:	sub    %eax,-0x10(%ebp)
+   0x8a43:	mov    (%ecx),%edx
+   0x8a45:	shr    $0x5,%edx
+   0x8a48:	sub    %edx,(%ecx)
+   0x8a4a:	stc    
+   0x8a4b:	jmp    0x8a25
 
 -----------------------------------------------------------------------
 
@@ -440,6 +450,7 @@ After returned from RangeDecoderBitDecode, now we are in _LzmaDecodeA routine ag
 3. eflags: [ ], now_pos: 0x00000002, prev_byte: 0x8e, eax: 0x1336, rep0: 0x1, edi: 0x100002, matchByte: (0x100001)0x8e, state: 0x00
 4. eflags: [ ], now_pos: 0x00000003, prev_byte: 0x41, eax: 0xd36, rep0: 0x1, edi: 0x100003, matchByte: (0x100002)0x41, state: 0x01
 5. eflags: [ CF PF AF ] ... jump to 1f address 0x8bc5
+6. [0x8b25:] eflags: [ ], now_pos: 0x00000006, prev_byte: 0x00, eax: 0x736, rep0: 0x1, edi: 0x100006, matchByte: (0x100005)0x00, state: 0x08, [0x8b62] esp: 0x7ffb0 0x0, [0x8b73] eax: 0x837
 
 ```assembly
    0x8b25:	jb     0x8bc5
@@ -462,6 +473,16 @@ After returned from RangeDecoderBitDecode, now we are in _LzmaDecodeA routine ag
    0x8b58:	cmp    $0x100,%edx
    0x8b5e:	jae    0x8ba0
    0x8b60:	xor    %eax,%eax
+   0x8b62:	shlb   (%esp)
+   0x8b65:	adc    %eax,%eax
+   0x8b67:	push   %eax
+   0x8b68:	push   %edx
+   0x8b69:	shl    $0x8,%eax
+   0x8b6c:	lea    0x100(%edx,%eax,1),%eax
+   0x8b73:	add    0xc(%esp),%eax
+   0x8b77:	call   0x8a01
+   0x8b7c:	setb   %al
+
 
 -----------------------------------------------------------------------
 
@@ -632,6 +653,7 @@ The context of WriteByte as follow
 3. al: 0x41, prev_byte: 0x8e -> 0x41, 0x100002: 0x41, edi: 0x100002 -> 0x100003, now_pos: 0x00000002 -> 0x00000003
 4. al: 0x00, prev_byte: 0x41 -> 0x0, 0x100003: 0x0, edi: 0x100003 -> 0x100004, now_pos: 0x00000003 -> 0x00000004
 5. [8c11:0x8ac6] al: 0x00, prev_byte: 0x0 -> 0x0, 0x100004: 0x0, edi: 0x100004 -> 0x100005, now_pos: 0x00000004 -> 0x00000005
+6. [8c11:0x8ac6] al: 0x00, prev_byte: 0x0 -> 0x0, 0x100005: 0x0, edi: 0x100005 -> 0x100006, now_pos: 0x00000005 -> 0x00000006
 
 
 ```assembly
@@ -653,7 +675,7 @@ WriteByte:
 
 It's a big block of instructions in lzma_decode.S, only context listed every time we get to here.
 
-1. state: 0x0 -> 0x8, call 0x8a01 at 0x8bcd retured eflags: [ CF ], call 0x8a01 at 0x8be0 returned eflags: [ ], esp: 0x7ffb8 0x00000000, call 0x8a01 at 0x8bef returned eflags: [ CF ], jmp 0x8c6d, jmp 0x8d20, edx: 0x0 -> 0x2, jmp 0x8c09, rep0: 0x1, edi: 0x100004, [0x8c16:]
+1. state: 0x0 -> 0x8, call 0x8a01 at 0x8bcd retured eflags: [ CF ], call 0x8a01 at 0x8be0 returned eflags: [ ], esp: 0x7ffb8 0x00000000, call 0x8a01 at 0x8bef returned eflags: [ CF ], jmp 0x8c6d, jmp 0x8d20, edx: 0x0 -> 0x2, jmp 0x8c09, rep0: 0x1, edi: 0x100004, [0x8c16:0x8c0e] edi: 100005
 
 ```assembly
    0x8bc5:	mov    -0x14(%ebp),%eax
