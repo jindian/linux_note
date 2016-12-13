@@ -360,7 +360,7 @@ Let's step into RangeDecoderBitDecode routine, grub initialized 0x1f36 words wit
 43. eax: 0x538, address: 0x10ccb0 0x400 -> 0x420, range: 0x3c100000 -> 0x1e080000, code: 0x040d0dcf, CF: 0
 44. eax: 0x53a, address: 0x10ccb8 0x400 -> 0x420, range: 0x1e080000 -> 0xf040000, code: 0x040d0dcf, CF: 0
 45. [0x8b20:0x8a2d^0x8a3b:0x8a3c] eax: 0x82, address: 0x10b9d8 0x400 -> 0x420, range: 0xf040000 -> 0x7820000, code: 0x040d0dcf, CF: 0
-46. [0x8b77:0x8a13^0x8a3d:0x8a4b^0x8a25:0x8a2d^0x8a3b:0x8a3c] eax: 0x837, address: 0x10d8ac 0x400 -> 0x3e0, range: 0x7820000 -> 0x3c10000, code: 0x040d0dcf -> 0x004c0dcf, CF: 1
+46. [0x8b77:0x8a13^0x8a3d:0x8a4b^0x8a25:0x8a2d^0x8a3b:0x8b7c] eax: 0x837, address: 0x10d8ac 0x400 -> 0x3e0, range: 0x7820000 -> 0x3c10000, code: 0x040d0dcf -> 0x004c0dcf, CF: 1
 
 ```assembly
    0x8a01:	lea    (%ebx,%eax,4),%eax
@@ -450,7 +450,7 @@ After returned from RangeDecoderBitDecode, now we are in _LzmaDecodeA routine ag
 3. eflags: [ ], now_pos: 0x00000002, prev_byte: 0x8e, eax: 0x1336, rep0: 0x1, edi: 0x100002, matchByte: (0x100001)0x8e, state: 0x00
 4. eflags: [ ], now_pos: 0x00000003, prev_byte: 0x41, eax: 0xd36, rep0: 0x1, edi: 0x100003, matchByte: (0x100002)0x41, state: 0x01
 5. eflags: [ CF PF AF ] ... jump to 1f address 0x8bc5
-6. [0x8b25:] eflags: [ ], now_pos: 0x00000006, prev_byte: 0x00, eax: 0x736, rep0: 0x1, edi: 0x100006, matchByte: (0x100005)0x00, state: 0x08, [0x8b62] esp: 0x7ffb0 0x0, [0x8b73] eax: 0x837
+6. [0x8b25:0x8b87] eflags: [ ], now_pos: 0x00000006, prev_byte: 0x00, eax: 0x736, rep0: 0x1, edi: 0x100006, matchByte: (0x100005)0x00, state: 0x08, [0x8b62] esp: 0x7ffb0 0x0, [0x8b73] eax: 0x837
 
 ```assembly
    0x8b25:	jb     0x8bc5
@@ -482,7 +482,11 @@ After returned from RangeDecoderBitDecode, now we are in _LzmaDecodeA routine ag
    0x8b73:	add    0xc(%esp),%eax
    0x8b77:	call   0x8a01
    0x8b7c:	setb   %al
-
+   0x8b7f:	pop    %edx
+   0x8b80:	adc    %edx,%edx
+   0x8b82:	pop    %ecx
+   0x8b83:	cmp    %cl,%al
+   0x8b85:	je     0x8b58
 
 -----------------------------------------------------------------------
 
@@ -521,6 +525,32 @@ grub-core/boot/i386/pc/lzma_decode.S:357
 
         cmpb    $kNumLitStates, state
         jb      5f
+        
+        /* LzmaLiteralDecodeMatch */
+
+3:
+        cmpl    $0x100, %edx
+        jae     4f
+
+        xorl    %eax, %eax
+        shlb    $1, (%esp)
+        adcl    %eax, %eax
+
+        pushl   %eax
+        pushl   %edx
+
+        shll    $8, %eax
+        leal    0x100(%edx, %eax), %eax
+        addl    12(%esp), %eax
+        call    RangeDecoderBitDecode
+
+        setc    %al
+        popl    %edx
+        adcl    %edx, %edx
+
+        popl    %ecx
+        cmpb    %cl, %al
+        jz      3b
 ```
 
 
