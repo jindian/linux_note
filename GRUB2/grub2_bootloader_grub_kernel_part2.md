@@ -354,6 +354,9 @@ Let's step into RangeDecoderBitDecode routine, grub initialized 0x1f36 words wit
 39. eax: 0xcc, address: 0x10bb00 0x400 -> 0x420, range: 0x3c10000 -> 0x1e08000, code: 0x00f44d0d, CF: 0
 40. eax: 0xf0, address: 0x10bb90 0x400 -> 0x3e0, range: 0x1e08000 -> 0xf04000 -> 0xf0400000, code: 0x00040d0d -> 0x040d0dcf, CF: 1
 41. eax: 0x534, address: 0x10cca0 0x400 -> 0x420, range: 0xf0400000 -> 0x78200000, code: 0x040d0dcf, CF: 0
+42. eax: 0x537, address: 0x10ccac 0x400 -> 0x420, range: 0x78200000 -> 0x3c100000, code: 0x040d0dcf, CF: 0
+43. eax: 0x538, address: 0x10ccb0 0x400 -> 0x420, range: 0x3c100000 -> 0x1e080000, code: 0x040d0dcf, CF: 0
+44. eax: 0x53a, address: 0x10ccb8 0x400 -> 0x420, range: 0x1e080000 -> 0xf040000, code: 0x040d0dcf, CF: 0
 
 
 ```assembly
@@ -627,7 +630,8 @@ The context of WriteByte as follow
 1. al: 0x89, prev_byte: 0x0 -> 0x89, 0x100000: 0x89, edi: 0x100000 -> 0x100001, now_pos: 0x00000000 -> 0x00000001
 2. al: 0x8e, prev_byte: 0x89 -> 0x8e, 0x100001: 0x8e, edi: 0x100001 -> 0x100002, now_pos: 0x00000001 -> 0x00000002
 3. al: 0x41, prev_byte: 0x8e -> 0x41, 0x100002: 0x41, edi: 0x100002 -> 0x100003, now_pos: 0x00000002 -> 0x00000003
-4. 3. al: 0x000, prev_byte: 0x41 -> 0x0, 0x100003: 0x0, edi: 0x100003 -> 0x100004, now_pos: 0x00000003 -> 0x00000004
+4. al: 0x00, prev_byte: 0x41 -> 0x0, 0x100003: 0x0, edi: 0x100003 -> 0x100004, now_pos: 0x00000003 -> 0x00000004
+5. [8c11:0x8ac6] al: 0x00, prev_byte: 0x0 -> 0x0, 0x100004: 0x0, edi: 0x100004 -> 0x100005, now_pos: 0x00000004 -> 0x00000005
 
 
 ```assembly
@@ -649,7 +653,7 @@ WriteByte:
 
 It's a big block of instructions in lzma_decode.S, only context listed every time we get to here.
 
-1. state: 0x0, call 0x8a01 at 0x8bcd retured eflags: [ CF ], call 0x8a01 at 0x8be0 returned eflags: [ ], esp: 0x7ffb8 0x00000000, call 0x8a01 at 0x8bef returned eflags: [ CF ], 
+1. state: 0x0 -> 0x8, call 0x8a01 at 0x8bcd retured eflags: [ CF ], call 0x8a01 at 0x8be0 returned eflags: [ ], esp: 0x7ffb8 0x00000000, call 0x8a01 at 0x8bef returned eflags: [ CF ], jmp 0x8c6d, jmp 0x8d20, edx: 0x0 -> 0x2, jmp 0x8c09, rep0: 0x1, edi: 0x100004, [0x8c16:]
 
 ```assembly
    0x8bc5:	mov    -0x14(%ebp),%eax
@@ -907,7 +911,6 @@ grub-core/boot/i386/pc/lzma_decode.S:452
    0x8aa6:	pop    %eax
    0x8aa7:	jb     0x8ab4
    0x8aa9:	push   $0x8
-(gdb) 
    0x8aab:	mov    $0x3,%cl
    0x8aad:	add    $0x82,%eax
    0x8ab2:	jmp    0x8a8c
@@ -957,3 +960,74 @@ LzmaLenDecode:
         jmp     3b
 
 ````
+
+
+1. ecx : 0x10cc03, eax: 0x536, 1st call 0x8a01 at 0x8a5a retured eflags: [ ], esp: 0x7ffa4 0x00000001 -> 0x00000002, 2nd call 0x8a01 at 0x8a5a retured eflags: [ ], esp: 0x7ffa4 0x00000002 -> 0x00000004, 3rd call 0x8a01 at 0x8a5a retured eflags: [ ], esp: 0x7ffa4 0x00000004 -> 0x00000008
+
+```assembly
+   0x8a4d:	movzbl %cl,%ecx
+   0x8a50:	xor    %edx,%edx
+   0x8a52:	push   %edx
+   0x8a53:	inc    %edx
+   0x8a54:	push   %edx
+   0x8a55:	push   %eax
+   0x8a56:	push   %ecx
+   0x8a57:	push   %edx
+   0x8a58:	add    %edx,%eax
+   0x8a5a:	call   0x8a01
+   0x8a5f:	pop    %edx
+   0x8a60:	pop    %ecx
+   0x8a61:	jae    0x8a6c
+   0x8a63:	mov    0x4(%esp),%eax
+   0x8a67:	or     %eax,0x8(%esp)
+   0x8a6b:	stc    
+   0x8a6c:	adc    %edx,%edx
+   0x8a6e:	pop    %eax
+   0x8a6f:	shll   (%esp)
+   0x8a72:	loop   0x8a55
+   0x8a74:	pop    %ecx
+   0x8a75:	sub    %ecx,%edx
+   0x8a77:	pop    %ecx
+   0x8a78:	ret    
+
+
+-----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/lzma_decode.S:197
+
+RangeDecoderBitTreeDecode:
+RangeDecoderReverseBitTreeDecode:
+        movzbl  %cl, %ecx
+        xorl    %edx, %edx
+        pushl   %edx
+        incl    %edx
+        pushl   %edx
+
+1:
+        pushl   %eax
+        pushl   %ecx
+        pushl   %edx
+
+        addl    %edx, %eax
+        call    RangeDecoderBitDecode
+
+        popl    %edx
+        popl    %ecx
+
+        jnc     2f
+        movl    4(%esp), %eax
+        orl     %eax, 8(%esp)
+        stc
+
+2:
+        adcl    %edx, %edx
+        popl    %eax
+
+        shll    $1, (%esp)
+        loop    1b
+
+        popl    %ecx
+        subl    %ecx, %edx              /* RangeDecoderBitTreeDecode */
+        popl    %ecx                    /* RangeDecoderReverseBitTreeDecode */
+        ret
+```
