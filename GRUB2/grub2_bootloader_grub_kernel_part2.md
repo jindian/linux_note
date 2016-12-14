@@ -1093,3 +1093,7 @@ RangeDecoderReverseBitTreeDecode:
         popl    %ecx                    /* RangeDecoderReverseBitTreeDecode */
         ret
 ```
+
+Links:
+------------------------------------
+  * [Intel Opcode and Instruction](http://ref.x86asm.net/coder32.html)
