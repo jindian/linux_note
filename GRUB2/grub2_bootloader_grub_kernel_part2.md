@@ -4,59 +4,6 @@ Decompress grub kernel
 Default compression algorithm of grub is lzma, its compression ratio is reasonable. With compressed grub kernel image it has high efficiency in grub initialization, original compressed code located from address 0x8d30, destination address of decompressed code started from address 0x100000, ended at 0x10b7cf.
 
 
-We are at the first instruction after label post_reed_solomon, here it saves decompressed grub core image destination address(0x100000) to edi, decompressed end(0x8d30) to esi, decompressed core image size(0xb7d0) to ecx and address after grub kernel decompressed region(0x10b7d0) to ebx. Values of all registers before calling _LzmaDecodeA list in following debug context, next call _LzmaDecodeA(0x8ac7) to do the decompression.
-
-
-```assembly
-   0x89ce:	mov    $0x100000,%edi
-   0x89d3:	mov    $0x8d30,%esi
-   0x89d8:	push   %edi
-   0x89d9:	mov    0x820c,%ecx
-   0x89df:	lea    (%edi,%ecx,1),%ebx
-   0x89e2:	push   %ecx
-(gdb) info registers 
-eax            0x616f	24943
-ecx            0xb7d0	47056
-edx            0xffffff90	-112
-ebx            0x10b7d0	1095632
-esp            0x7ffec	0x7ffec
-ebp            0x7fff0	0x7fff0
-esi            0x8d30	36144
-edi            0x100000	1048576
-eip            0x89e3	0x89e3
-eflags         0x2	[ ]
-cs             0x8	8
-ss             0x10	16
-ds             0x10	16
-es             0x10	16
-fs             0x10	16
-gs             0x10	16
-   0x89e3:	call   0x8ac7
-   0x89e8:	pop    %ecx
-   0x89e9:	pop    %esi
-   0x89ea:	mov    0x8218,%edx
-
------------------------------------------------------------------------
-
-grub-core/boot/i386/pc/startup_raw.S:340
-
-post_reed_solomon:
-
-#ifdef ENABLE_LZMA
-        movl    $GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR, %edi
-#ifdef __APPLE__
-        movl    $decompressor_end, %esi
-#else
-        movl    $LOCAL(decompressor_end), %esi
-#endif
-        pushl   %edi
-        movl    LOCAL (uncompressed_size), %ecx
-        leal    (%edi, %ecx), %ebx
-        /* Don't remove this push: it's an argument.  */
-        push    %ecx
-        call    _LzmaDecodeA
-```
-
 Initialize stack, reserve data area used in decompress procedure as follow, let's name these parameters with decompress parameters in the rest of this chapter.
 ```assembly
 grub-core/boot/i386/pc/lzma_decode.S:82
