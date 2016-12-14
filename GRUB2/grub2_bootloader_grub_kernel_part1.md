@@ -548,7 +548,7 @@ grub-core/boot/i386/pc/startup_raw.S:107
         jmp     post_reed_solomon
 ```
 
-We are at the first instruction after label post_reed_solomon, here it saves decompressed grub core image destination address(0x100000) to edi, decompressed image start address(0x8d30) to esi, decompressed core image size(0xb7d0) to ecx and address after grub kernel decompressed region(0x10b7d0) to ebx, from address 0x10b7d0, it's a dictionary used in decompression. Values of all registers before calling _LzmaDecodeA list in following debug context, next call _LzmaDecodeA(0x8ac7) to do the decompression.  Detail of _LzmaDecodeA put in the next chapter.
+We are at the first instruction after label post_reed_solomon, here it saves decompressed grub core image destination address(0x100000) to edi, decompressed image start address(0x8d30) to esi, decompressed core image size(0xb7d0) to ecx and address after grub kernel decompressed region(0x10b7d0) to ebx, from address 0x10b7d0, it's a dictionary used in decompression. Values of all registers before calling _LzmaDecodeA list in following debug context, next call _LzmaDecodeA(0x8ac7) to do the decompression.  Detail of _LzmaDecodeA put in the next chapter. After completed decompression, jump to address 0x100000 start the next stage of grub initialization.
 
 
 ```assembly
@@ -577,8 +577,18 @@ fs             0x10	16
 gs             0x10	16
    0x89e3:	call   0x8ac7
    0x89e8:	pop    %ecx
+(gdb) info registers ecx
+ecx            0xb7d0	47056
    0x89e9:	pop    %esi
+(gdb) info registers esi
+esi            0x100000	1048576
    0x89ea:	mov    0x8218,%edx
+(gdb) x/w 0x8218
+0x8218:	0x80ffffff
+   0x89f0:	mov    $0x832a,%edi
+   0x89f5:	mov    $0x82d2,%ecx
+   0x89fa:	mov    $0x82c6,%eax
+   0x89ff:	jmp    *%esi
 
 -----------------------------------------------------------------------
 
@@ -599,6 +609,16 @@ post_reed_solomon:
         /* Don't remove this push: it's an argument.  */
         push    %ecx
         call    _LzmaDecodeA
+        pop     %ecx
+        /* _LzmaDecodeA clears DF, so no need to run cld */
+        popl    %esi
+#endif
+
+        movl    LOCAL(boot_dev), %edx
+        movl    $prot_to_real, %edi
+        movl    $real_to_prot, %ecx
+        movl    $LOCAL(realidt), %eax
+        jmp     *%esi
 ```
 
 Links:
