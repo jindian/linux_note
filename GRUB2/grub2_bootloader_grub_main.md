@@ -47,7 +47,7 @@ In grub_machine_init:
 
 2. Initialize the console with grub_console_init in which registers console input and output with intialized data struct, the struct initialized with callback functions and other values, detail information checks grub_console_term_input and grub_console_term_output in grub-core/term/i386/pc/console.c
 
-3.  Check mapped memory region, ensure mapped memory located between 0x10000 and 0xFFFFFFFF.
+3.  Check mapped memory region with grub_machine_mmap_iterate, ensure mapped memory located between 0x10000 and 0xFFFFFFFF.
 
 ```grub_machine_init
 grub-core/kern/i386/pc/init.c:157
