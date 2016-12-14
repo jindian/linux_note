@@ -1,10 +1,13 @@
 Decompress grub kernel: lzma decode
 ================================
 
-Default compression algorithm of grub is lzma, its compression ratio is reasonable. With compressed grub kernel image it has high efficiency in grub initialization, original compressed code located from address 0x8d30, destination address of decompressed code started from address 0x100000, ended at 0x10b7cf.
+Default compression algorithm of grub is lzma(Lempel–Ziv–Markov chain algorithm), This algorithm uses a dictionary compression scheme  and features a high compression ratio, so it is very suitable for embedded applications. Original compressed code located from address 0x8d30, destination address of decompressed code started from address 0x100000, ended at 0x10b7cf.
 
+After decompression completed, the content of memory start from 0x100000 as followed screen shot
 
-Initialize stack, reserve data area used in decompress procedure as follow, let's name these parameters with decompress parameters in the rest of this chapter.
+![](decompressed_grub_core_image.png)
+
+Initialize stack, reserve data area used in decompress procedure as follow:
 ```assembly
 grub-core/boot/i386/pc/lzma_decode.S:82
 #define now_pos         -4(%ebp)
@@ -194,7 +197,6 @@ grub-core/boot/i386/pc/lzma_decode.S:80
 
 In lzma_decode_loop it first check whether now_pos exceeds out_size, if yes, it means decompress procedure completed, return and continue next step of grub intialization, if not, continue the decompress loop, jump to address 0x8b13.
 
-1. [0x8c1a:0x8b0d]
 
 ```assembly
    0x8b07:	mov    -0x4(%ebp),%eax
@@ -224,7 +226,7 @@ The context before calling RangeDecoderBitDecode of below instructions block as 
 3. eax: 0x2, state: 0x00000000
 4. eax: 0x3, state: 0x00000000
 5. eax: 0x4, state: 0x00000000
-6. [0x8b0d:0x8b20] eax: 0x6, state: 0x00000008
+6. eax: 0x6, state: 0x00000008
 
 
 
@@ -306,12 +308,12 @@ Let's step into RangeDecoderBitDecode routine, grub initialized 0x1f36 words wit
 42. eax: 0x537, address: 0x10ccac 0x400 -> 0x420, range: 0x78200000 -> 0x3c100000, code: 0x040d0dcf, CF: 0
 43. eax: 0x538, address: 0x10ccb0 0x400 -> 0x420, range: 0x3c100000 -> 0x1e080000, code: 0x040d0dcf, CF: 0
 44. eax: 0x53a, address: 0x10ccb8 0x400 -> 0x420, range: 0x1e080000 -> 0xf040000, code: 0x040d0dcf, CF: 0
-45. [0x8b20:0x8a2d^0x8a3b:0x8a3c] eax: 0x82, address: 0x10b9d8 0x400 -> 0x420, range: 0xf040000 -> 0x7820000, code: 0x040d0dcf, CF: 0
-46. [0x8b77:0x8a13^0x8a3d:0x8a4b^0x8a25:0x8a2d^0x8a3b:0x8b7c] eax: 0x837, address: 0x10d8ac 0x400 -> 0x3e0, range: 0x7820000 -> 0x3c10000, code: 0x040d0dcf -> 0x004c0dcf, CF: 1
-47. [0x8b96-> 0x8a01:0x8a2d^0x8a3b:0x8a3c->0x8b9b] eax: 0x739, address: 0x10d4b4 0x420 -> 0x43f, range: 0x3c10000 -> 0x01ef8400, code: 0x004c0dcf, CF: 0
-48. [0x8b96 -> 0x8a01:0x8a3c->0x8b9b] eax: 0x73c, address: 0x10d4c0 0x420 -> 0x43f, range: 0x01ef8400 -> 0xff7e00 -> 0xff7e0000, code: 0x004c0dcf -> 0x4c0dcfb8, CF: 0
-49. [0x8b96 -> 0x8a01:0x8a2d^0x8a3b->0x8b9b] eax: 0x742, address: 0x10d4d8 0x420 -> 0x43f, range: 0xff7e0000 -> 0x83bcf800, code: 0x4c0dcfb8, CF: 0
-50. [0x8b96 -> 0x8a01:0x8a13^0x8a3d:0x8a25:0x8a2d^0x8a3b:0x8a3c->0x8b9b] eax: 0x74e, address: 0x10d508 0x3e0 -> 3c1, range: 0x83bcf800 -> 0x43ed6fe0, code: 0x4c0dcfb8 -> 0x0c3e4798, CF: 1
+45. eax: 0x82, address: 0x10b9d8 0x400 -> 0x420, range: 0xf040000 -> 0x7820000, code: 0x040d0dcf, CF: 0
+46. eax: 0x837, address: 0x10d8ac 0x400 -> 0x3e0, range: 0x7820000 -> 0x3c10000, code: 0x040d0dcf -> 0x004c0dcf, CF: 1
+47. eax: 0x739, address: 0x10d4b4 0x420 -> 0x43f, range: 0x3c10000 -> 0x01ef8400, code: 0x004c0dcf, CF: 0
+48. eax: 0x73c, address: 0x10d4c0 0x420 -> 0x43f, range: 0x01ef8400 -> 0xff7e00 -> 0xff7e0000, code: 0x004c0dcf -> 0x4c0dcfb8, CF: 0
+49. eax: 0x742, address: 0x10d4d8 0x420 -> 0x43f, range: 0xff7e0000 -> 0x83bcf800, code: 0x4c0dcfb8, CF: 0
+50. eax: 0x74e, address: 0x10d508 0x3e0 -> 3c1, range: 0x83bcf800 -> 0x43ed6fe0, code: 0x4c0dcfb8 -> 0x0c3e4798, CF: 1
 
 ```assembly
    0x8a01:	lea    (%ebx,%eax,4),%eax
@@ -401,7 +403,7 @@ After returned from RangeDecoderBitDecode, now we are in _LzmaDecodeA routine ag
 3. eflags: [ ], now_pos: 0x00000002, prev_byte: 0x8e, eax: 0x1336, rep0: 0x1, edi: 0x100002, matchByte: (0x100001)0x8e, state: 0x00
 4. eflags: [ ], now_pos: 0x00000003, prev_byte: 0x41, eax: 0xd36, rep0: 0x1, edi: 0x100003, matchByte: (0x100002)0x41, state: 0x01
 5. eflags: [ CF PF AF ] ... jump to 1f address 0x8bc5
-6. [0x8b25:0x8b87] eflags: [ ], now_pos: 0x00000006, prev_byte: 0x00, eax: 0x736, rep0: 0x1, edi: 0x100006, matchByte: (0x100005)0x00, state: 0x08, [0x8b62] esp: 0x7ffb0 0x0, [0x8b73] eax: 0x837
+6. eflags: [ ], now_pos: 0x00000006, prev_byte: 0x00, eax: 0x736, rep0: 0x1, edi: 0x100006, matchByte: (0x100005)0x00, state: 0x08, [0x8b62] esp: 0x7ffb0 0x0, [0x8b73] eax: 0x837
 
 ```assembly
    0x8b25:	jb     0x8bc5
@@ -543,12 +545,11 @@ Followed instructions will be executed not only once, same with RangeDecoderBitD
 34. edx: 0x40, 0x8(%esp): 0xd36, eax: 0xd76, CF: 0
 35. edx: 0x80, 0x8(%esp): 0xd36, eax: 0xdb6, CF: 0
 36. edx: 0x100, 0x8(%esp): ?, eax: ?, CF: ?
-37. [0x8b85 -> 0x8b87:0x8b96] edx: 0x3, 0x8(%esp): 0x736, eax: 0x739, CF: 0
-38. [0x8a3c -> 0x8b9b:0x8b96] edx: 0x6, 0x8(%esp): 0x736, eax: 0x73c, CF: 0
-39. [0x8a3c -> 0x8b9b:0x8b96] edx: 0xc, 0x8(%esp): 0x736, eax: 0x742, CF: 0
-40. [0x8a3c -> 0x8b9b:0x8b96] edx: 0x18, 0x8(%esp): 0x736, eax: 0x74e, CF: 1
+37. edx: 0x3, 0x8(%esp): 0x736, eax: 0x739, CF: 0
+38. edx: 0x6, 0x8(%esp): 0x736, eax: 0x73c, CF: 0
+39. edx: 0xc, 0x8(%esp): 0x736, eax: 0x742, CF: 0
+40. edx: 0x18, 0x8(%esp): 0x736, eax: 0x74e, CF: 1
 
-......
 
 ```assembly
    0x8b87:	cmp    $0x100,%edx
@@ -639,8 +640,8 @@ The context of WriteByte as follow
 2. al: 0x8e, prev_byte: 0x89 -> 0x8e, 0x100001: 0x8e, edi: 0x100001 -> 0x100002, now_pos: 0x00000001 -> 0x00000002
 3. al: 0x41, prev_byte: 0x8e -> 0x41, 0x100002: 0x41, edi: 0x100002 -> 0x100003, now_pos: 0x00000002 -> 0x00000003
 4. al: 0x00, prev_byte: 0x41 -> 0x0, 0x100003: 0x0, edi: 0x100003 -> 0x100004, now_pos: 0x00000003 -> 0x00000004
-5. [8c11:0x8ac6] al: 0x00, prev_byte: 0x0 -> 0x0, 0x100004: 0x0, edi: 0x100004 -> 0x100005, now_pos: 0x00000004 -> 0x00000005
-6. [8c11:0x8ac6] al: 0x00, prev_byte: 0x0 -> 0x0, 0x100005: 0x0, edi: 0x100005 -> 0x100006, now_pos: 0x00000005 -> 0x00000006
+5. al: 0x00, prev_byte: 0x0 -> 0x0, 0x100004: 0x0, edi: 0x100004 -> 0x100005, now_pos: 0x00000004 -> 0x00000005
+6. al: 0x00, prev_byte: 0x0 -> 0x0, 0x100005: 0x0, edi: 0x100005 -> 0x100006, now_pos: 0x00000005 -> 0x00000006
 
 
 ```assembly
@@ -1044,3 +1045,5 @@ RangeDecoderReverseBitTreeDecode:
 Links:
 ------------------------------------
   * [Intel Opcode and Instruction](http://ref.x86asm.net/coder32.html)
+  * [LZMA](https://en.wikipedia.org/wiki/Lempel%E2%80%93Ziv%E2%80%93Markov_chain_algorithm)
+  * [LZMA SDK](http://www.7-zip.org/sdk.html)
