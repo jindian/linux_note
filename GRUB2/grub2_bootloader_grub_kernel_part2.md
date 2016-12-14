@@ -1,4 +1,4 @@
-Decompress grub kernel
+Decompress grub kernel: lzma decode
 ================================
 
 Default compression algorithm of grub is lzma, its compression ratio is reasonable. With compressed grub kernel image it has high efficiency in grub initialization, original compressed code located from address 0x8d30, destination address of decompressed code started from address 0x100000, ended at 0x10b7cf.
