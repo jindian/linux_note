@@ -8,4 +8,5 @@
   * [Decompress grub kernel: lzma decode](GRUB2/lzma_decode.md)
   * [Preparation before grub_main](GRUB2/before_grub_main.md)
   * [grub_main: grub_machine_init](GRUB2/grub_main_grub_machine_init.md)
+  * [grub_main: grub_load_moules](GRUB2/grub_main_grub_load_modules.md)
 
