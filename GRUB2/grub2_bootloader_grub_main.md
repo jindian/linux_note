@@ -278,10 +278,25 @@ void
 grub_tsc_init (void)
 {
   if (grub_cpu_is_tsc_supported ())
+grub_cpu_is_tsc_supported () at ../include/grub/i386/tsc.h:129
+129	  __asm__ ("movl $1, %%eax\n\t"
     {
       tsc_boot_time = grub_get_tsc ();
+grub_get_tsc () at ../include/grub/i386/tsc.h:47
+47	  __asm__ __volatile__ ("xorl %%eax, %%eax\n\t"
+(gdb) n
+52	  __asm__ __volatile__ ("rdtsc":"=a" (lo), "=d" (hi));
+(gdb) 
+54	  return (((grub_uint64_t) hi) << 32) | lo;
       calibrate_tsc ();
       grub_install_get_time_ms (grub_tsc_get_time_ms);
+grub_install_get_time_ms (func=0x9668 <grub_tsc_get_time_ms>)
+    at kern/time.c:35
+35	{
+(gdb) n
+36	  get_time_ms_func = func;
+(gdb) 
+37	}
     }
   else
     {
