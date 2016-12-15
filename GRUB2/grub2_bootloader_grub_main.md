@@ -1,4 +1,4 @@
-grub_main
+grub_main: grub_machine_init
 ================================
 
 Here we are at the entrance of grub_main, next we will check functions involved in grub_main one by one.
@@ -47,7 +47,14 @@ In grub_machine_init:
 
 2. Initialize the console with grub_console_init in which registers console input and output with intialized data struct, the struct initialized with callback functions and other values, detail information checks grub_console_term_input and grub_console_term_output in grub-core/term/i386/pc/console.c
 
-3.  Check mapped memory region with grub_machine_mmap_iterate.
+3.  Check mapped memory region with grub_machine_mmap_iterate. Bootloader uses BIOS interrupt 0x15 to get memory map in grub_get_mmap_entry interface.
+
+4. Sort and merge overlapped memory region.
+
+5. Initialize memory region with a simple memory management mechanic, grub memory allocate and free are based on this mechanic
+
+6. Initialize tsc, check CPU support TSC or not with CPUID + EAX=1: Processor Info and Feature Bits
+
 
 ```grub_machine_init
 grub-core/kern/i386/pc/init.c:157
@@ -146,7 +153,26 @@ The context of entry in loop
 4. entry->addr: 0x100000, entry->len: 0x7efe000, entry->size: 0x14, entry->type: 0x1
 5. entry->addr: 0x7ffe000, entry->len: 0x2000, entry->size: 0x14, entry->type: 0x2
 6. entry->addr: 0xfffc0000, entry->len: 0x40000, entry->size: 0x14, entry->type: 0x2
+
+Defination of grub memory type
+
+include/grub/memory.h:26
+
+typedef enum grub_memory_type
+  {
+    GRUB_MEMORY_AVAILABLE = 1,
+    GRUB_MEMORY_RESERVED = 2,
+    GRUB_MEMORY_ACPI = 3,
+    GRUB_MEMORY_NVS = 4,
+    GRUB_MEMORY_BADRAM = 5,
+    GRUB_MEMORY_CODE = 20,
+    /* This one is special: it's used internally but is never reported
+       by firmware. */
+    GRUB_MEMORY_HOLE = 21
+  } grub_memory_type_t;
+
 -----------------------------------------------------------------------
+
 grub-core/kern/i386/pc/mmap.c:141
 
 grub_err_t
@@ -199,4 +225,79 @@ grub_machine_mmap_iterate (grub_memory_hook_t hook)
 
   return 0;
 }
+
+-----------------------------------------------------------------------
+
+grub-core/kern/mm.c:108
+
+/* Initialize a region starting from ADDR and whose size is SIZE,
+   to use it as free space.  */
+void
+grub_mm_init_region (void *addr, grub_size_t size)
+{
+  grub_mm_header_t h;
+  grub_mm_region_t r, *p, q;
+
+#if 0
+  grub_printf ("Using memory for heap: start=%p, end=%p\n", addr, addr + (unsigned int) size);
+#endif
+
+  /* Allocate a region from the head.  */
+  r = (grub_mm_region_t) ALIGN_UP ((grub_addr_t) addr, GRUB_MM_ALIGN);
+  size -= (char *) r - (char *) addr + sizeof (*r);
+
+  /* If this region is too small, ignore it.  */
+  if (size < GRUB_MM_ALIGN)
+    return;
+
+  h = (grub_mm_header_t) (r + 1);
+  h->next = h;
+  h->magic = GRUB_MM_FREE_MAGIC;
+  h->size = (size >> GRUB_MM_ALIGN_LOG2);
+
+  r->first = h;
+  r->pre_size = (grub_addr_t) r - (grub_addr_t) addr;
+  r->size = (h->size << GRUB_MM_ALIGN_LOG2);
+
+  /* Find where to insert this region. Put a smaller one before bigger ones,
+     to prevent fragmentation.  */
+  for (p = &grub_mm_base, q = *p; q; p = &(q->next), q = *p)
+    if (q->size > r->size)
+      break;
+
+  *p = r;
+  r->next = q;
+}
+
+
+-----------------------------------------------------------------------
+
+grub-core/kern/i386/tsc.c:61
+
+void
+grub_tsc_init (void)
+{
+  if (grub_cpu_is_tsc_supported ())
+    {
+      tsc_boot_time = grub_get_tsc ();
+      calibrate_tsc ();
+      grub_install_get_time_ms (grub_tsc_get_time_ms);
+    }
+  else
+    {
+#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_IEEE1275)
+      grub_install_get_time_ms (grub_rtc_get_time_ms);
+#else
+      grub_fatal ("no TSC found");
+#endif
+    }
+}
+
 ```
+
+
+LINKS
+=============================================================================================================
+  [* E820](https://en.wikipedia.org/wiki/E820)
+  [* CPUID](https://en.wikipedia.org/wiki/CPUID)
+  [* TSC](https://en.wikipedia.org/wiki/Time_Stamp_Counter)
