@@ -26,10 +26,9 @@ Function grub_register_exported_symbols could be found in grub-core/symlist.c, s
 
 All loaded modules will be stored in grub_dl_head, it's a global variable. Before executing grub_load_modules, no modules stored in it, after load first module successfully, check it again, we can find fshelp stored in it. GRUB consists of several images: a variety of bootstrap images for starting GRUB in various ways, a kernel image, and a set of modules which are combined with the kernel image to form a core image, what grub_load_modules do is load modules included in core image.
 
-```grub_load_modules
--------------------------------------------------------------------------------------------------------------
+The startup address of modules stored in grub_modbase.
 
--------------------------------------------------------------------------------------------------------------
+```grub_load_modules
 grub-core/kern/main.c:50
 
 /* Load all modules in core.  */
@@ -55,6 +54,80 @@ $4 = 0x7ffc990 "fshelp"
     if (grub_errno)
       grub_print_error ();
   }
+}
+
+-------------------------------------------------------------------------------------------------------------
+1. mod->name: 0x7ffc990 "fshelp", mod->init: (void (*)(struct grub_dl *)) 0x0
+-------------------------------------------------------------------------------------------------------------
+
+grub-core/kern/dl.c:594
+
+/* Load a module from core memory.  */
+grub_dl_t
+grub_dl_load_core (void *addr, grub_size_t size)
+{
+  Elf_Ehdr *e;
+  grub_dl_t mod;
+
+  grub_dprintf ("modules", "module at %p, size 0x%lx\n", addr,
+                (unsigned long) size);
+  e = addr;
+  if (grub_dl_check_header (e, size))
+    return 0;
+
+  if (e->e_type != ET_REL)
+    {
+      grub_error (GRUB_ERR_BAD_MODULE, N_("this ELF file is not of the right type"));
+      return 0;
+    }
+
+  /* Make sure that every section is within the core.  */
+  if (size < e->e_shoff + e->e_shentsize * e->e_shnum)
+    {
+      grub_error (GRUB_ERR_BAD_OS, "ELF sections outside core");
+      return 0;
+    }
+
+  mod = (grub_dl_t) grub_zalloc (sizeof (*mod));
+  if (! mod)
+    return 0;
+
+  mod->ref_count = 1;
+
+  grub_dprintf ("modules", "relocating to %p\n", mod);
+  /* Me, Vladimir Serbinenko, hereby I add this module check as per new
+     GNU module policy. Note that this license check is informative only.
+     Modules have to be licensed under GPLv3 or GPLv3+ (optionally
+     multi-licensed under other licences as well) independently of the
+     presence of this check and solely by linking (module loading in GRUB
+     constitutes linking) and GRUB core being licensed under GPLv3+.
+     Be sure to understand your license obligations.
+  */
+  if (grub_dl_check_license (e)
+      || grub_dl_resolve_name (mod, e)
+      || grub_dl_resolve_dependencies (mod, e)
+      || grub_dl_load_segments (mod, e)
+      || grub_dl_resolve_symbols (mod, e)
+      || grub_arch_dl_relocate_symbols (mod, e))
+    {
+      mod->fini = 0;
+      grub_dl_unload (mod);
+      return 0;
+    }
+
+  grub_dl_flush_cache (mod);
+
+  grub_dprintf ("modules", "module name: %s\n", mod->name);
+  grub_dprintf ("modules", "init function: %p\n", mod->init);
+  grub_dl_call_init (mod);
+
+  if (grub_dl_add (mod))
+    {
+      grub_dl_unload (mod);
+      return 0;
+    }
+
+  return mod;
 }
 
 ```
