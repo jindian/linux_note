@@ -298,6 +298,6 @@ grub_tsc_init (void)
 
 LINKS
 =============================================================================================================
-  [* E820](https://en.wikipedia.org/wiki/E820)
-  [* CPUID](https://en.wikipedia.org/wiki/CPUID)
-  [* TSC](https://en.wikipedia.org/wiki/Time_Stamp_Counter)
+  * [E820](https://en.wikipedia.org/wiki/E820)
+  * [CPUID](https://en.wikipedia.org/wiki/CPUID)
+  * [TSC](https://en.wikipedia.org/wiki/Time_Stamp_Counter)
