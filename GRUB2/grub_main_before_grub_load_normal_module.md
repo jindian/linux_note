@@ -361,3 +361,23 @@ grub_register_core_commands () at kern/corecmd.c:185
                          N_("MODULE"), N_("Insert a module."));
 }
 ```
+
+
+
+```grub_load_config
+static void
+grub_load_config (void)
+{
+  struct grub_module_header *header;
+  FOR_MODULES (header)
+  {
+    /* Not an embedded config, skip.  */
+    if (header->type != OBJ_TYPE_CONFIG)
+      continue;
+
+    grub_parser_execute ((char *) header +
+                         sizeof (struct grub_module_header));
+    break;
+  }
+}
+```
