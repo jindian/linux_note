@@ -18,7 +18,7 @@ Get values from grub modules combined with grub core image, set root and prefix 
 1. Get values from grub modules.
 2. Set write hook for root environment variable with grub_register_variable_hook, the hook will be involved when update root environment variable, inside grub_register_variable_hook, first get environment variable from hash table, if not exists, allocate memory storing environment variable and insert it to hash table: grub_current_context. Every enviroment variable has a hash key which calculated with its name, with the key to find its information from hash table.
 3. Get boot location with grub_machine_get_bootlocation
-
+4. Set prefix and root environment variables.
 
 
 ```grub_set_prefix_and_root
