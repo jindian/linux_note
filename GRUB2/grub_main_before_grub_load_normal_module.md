@@ -16,7 +16,8 @@ Before get to grub_load_normal_module, there are several routines, let's check t
 Get values from grub modules combined with grub core image, set root and prefix environment variables.
 
 1. Get values from grub modules.
-2. Set write hook for root environment variable, the hook will be involved when update root environment variable.
+2. Set write hook for root environment variable with grub_register_variable_hook, the hook will be involved when update root environment variable, inside grub_register_variable_hook, first get environment variable from hash table, if not exists, allocate memory storing environment variable and insert it to hash table grub_current_context. Every enviroment variable has a hash key which calculated from its name, with the key to find its information from hash table.
+3. 
 
 
 
