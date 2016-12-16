@@ -362,7 +362,7 @@ grub_register_core_commands () at kern/corecmd.c:185
 }
 ```
 
-
+Get comand and arguments from configuration in grub core image, execute the command with configured arguments.
 
 ```grub_load_config
 static void
@@ -468,9 +468,25 @@ $5 = {{from_state = GRUB_PARSER_STATE_TEXT,
     from_state = GRUB_PARSER_STATE_QVARNAME2, 
     to_state = GRUB_PARSER_STATE_DQUOTE, input = 125 '}', keep_value = 0}, {
     from_state = 0, to_state = 0, input = 0 '\000', keep_value = 0}}
-(gdb) 
+(gdb) break kern/parser.c:88
+Breakpoint 4 at 0xddb0: file kern/parser.c, line 88.
+(gdb) c
+Continuing.
 
+Breakpoint 4, grub_parser_cmdline_state (state=GRUB_PARSER_STATE_TEXT, 
+    c=115 's', result=result@entry=0x7fa5b "") at kern/parser.c:89
+89	    transition = &default_transition;
+(gdb) p transition->from_state 
+$6 = 0
 (gdb) n
+92	    *result = c;
+(gdb) p transition->keep_value 
+$7 = 1
+(gdb) n
+95	  return transition->to_state;
+(gdb) 
+96	}
+(gdb) 
 grub_parser_split_cmdline (
     cmdline=cmdline@entry=0x7ff81f0 "search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root  ", getline=getline@entry=0x7ff98, argc=argc@entry=0x7ff6c, 
     argv=0x7ff70) at kern/parser.c:170
@@ -495,10 +511,87 @@ $10 = 0x7fb34 ""
 $11 = 0x7fb35 ""
 (gdb) p (char*)0x7fb34
 $12 = 0x7fb34 "s"
+-------------------------------------------------------------------------------------------------------------
+......
+-------------------------------------------------------------------------------------------------------------
+(gdb) 
+179		      if (newstate == GRUB_PARSER_STATE_TEXT
+(gdb) 
+180			  && state != GRUB_PARSER_STATE_ESC && grub_isspace (use))
+(gdb) p use
+$11 = 32 ' '
+(gdb) n
+184			  if (bp != buffer && *(bp - 1))
+(gdb) p buffer 
+$12 = "search.fs_uuid", '\000' <repeats 706 times>...
+(gdb) n
+186			      *(bp++) = '\0';
+(gdb) 
+187			      (*argc)++;
+(gdb) p argc
+$13 = (int *) 0x7ff6c
+(gdb) p *argc
+$14 = 0
+(gdb) n
+193		  state = newstate;
+(gdb) p *argc
+$15 = 1
+(gdb) break kern/parser.c:200
+Breakpoint 5 at 0xde29: file kern/parser.c, line 200.
+(gdb) c
+Continuing.
 
+Breakpoint 5, grub_parser_split_cmdline (
+    cmdline=cmdline@entry=0x7ff81f0 "search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root  ", getline=getline@entry=0x7ff98, argc=argc@entry=0x7ff6c, 
+    argv=0x7ff70) at kern/parser.c:200
+200	  add_var (GRUB_PARSER_STATE_TEXT);
+(gdb) p buffer 
+$16 = "search.fs_uuid\000a6f72da4-5a32-4b43-9a02-d9447c833f94\000root", '\000' <repeats 664 times>...
+(gdb) p *argc
+$18 = 3
+Breakpoint 6 at 0xdfdc: file kern/parser.c, line 232.
+(gdb) c
+Continuing.
 
-
-
+Breakpoint 6, grub_parser_split_cmdline (
+    cmdline=cmdline@entry=0x7ff81f0 "search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root  ", getline=getline@entry=0x7ff98, argc=argc@entry=0x7ff6c, 
+    argv=0x7ff70) at kern/parser.c:232
+232	  return 0;
+(gdb) p *argv[0]
+$32 = 0x7ff81a0 "search.fs_uuid"
+(gdb) p *argv[1]
+$33 = 0x10b79b "set prefix=($root)/boot/grub\n"
+(gdb) p *argv[2]
+$34 = 0x10b79b "set prefix=($root)/boot/grub\n"
+(gdb) p *argv[3]
+$35 = 0x7ffec "\360\377\a"
+(gdb) p *argc
+$36 = 3
+(gdb) n
+233	}
+(gdb) 
+grub_rescue_parse_line (
+    line=0x7ff81f0 "search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root  ", getline=getline@entry=0x7ff98) at kern/rescue_parser.c:39
+39	  if (n == 0)
+(gdb) p n
+$37 = 3
+(gdb) n
+44	  if (n == 1 && grub_strchr (line, '='))
+(gdb) n
+54	  name = args[0];
+(gdb) 
+57	  if (*name == '\0')
+(gdb) p name
+$38 = 0x7ff81a0 "search.fs_uuid"
+(gdb) n
+60	  cmd = grub_command_find (name);
+(gdb) n
+63	      (cmd->func) (cmd, n - 1, &args[1]);
+(gdb) p args[1]
+$41 = 0x7ff81af "a6f72da4-5a32-4b43-9a02-d9447c833f94"
+(gdb) p args[2]
+$42 = 0x7ff81d4 "root"
+(gdb) 
 
 
     break;
