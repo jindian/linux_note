@@ -250,3 +250,32 @@ $30 = 0x7ff82a0 "hd0"
 }
 
 ```
+
+Export environment variable root and prefix with grub_env_export in which we can find global of a specific variable set as 1.
+
+```export_environment_variable
+grub-core/kern/env.c:241
+
+grub_err_t
+grub_env_export (const char *name)
+{
+  struct grub_env_var *var;
+
+  var = grub_env_find (name);
+(gdb) p name
+$31 = 0xe9b8 "root"
+  if (! var)
+    {
+      grub_err_t err;
+
+      err = grub_env_set (name, "");
+      if (err)
+        return err;
+      var = grub_env_find (name);
+    }
+  var->global = 1;
+
+  return GRUB_ERR_NONE;
+}
+
+```
