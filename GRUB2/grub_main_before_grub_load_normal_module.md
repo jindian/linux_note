@@ -13,7 +13,12 @@ Before get to grub_load_normal_module, there are several routines, let's check t
   grub_load_config ();
 ```
 
-Get values from prefix, set 
+Get values from grub modules combined with grub core image, set root and prefix environment variables.
+
+1. Get values from grub modules.
+2. Set write hook for root environment variable, the hook will be involved when update root environment variable.
+
+
 
 ```grub_set_prefix_and_root
 grub-core/kern/main.c:101
@@ -31,6 +36,10 @@ grub_set_prefix_and_root (void)
   FOR_MODULES (header)
     if (header->type == OBJ_TYPE_PREFIX)
       prefix = (char *) header + sizeof (struct grub_module_header);
+(gdb) p header->type 
+$8 = 3
+(gdb) p header
+$9 = (struct grub_module_header *) 0x10b7bc
 
   grub_register_variable_hook ("root", 0, grub_env_write_root);
 
