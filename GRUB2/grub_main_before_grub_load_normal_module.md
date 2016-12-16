@@ -179,10 +179,17 @@ $25 = 0x7ff82a3 ""
 103	  ptr += grub_strlen (ptr);
 (gdb) 
 104	  *ptr = 0;
-
+(gdb) n
+105	}
+(gdb) 
 
   if (!device && fwdevice)
     device = fwdevice;
+(gdb) p fwdevice 
+$26 = 0x7ff82a0 "hd0"
+(gdb) p device
+$27 = 0x7ff82a0 "hd0"
+
   else if (fwdevice && (device[0] == ',' || !device[0]))
     {
       /* We have a partition, but still need to fill in the drive.  */
@@ -215,6 +222,8 @@ $25 = 0x7ff82a3 ""
   else
     grub_free (fwdevice);
   if (fwpath && !path)
+(gdb) p fwpath 
+$28 = 0x0
     path = fwpath;
   else
     grub_free (fwpath);
@@ -226,9 +235,13 @@ $25 = 0x7ff82a3 ""
       if (prefix_set)
         {
           grub_env_set ("prefix", prefix_set);
+(gdb) p prefix_set 
+$29 = 0x7ff8190 "(hd0)/boot/grub"
           grub_free (prefix_set);
         }
       grub_env_set ("root", device);
+(gdb) p device
+$30 = 0x7ff82a0 "hd0"
     }
 
   grub_free (device);
