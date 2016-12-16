@@ -16,8 +16,8 @@ Before get to grub_load_normal_module, there are several routines, let's check t
 Get values from grub modules combined with grub core image, set root and prefix environment variables.
 
 1. Get values from grub modules.
-2. Set write hook for root environment variable with grub_register_variable_hook, the hook will be involved when update root environment variable, inside grub_register_variable_hook, first get environment variable from hash table, if not exists, allocate memory storing environment variable and insert it to hash table grub_current_context. Every enviroment variable has a hash key which calculated from its name, with the key to find its information from hash table.
-3. 
+2. Set write hook for root environment variable with grub_register_variable_hook, the hook will be involved when update root environment variable, inside grub_register_variable_hook, first get environment variable from hash table, if not exists, allocate memory storing environment variable and insert it to hash table: grub_current_context. Every enviroment variable has a hash key which calculated with its name, with the key to find its information from hash table.
+3. Get boot location with grub_machine_get_bootlocation
 
 
 
@@ -102,8 +102,22 @@ grub_register_variable_hook (name=name@entry=0xe9b8 "root",
     write_hook=write_hook@entry=0xc9c9 <grub_env_write_root>)
     at kern/env.c:231
 231	      var = grub_env_find (name);
+(gdb) n
+235	  var->read_hook = read_hook;
+(gdb) p var
+$15 = (struct grub_env_var *) 0x7ff8380
+(gdb) n
+236	  var->write_hook = write_hook;
+(gdb) 
+238	  return GRUB_ERR_NONE;
+(gdb) 
+239	}
+grub_set_prefix_and_root () at kern/main.c:117
+117	  if (prefix)
 
   if (prefix)
+(gdb) p prefix 
+$16 = 0x10b7c4 "/boot/grub"
     {
       char *pptr = NULL;
       if (prefix[0] == '(')
@@ -116,12 +130,56 @@ grub_register_variable_hook (name=name@entry=0xe9b8 "root",
             }
         }
       if (!pptr)
+(gdb) p pptr 
+$17 = 0x0
         pptr = prefix;
       if (pptr[0])
         path = grub_strdup (pptr);
     }
+(gdb) p path
+$18 = 0x7ff8320 "/boot/grub"
+(gdb) p device
+$19 = 0x0
   if ((!device || device[0] == ',' || !device[0]) || !path)
     grub_machine_get_bootlocation (&fwdevice, &fwpath);
+(gdb) s
+grub_machine_get_bootlocation (device=device@entry=0x7ffcc, 
+    path=path@entry=0x7ffd0) at kern/i386/pc/init.c:73
+73	  boot_drive = (grub_boot_device >> 24);
+(gdb) p /x grub_boot_device 
+$20 = 0x80ffffff
+(gdb) n
+74	  dos_part = (grub_boot_device >> 16);
+(gdb) p /x dos_part 
+$21 = 0xff
+(gdb) n
+75	  bsd_part = (grub_boot_device >> 8);
+(gdb) n
+79	  if (boot_drive == GRUB_BOOT_MACHINE_PXE_DL)
+(gdb) 
+88	  *device = grub_malloc (DEV_SIZE);
+(gdb) p *device
+$22 = 0x7ff82a0 ""
+90	  grub_snprintf (*device, DEV_SIZE,
+(gdb) p *device
+$23 = 0x7ff82a0 "hd0"
+(gdb) n
+93	  ptr += grub_strlen (ptr);
+(gdb) p ptr
+$24 = 0x7ff82a0 "hd0"
+(gdb) n
+95	  if (dos_part != 0xff)
+(gdb) p ptr
+$25 = 0x7ff82a3 ""
+(gdb) n
+98	  ptr += grub_strlen (ptr);
+(gdb) n
+100	  if (bsd_part != 0xff)
+(gdb) 
+103	  ptr += grub_strlen (ptr);
+(gdb) 
+104	  *ptr = 0;
+
 
   if (!device && fwdevice)
     device = fwdevice;
