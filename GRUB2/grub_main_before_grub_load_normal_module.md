@@ -373,10 +373,134 @@ grub_load_config (void)
   {
     /* Not an embedded config, skip.  */
     if (header->type != OBJ_TYPE_CONFIG)
+(gdb) break if header->type == 2
+Breakpoint 3 at 0xcc76: file kern/main.c, line 77.
+(gdb) c
+Continuing.
+
+Breakpoint 3, grub_load_config () at kern/main.c:77
+77	    if (header->type != OBJ_TYPE_CONFIG)
+(gdb) n
       continue;
 
     grub_parser_execute ((char *) header +
                          sizeof (struct grub_module_header));
+(gdb) p (char *) header + sizeof (struct grub_module_header)
+$2 = 0x10b760 "search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root  \nset prefix=($root)/boot/grub\n"
+(gdb) s
+grub_parser_execute () at kern/parser.c:236
+236	grub_parser_execute (char *source)
+(gdb) n
+259	  while (source)
+(gdb) 
+263	      getline (&line, 0);
+(gdb) n
+264	      grub_rescue_parse_line (line, getline);
+(gdb) p line
+$3 = 0x7ff81f0 "search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root  "
+(gdb) s
+grub_rescue_parse_line (
+    line=0x7ff81f0 "search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root  ", getline=getline@entry=0x7ff98) at kern/rescue_parser.c:36
+36	  if (grub_parser_split_cmdline (line, getline, &n, &args) || n < 0)
+(gdb) s
+grub_parser_split_cmdline (
+    cmdline=cmdline@entry=0x7ff81f0 "search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root  ", getline=getline@entry=0x7ff98, argc=argc@entry=0x7ff6c, 
+    argv=0x7ff70) at kern/parser.c:102
+102	{
+(gdb) n
+103	  grub_parser_state_t state = GRUB_PARSER_STATE_TEXT;
+(gdb) 
+107	  char *bp = buffer;
+(gdb) n
+108	  char *rd = (char *) cmdline;
+(gdb) 
+110	  char *vp = varname;
+(gdb) 
+146	  *argc = 0;
+(gdb) n
+149	      if (!rd || !*rd)
+(gdb) n
+157	      if (!rd)
+(gdb) 
+160	      for (; *rd; rd++)
+(gdb) p rd
+$4 = 0x7ff81f0 "search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root  "
+(gdb) n
+165		  newstate = grub_parser_cmdline_state (state, *rd, &use);
+(gdb) s
+grub_parser_cmdline_state (state=GRUB_PARSER_STATE_TEXT, c=115 's', 
+    result=result@entry=0x7fa5b "") at kern/parser.c:70
+70	  for (transition = state_transitions; transition->from_state; transition++)
+(gdb) p state_transitions 
+$5 = {{from_state = GRUB_PARSER_STATE_TEXT, 
+    to_state = GRUB_PARSER_STATE_QUOTE, input = 39 '\'', keep_value = 0}, {
+    from_state = GRUB_PARSER_STATE_TEXT, to_state = GRUB_PARSER_STATE_DQUOTE, 
+    input = 34 '"', keep_value = 0}, {from_state = GRUB_PARSER_STATE_TEXT, 
+    to_state = GRUB_PARSER_STATE_VAR, input = 36 '$', keep_value = 0}, {
+    from_state = GRUB_PARSER_STATE_TEXT, to_state = GRUB_PARSER_STATE_ESC, 
+    input = 92 '\\', keep_value = 0}, {from_state = GRUB_PARSER_STATE_ESC, 
+    to_state = GRUB_PARSER_STATE_TEXT, input = 0 '\000', keep_value = 1}, {
+    from_state = GRUB_PARSER_STATE_QUOTE, to_state = GRUB_PARSER_STATE_TEXT, 
+    input = 39 '\'', keep_value = 0}, {from_state = GRUB_PARSER_STATE_DQUOTE, 
+    to_state = GRUB_PARSER_STATE_TEXT, input = 34 '"', keep_value = 0}, {
+    from_state = GRUB_PARSER_STATE_DQUOTE, to_state = GRUB_PARSER_STATE_QVAR, 
+    input = 36 '$', keep_value = 0}, {from_state = GRUB_PARSER_STATE_VAR, 
+    to_state = GRUB_PARSER_STATE_VARNAME2, input = 123 '{', keep_value = 0}, {
+    from_state = GRUB_PARSER_STATE_VAR, to_state = GRUB_PARSER_STATE_VARNAME, 
+    input = 0 '\000', keep_value = 1}, {
+    from_state = GRUB_PARSER_STATE_VARNAME, 
+    to_state = GRUB_PARSER_STATE_TEXT, input = 32 ' ', keep_value = 1}, {
+    from_state = GRUB_PARSER_STATE_VARNAME, 
+    to_state = GRUB_PARSER_STATE_TEXT, input = 9 '\t', keep_value = 1}, {
+    from_state = GRUB_PARSER_STATE_VARNAME2, 
+    to_state = GRUB_PARSER_STATE_TEXT, input = 125 '}', keep_value = 0}, {
+---Type <return> to continue, or q <return> to quit---
+    from_state = GRUB_PARSER_STATE_QVAR, 
+    to_state = GRUB_PARSER_STATE_QVARNAME2, input = 123 '{', keep_value = 0}, 
+  {from_state = GRUB_PARSER_STATE_QVAR, 
+    to_state = GRUB_PARSER_STATE_QVARNAME, input = 0 '\000', keep_value = 1}, 
+  {from_state = GRUB_PARSER_STATE_QVARNAME, 
+    to_state = GRUB_PARSER_STATE_TEXT, input = 34 '"', keep_value = 0}, {
+    from_state = GRUB_PARSER_STATE_QVARNAME, 
+    to_state = GRUB_PARSER_STATE_DQUOTE, input = 32 ' ', keep_value = 1}, {
+    from_state = GRUB_PARSER_STATE_QVARNAME, 
+    to_state = GRUB_PARSER_STATE_DQUOTE, input = 9 '\t', keep_value = 1}, {
+    from_state = GRUB_PARSER_STATE_QVARNAME2, 
+    to_state = GRUB_PARSER_STATE_DQUOTE, input = 125 '}', keep_value = 0}, {
+    from_state = 0, to_state = 0, input = 0 '\000', keep_value = 0}}
+(gdb) 
+
+(gdb) n
+grub_parser_split_cmdline (
+    cmdline=cmdline@entry=0x7ff81f0 "search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root  ", getline=getline@entry=0x7ff98, argc=argc@entry=0x7ff6c, 
+    argv=0x7ff70) at kern/parser.c:170
+170		  add_var (newstate);
+(gdb) p newstate 
+$9 = GRUB_PARSER_STATE_TEXT
+(gdb) n
+172		  if (check_varstate (newstate))
+(gdb) n
+179		      if (newstate == GRUB_PARSER_STATE_TEXT
+(gdb) n
+180			  && state != GRUB_PARSER_STATE_ESC && grub_isspace (use))
+(gdb) 
+190		      else if (use)
+(gdb) 
+191			*(bp++) = use;
+(gdb) p bp
+$10 = 0x7fb34 ""
+(gdb) n
+193		  state = newstate;
+(gdb) p bp
+$11 = 0x7fb35 ""
+(gdb) p (char*)0x7fb34
+$12 = 0x7fb34 "s"
+
+
+
+
+
+
     break;
   }
 }
