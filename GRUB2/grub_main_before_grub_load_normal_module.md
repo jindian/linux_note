@@ -279,3 +279,85 @@ $31 = 0xe9b8 "root"
 }
 
 ```
+
+Register command set, unset, ls, insmod command to grub commmand, every command has a dedicated response function to process specific operation from console.
+
+```grub_register_core_commands
+grub-core/kern/corecmd.c:178
+
+void
+grub_register_core_commands (void)
+{
+  grub_command_t cmd;
+  cmd = grub_register_command ("set", grub_core_cmd_set,
+                               N_("[ENVVAR=VALUE]"),
+                               N_("Set an environment variable."));
+(gdb) s
+grub_register_command (description=0xe92f "Set an environment variable.", 
+    summary=0xe920 "[ENVVAR=VALUE]", func=0xa352 <grub_core_cmd_set>, 
+    name=0xe9d1 "set") at ../include/grub/command.h:96
+96	  return grub_register_command_prio (name, func, summary, description, 0);
+(gdb) s
+grub_register_command_prio (name=name@entry=0xe9d1 "set", 
+    func=func@entry=0xa352 <grub_core_cmd_set>, 
+    summary=summary@entry=0xe920 "[ENVVAR=VALUE]", 
+    description=0xe92f "Set an environment variable.", prio=0)
+    at kern/command.c:37
+37	  cmd = (grub_command_t) grub_zalloc (sizeof (*cmd));
+(gdb) n
+38	  if (! cmd)
+(gdb) p cmd
+$33 = (grub_command_t) 0x7ff8320
+(gdb) n
+41	  cmd->name = name;
+(gdb) 
+42	  cmd->func = func;
+(gdb) 
+43	  cmd->summary = (summary) ? summary : "";
+44	  cmd->description = description;
+(gdb) 
+46	  cmd->flags = 0;
+(gdb) 
+47	  cmd->prio = prio;
+(gdb) 
+49	  for (p = &grub_command_list, q = *p; q; p = &(q->next), q = q->next)
+(gdb) 
+53	      r = grub_strcmp (cmd->name, q->name);
+(gdb) 
+54	      if (r < 0)
+(gdb) 
+56	      if (r > 0)
+(gdb) 
+49	  for (p = &grub_command_list, q = *p; q; p = &(q->next), q = q->next)
+(gdb) 
+70	  if (q)
+(gdb) 
+68	  *p = cmd;
+(gdb) 
+69	  cmd->next = q;
+(gdb) 
+70	  if (q)
+(gdb) 
+74	  if (! inactive)
+(gdb) 
+72	  cmd->prev = p;
+(gdb) 
+74	  if (! inactive)
+(gdb) 
+75	    cmd->prio |= GRUB_COMMAND_FLAG_ACTIVE;
+(gdb) 
+78	}
+(gdb) 
+grub_register_core_commands () at kern/corecmd.c:185
+
+  if (cmd)
+    cmd->flags |= GRUB_COMMAND_FLAG_EXTRACTOR;
+  grub_register_command ("unset", grub_core_cmd_unset,
+                         N_("ENVVAR"),
+                         N_("Remove an environment variable."));
+  grub_register_command ("ls", grub_core_cmd_ls,
+                         N_("[ARG]"), N_("List devices or files."));
+  grub_register_command ("insmod", grub_core_cmd_insmod,
+                         N_("MODULE"), N_("Insert a module."));
+}
+```
