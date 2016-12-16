@@ -42,6 +42,65 @@ $8 = 3
 $9 = (struct grub_module_header *) 0x10b7bc
 
   grub_register_variable_hook ("root", 0, grub_env_write_root);
+(gdb) s
+grub_register_variable_hook (name=name@entry=0xe9b8 "root", 
+    read_hook=read_hook@entry=0x0, 
+    write_hook=write_hook@entry=0xc9c9 <grub_env_write_root>)
+    at kern/env.c:224
+224	  struct grub_env_var *var = grub_env_find (name);
+(gdb) n
+226	  if (! var)
+(gdb) p var
+$11 = (struct grub_env_var *) 0x0
+(gdb) n
+228	      if (grub_env_set (name, "") != GRUB_ERR_NONE)
+(gdb) s
+grub_env_set (name=0xe9b8 "root", val=0xee54 "") at kern/env.c:87
+87	  var = grub_env_find (name);
+(gdb) s
+grub_env_find (name=name@entry=0xe9b8 "root") at kern/env.c:46
+46	{
+(gdb) n
+48	  int idx = grub_env_hashval (name);
+(gdb) p name
+$12 = 0xe9b8 "root"
+(gdb) n
+51	  for (var = grub_current_context->vars[idx]; var; var = var->next)
+(gdb) p idx
+$13 = 11
+(gdb) n
+55	  return 0;
+(gdb) p var
+$14 = (struct grub_env_var *) 0x0
+(gdb) n
+56	}
+(gdb) 
+grub_env_set (name=0xe9b8 "root", val=0xee54 "") at kern/env.c:88
+88	  if (var)
+(gdb) n
+108	  var = grub_zalloc (sizeof (*var));
+(gdb) 
+109	  if (! var)
+(gdb) 
+112	  var->name = grub_strdup (name);
+(gdb) 
+113	  if (! var->name)
+(gdb) 
+116	  var->value = grub_strdup (val);
+(gdb) 
+117	  if (! var->value)
+(gdb) 
+120	  grub_env_insert (grub_current_context, var);
+(gdb) n
+122	  return GRUB_ERR_NONE;
+(gdb) 
+130	}
+(gdb) n
+grub_register_variable_hook (name=name@entry=0xe9b8 "root", 
+    read_hook=read_hook@entry=0x0, 
+    write_hook=write_hook@entry=0xc9c9 <grub_env_write_root>)
+    at kern/env.c:231
+231	      var = grub_env_find (name);
 
   if (prefix)
     {
