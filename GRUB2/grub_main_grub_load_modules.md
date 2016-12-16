@@ -57,18 +57,19 @@ $4 = 0x7ffc990 "fshelp"
 }
 
 -------------------------------------------------------------------------------------------------------------
-context when loading modules:
+All modules after loaded as follow, after load normal module, there will be more modules loaded.
 
-1. mod->name: 0x7ffc990 "fshelp", mod->init: (void (*)(struct grub_dl *)) 0x0
-2. mod->name: 0x7ffbe30 "ext2", mod->init: (void (*)(struct grub_dl *)) 0x7ffb629
-3. mod->name: 0x7ffa920 "part_msdos", mod->init: (void (*)(struct grub_dl *)) 0x7ffa558
-4. mod->name: 0x7ffa0a0 "biosdisk", mod->init: (void (*)(struct grub_dl *)) 0x7ff9929
-5. mod->name: 0x7ff8fd0 "search_fs_uuid", mod->init: (void (*)(struct grub_dl *)) 0x7ff8977
-6. mod->name: 0x7ff7d50 "boot", mod->init: (void (*)(struct grub_dl *)) 0x7ff77ca
-7. mod->name: 0x7ff70a0 "extcmd", mod->init: (void (*)(struct grub_dl *)) 0x0
-8. mod->name: 0x7ff5c50 "crypto", mod->init: (void (*)(struct grub_dl *)) 0x0
-9. mod->name: 0x7ff42c0 "terminal", mod->init: (void (*)(struct grub_dl *)) 0x7ff39c6
-10. mod->name: 0x7ff30d0 "gettext", mod->init: (void (*)(struct grub_dl *)) 0x7ff2692
+(gdb) print_all_modules 
+$1 = 0x7ff8fd0 "search_fs_uuid"
+$2 = (void (*)(struct grub_dl *)) 0x7ff8977
+$3 = 0x7ffa0a0 "biosdisk"
+$4 = (void (*)(struct grub_dl *)) 0x7ff9929
+$5 = 0x7ffa920 "part_msdos"
+$6 = (void (*)(struct grub_dl *)) 0x7ffa558
+$7 = 0x7ffbe30 "ext2"
+$8 = (void (*)(struct grub_dl *)) 0x7ffb629
+$9 = 0x7ffc990 "fshelp"
+$10 = (void (*)(struct grub_dl *)) 0x0
 -------------------------------------------------------------------------------------------------------------
 
 grub-core/kern/dl.c:594
