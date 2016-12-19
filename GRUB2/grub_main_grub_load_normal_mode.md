@@ -34,7 +34,7 @@ grub_load_normal_mode:
     |--grub_command_execute
         |--grub_command_find
             |--grub_named_list_find
-        |--cmd->func                                       //callback function of normal mode
+        |--cmd->func: grub_cmd_normal      //callback function of normal mode: grub_cmd_normal
 
 ```
 
@@ -135,6 +135,8 @@ $38 = (void (*)(struct grub_dl *)) 0x7ffb629
 $39 = 0x7ffc990 "fshelp"
 $40 = (void (*)(struct grub_dl *)) 0x0
 ```
+
+Find normal command in grub_command_list and involve callback function grub_cmd_normal.
 
 ```grub_load_normal_mode:
 
