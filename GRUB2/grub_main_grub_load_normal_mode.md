@@ -46,9 +46,14 @@ grub_load_normal_mode:
                             |--grub_gettext_init_ext
                     |--grub_register_variable_hook
                     |--read_config_file
-
-
+                        |--grub_env_get_menu
+                        |--grub_env_set_menu
+                        |--grub_normal_parse_line
+                    |--grub_show_menu
 ```
+
+Result of grub_show_menu:
+![result of grub_show_menu](/GRUB2/result_of_grub_show_menu.png)
 
 ```grub_load_normal_mode:
 
@@ -284,6 +289,10 @@ $49 = 0x7ff8030 "(hd0,msdos1)/boot/grub"
   if (! batch)
     {
       if (menu && menu->size)
+(gdb) p menu
+$4 = (grub_menu_t) 0x7ff19f0
+(gdb) p menu->size 
+$5 = 1
         {
           grub_show_menu (menu, nested, 0);
           if (nested)
