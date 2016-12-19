@@ -161,9 +161,12 @@ $1 = 0xe9b8 "root"
 
 Register command set, unset, ls, insmod command to grub commmand, every command has a dedicated response function to process specific operation from console. All grub commands stored in grub_command_list, allocate memory for new command and insert it to the list.
 
+Call stack of grub_register_core_command:
+```callstack
 grub_register_core_commands
-    |--grub_register_command_prio
+    |--grub_register_command
         |--grub_register_command_prio
+```
 
 ```grub_register_core_commands
 
