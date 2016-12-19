@@ -35,6 +35,9 @@ grub_load_normal_mode:
         |--grub_command_find
             |--grub_named_list_find
         |--cmd->func: grub_cmd_normal      //callback function of normal mode: grub_cmd_normal
+            |--grub_enter_normal_mode
+                |--grub_normal_execute
+                      
 
 ```
 
@@ -178,6 +181,108 @@ grub_named_list_find (grub_named_list_t head, const char *name)
 
   return NULL;
 }
+
+```
+
+In grub_cmd_normal, get grub configuration from specify directory in first partition, enter normal mode. In normal mode, first read lists and auto-loading, then read configuration information from grub.cfg, show grub menu and wait for response from end user.
+
+```grub_cmd_normal
+grub-core/normal/main.c:326
+
+/* Enter normal mode from rescue mode.  */
+static grub_err_t
+grub_cmd_normal (struct grub_command *cmd __attribute__ ((unused)),
+                 int argc, char *argv[])
+{
+  if (argc == 0)
+    {
+      /* Guess the config filename. It is necessary to make CONFIG static,
+         so that it won't get broken by longjmp.  */
+      char *config;
+      const char *prefix;
+
+      prefix = grub_env_get ("prefix");
+(gdb) p prefix
+$45 = 0x7ff8030 "(hd0,msdos1)/boot/grub"
+      if (prefix)
+        {
+          config = grub_xasprintf ("%s/grub.cfg", prefix);
+(gdb) p config
+$47 = 0x7ff7f20 "(hd0,msdos1)/boot/grub/grub.cfg"
+          if (! config)
+            goto quit;
+
+          grub_enter_normal_mode (config);
+          grub_free (config);
+        }
+      else
+        grub_enter_normal_mode (0);
+    }
+  else
+    grub_enter_normal_mode (argv[0]);
+
+quit:
+  return 0;
+}
+
+-------------------------------------------------------------------------------------------------------------
+
+grub-core/normal/main.c:314
+
+/* This starts the normal mode.  */
+void
+grub_enter_normal_mode (const char *config)
+{
+  nested_level++;
+  grub_normal_execute (config, 0, 0);
+  grub_cmdline_run (0);
+  nested_level--;
+  if (grub_normal_exit_level)
+    grub_normal_exit_level--;
+}
+
+-------------------------------------------------------------------------------------------------------------
+
+grub-core/normal/main.c:280
+
+/* Read the config file CONFIG and execute the menu interface or
+   the command line interface if BATCH is false.  */
+void
+grub_normal_execute (const char *config, int nested, int batch)
+{
+  grub_menu_t menu = 0;
+  const char *prefix;
+
+  if (! nested)
+(gdb) p nested
+$48 = 0
+    {
+      prefix = grub_env_get ("prefix");
+      read_lists (prefix);
+(gdb) p prefix
+$49 = 0x7ff8030 "(hd0,msdos1)/boot/grub"
+      grub_register_variable_hook ("prefix", NULL, read_lists_hook);
+    }
+
+  if (config)
+    {
+      menu = read_config_file (config);
+
+      /* Ignore any error.  */
+      grub_errno = GRUB_ERR_NONE;
+    }
+
+  if (! batch)
+    {
+      if (menu && menu->size)
+        {
+          grub_show_menu (menu, nested, 0);
+          if (nested)
+            grub_normal_free_menu (menu);
+        }
+    }
+}
+
 
 
 ```
