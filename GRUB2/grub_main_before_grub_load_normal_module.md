@@ -270,7 +270,7 @@ grub_register_command_prio (const char *name,
 }
 ```
 
-Get comand and arguments from configuration in grub core image, execute the command with configured arguments. We have two commands here with arguments here:
+Get comand and arguments from configuration in grub core image, execute the command with configured arguments. We have two commands:
 
 1. search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root
 2. set prefix=($root)/boot/grub
