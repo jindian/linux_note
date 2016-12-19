@@ -15,9 +15,9 @@ Before get to grub_load_normal_module, there are several routines, let's check t
 
 Get values from grub modules combined with grub core image, set root and prefix environment variables.
 
-1. Get values from grub modules.
+1. Get prefix from grub_modebase.
 2. Set write hook for root environment variable with grub_register_variable_hook, the hook will be involved when update root environment variable, inside grub_register_variable_hook, first get environment variable from hash table, if not exists, allocate memory storing environment variable and insert it to hash table: grub_current_context. Every enviroment variable has a hash key which calculated with its name, with the key to find its information from hash table.
-3. Get boot location with grub_machine_get_bootlocation
+3. Get boot location with grub_machine_get_bootlocation.
 4. Set prefix and root environment variables.
 
 
@@ -41,6 +41,8 @@ grub_set_prefix_and_root (void)
   grub_register_variable_hook ("root", 0, grub_env_write_root);
 
   if (prefix)
+(gdb) p prefix
+$1 = 0x10b7c4 "/boot/grub"
     {
       char *pptr = NULL;
       if (prefix[0] == '(')
@@ -56,9 +58,15 @@ grub_set_prefix_and_root (void)
         pptr = prefix;
       if (pptr[0])
         path = grub_strdup (pptr);
+(gdb) p path
+$2 = 0x7ff8320 "/boot/grub"
     }
   if ((!device || device[0] == ',' || !device[0]) || !path)
     grub_machine_get_bootlocation (&fwdevice, &fwpath);
+(gdb) p fwdevice 
+$3 = 0x7ff82a0 "hd0"
+(gdb) p fwpath 
+$4 = 0x0
 
   if (!device && fwdevice)
     device = fwdevice;
@@ -103,11 +111,15 @@ grub_set_prefix_and_root (void)
 
       prefix_set = grub_xasprintf ("(%s)%s", device, path ? : "");
       if (prefix_set)
+(gdb) p prefix_set
+$5 = 0x7ff8190 "(hd0)/boot/grub"
         {
           grub_env_set ("prefix", prefix_set);
           grub_free (prefix_set);
         }
       grub_env_set ("root", device);
+(gdb) p device
+$6 = 0x7ff82a0 "hd0"
     }
 
   grub_free (device);
