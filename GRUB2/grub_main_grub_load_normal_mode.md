@@ -40,7 +40,8 @@ grub_load_normal_mode:
                     |--read_lists
                         |--read_command_list
                         |--read_fs_list
-                      
+                        |--read_crypto_list
+                        |--read_terminal_list
 
 ```
 
@@ -187,7 +188,7 @@ grub_named_list_find (grub_named_list_t head, const char *name)
 
 ```
 
-In grub_cmd_normal, get grub configuration from specify directory in first partition, enter normal mode. In normal mode, first read lists and auto-loading, then read configuration information from grub.cfg, show grub menu and wait for response from end user.
+In grub_cmd_normal, autoload config lists in dedicated directory, get grub configuration from specify directory in first partition, enter normal mode. In normal mode, first read lists and auto-loading, then read configuration information from grub.cfg, show grub menu and wait for response from end user.
 
 ```grub_cmd_normal
 grub-core/normal/main.c:326
@@ -507,6 +508,209 @@ $61 = 0x7ff1c60 "(hd0,msdos1)/boot/grub/i386-pc/fs.lst"
 
   /* Set the hook.  */
   grub_fs_autoload_hook = autoload_fs_module;
+}
+
+-------------------------------------------------------------------------------------------------------------
+
+grub-core/normal/crypto.c:75
+
+/* Read the file crypto.lst for auto-loading.  */
+void
+read_crypto_list (const char *prefix)
+{
+  char *filename;
+  grub_file_t file;
+  char *buf = NULL;
+
+  if (!prefix)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return;
+    }
+
+  filename = grub_xasprintf ("%s/" GRUB_TARGET_CPU "-" GRUB_PLATFORM
+                             "/crypto.lst", prefix);
+  if (!filename)
+(gdb) p filename 
+$62 = 0x7ff1c60 "(hd0,msdos1)/boot/grub/i386-pc/crypto.lst"
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return;
+    }
+
+  file = grub_file_open (filename);
+  grub_free (filename);
+  if (!file)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return;
+    }
+
+  /* Override previous crypto.lst.  */
+  grub_crypto_spec_free ();
+
+  for (;; grub_free (buf))
+    {
+      char *p, *name;
+      struct load_spec *cur;
+
+      buf = grub_file_getline (file);
+
+      if (! buf)
+        break;
+
+      name = buf;
+      while (grub_isspace (name[0]))
+        name++;
+
+      p = grub_strchr (name, ':');
+      if (! p)
+        continue;
+
+      *p = '\0';
+      p++;
+      while (*p == ' ' || *p == '\t')
+        p++;
+
+      cur = grub_malloc (sizeof (*cur));
+      if (!cur)
+        {
+          grub_errno = GRUB_ERR_NONE;
+          continue;
+        }
+
+      cur->name = grub_strdup (name);
+      if (! name)
+        {
+          grub_errno = GRUB_ERR_NONE;
+          grub_free (cur);
+          continue;
+        }
+
+      if (! cur->modname)
+        {
+          grub_errno = GRUB_ERR_NONE;
+          grub_free (cur);
+          grub_free (cur->name);
+          continue;
+        }
+      cur->next = crypto_specs;
+      crypto_specs = cur;
+    }
+
+  grub_file_close (file);
+
+  grub_errno = GRUB_ERR_NONE;
+
+  grub_crypto_autoload_hook = grub_crypto_autoload;
+}
+
+-------------------------------------------------------------------------------------------------------------
+
+grub-core/normal/term.c
+
+/* Read the file terminal.lst for auto-loading.  */
+void
+read_terminal_list (const char *prefix)
+{
+  char *filename;
+  grub_file_t file;
+  char *buf = NULL;
+
+  if (!prefix)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return;
+    }
+
+  filename = grub_xasprintf ("%s/" GRUB_TARGET_CPU "-" GRUB_PLATFORM
+                             "/terminal.lst", prefix);
+  if (!filename)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return;
+    }
+
+  file = grub_file_open (filename);
+  grub_free (filename);
+  if (!file)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return;
+    }
+
+  /* Override previous terminal.lst.  */
+  grub_terminal_autoload_free ();
+
+  for (;; grub_free (buf))
+    {
+      char *p, *name;
+      struct grub_term_autoload *cur;
+      struct grub_term_autoload **target = NULL;
+
+      buf = grub_file_getline (file);
+
+      if (! buf)
+        break;
+
+      p = buf;
+      while (grub_isspace (p[0]))
+        p++;
+
+      switch (p[0])
+        {
+        case 'i':
+          target = &grub_term_input_autoload;
+          break;
+
+        case 'o':
+          target = &grub_term_output_autoload;
+          break;
+        }
+      if (!target)
+        continue;
+
+      name = p + 1;
+
+      p = grub_strchr (name, ':');
+      if (! p)
+        continue;
+      *p = 0;
+
+      p++;
+      while (*p == ' ' || *p == '\t')
+        p++;
+
+      cur = grub_malloc (sizeof (*cur));
+      if (!cur)
+        {
+          grub_errno = GRUB_ERR_NONE;
+          continue;
+        }
+
+      cur->name = grub_strdup (name);
+      if (! name)
+        {
+          grub_errno = GRUB_ERR_NONE;
+          grub_free (cur);
+          continue;
+        }
+
+      cur->modname = grub_strdup (p);
+      if (! cur->modname)
+        {
+          grub_errno = GRUB_ERR_NONE;
+          grub_free (cur->name);
+          grub_free (cur);
+          continue;
+        }
+      cur->next = *target;
+      *target = cur;
+    }
+
+  grub_file_close (file);
+
+  grub_errno = GRUB_ERR_NONE;
 }
 
 ```
