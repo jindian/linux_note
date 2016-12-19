@@ -34,7 +34,7 @@ grub_load_normal_mode:
     |--grub_command_execute
         |--grub_command_find
             |--grub_named_list_find
-        |--cmd->func: grub_cmd_normal      //callback function of normal mode: grub_cmd_normal
+        |--cmd->func: grub_cmd_normal                   //callback function of normal mode: grub_cmd_normal
             |--grub_enter_normal_mode
                 |--grub_normal_execute
                     |--read_lists
@@ -50,6 +50,10 @@ grub_load_normal_mode:
                         |--grub_env_set_menu
                         |--grub_normal_parse_line
                     |--grub_show_menu
+                        |--show_menu
+                            |--run_menu                 //wait for response from end user or timeout
+                            |--grub_menu_get_entry      //get selected entry after run menu
+                            |--grub_menu_execute_entry  //execute selected entry
 ```
 
 Result of grub_show_menu:
@@ -795,4 +799,70 @@ Breakpoint 4, grub_gettext_init_ext (ctx=0x7ff28d0 <main_context>,
   return err;
 }
 
+-------------------------------------------------------------------------------------------------------------
+
+grub-core/normal/menu.c:748
+
+grub_err_t
+grub_show_menu (grub_menu_t menu, int nested, int autoboot)
+{
+  grub_err_t err1, err2;
+
+  while (1)
+    {
+      err1 = show_menu (menu, nested, autoboot);
+      autoboot = 0;
+      grub_print_error ();
+
+      if (grub_normal_exit_level)
+        break;
+
+      err2 = grub_auth_check_authentication (NULL);
+      if (err2)
+        {
+          grub_print_error ();
+          grub_errno = GRUB_ERR_NONE;
+          continue;
+        }
+
+      break;
+    }
+
+  return err1;
+}
+
+-------------------------------------------------------------------------------------------------------------
+
+grub-core/normal/menu.c:717
+
+static grub_err_t
+show_menu (grub_menu_t menu, int nested, int autobooted)
+{
+  while (1)
+    {
+      int boot_entry;
+      grub_menu_entry_t e;
+      int auto_boot;
+
+      boot_entry = run_menu (menu, nested, &auto_boot);
+      if (boot_entry < 0)
+        break;
+
+      e = grub_menu_get_entry (menu, boot_entry);
+      if (! e)
+        continue; /* Menu is empty.  */
+
+      grub_cls ();
+
+      if (auto_boot)
+        grub_menu_execute_with_fallback (menu, e, autobooted,
+                                         &execution_callback, 0);
+      else
+        grub_menu_execute_entry (e, 0);
+      if (autobooted)
+        break;
+    }
+
+  return GRUB_ERR_NONE;
+}
 ```
