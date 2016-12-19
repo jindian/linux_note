@@ -9,5 +9,6 @@
   * [Preparation before grub_main](GRUB2/before_grub_main.md)
   * [grub_main: grub_machine_init](GRUB2/grub_main_grub_machine_init.md)
   * [grub_main: grub_load_moules](GRUB2/grub_main_grub_load_modules.md)
-  * [grub_main: before grub_load_normal_module](GRUB2/grub_main_before_grub_load_normal_module.md)
+  * [grub_main: before grub_load_normal_mode](GRUB2/grub_main_before_grub_load_normal_mode.md)
+  * [grub_main: grub_load_normal_mode](GRUB2/grub_main_grub_load_normal_mode.md)
 
