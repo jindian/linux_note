@@ -30,6 +30,11 @@ grub_load_normal_mode:
         |--grub_env_get
         |--grub_dl_get
         |--grub_dl_load_file
+    |--grub_print_error
+    |--grub_command_execute
+        |--grub_command_find
+            |--grub_named_list_find
+        |--cmd->func                                       //callback function of normal mode
 
 ```
 
@@ -129,4 +134,48 @@ $37 = 0x7ffbe30 "ext2"
 $38 = (void (*)(struct grub_dl *)) 0x7ffb629
 $39 = 0x7ffc990 "fshelp"
 $40 = (void (*)(struct grub_dl *)) 0x0
+```
+
+```grub_load_normal_mode:
+
+-------------------------------------------------------------------------------------------------------------
+
+include/grub/command.h:114
+
+static inline grub_err_t
+grub_command_execute (const char *name, int argc, char **argv)
+{
+  grub_command_t cmd;
+
+  cmd = grub_command_find (name);
+  return (cmd) ? cmd->func (cmd, argc, argv) : GRUB_ERR_FILE_NOT_FOUND;
+}
+
+-------------------------------------------------------------------------------------------------------------
+
+include/grub/command.h:108
+
+static inline grub_command_t
+grub_command_find (const char *name)
+{
+  return grub_named_list_find (GRUB_AS_NAMED_LIST (grub_command_list), name);
+}
+
+-------------------------------------------------------------------------------------------------------------
+
+grub-core/kern/list.c:24
+
+void *
+grub_named_list_find (grub_named_list_t head, const char *name)
+{
+  grub_named_list_t item;
+
+  FOR_LIST_ELEMENTS (item, head)
+    if (grub_strcmp (item->name, name) == 0)
+      return item;
+
+  return NULL;
+}
+
+
 ```
