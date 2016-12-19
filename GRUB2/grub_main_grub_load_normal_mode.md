@@ -1,7 +1,7 @@
 grub_main: grub_load_normal_mode
 ==============================================================================================================
 
-In grub_load_normal_mode, grub initialization load normal module and execute the normal mode.
+In grub_load_normal_mode, grub initialization load normal module and execute it.
 
 Before loading normal module, let's check loaded modules again:
 ```loaded_modules_before_normal
