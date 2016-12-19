@@ -20,7 +20,7 @@ Get values from grub modules combined with grub core image, set root and prefix 
 3. Get boot location with grub_machine_get_bootlocation.
 4. Set prefix and root environment variables.
 
-Call stack of grub_set_prefix_and_root:
+Call context of grub_set_prefix_and_root:
 ```grub_set_prefix_and_root
 grub_set_prefix_and_root
     |--grub_register_variable_hook
@@ -168,8 +168,8 @@ $1 = 0xe9b8 "root"
 
 Register command set, unset, ls, insmod command to grub commmand, every command has a dedicated response function to process specific operation from console. All grub commands stored in grub_command_list, allocate memory for new command and insert it to the list.
 
-Call stack of grub_register_core_command:
-```callstack
+Call context of grub_register_core_command:
+```grub_register_core_commands
 grub_register_core_commands
     |--grub_register_command
         |--grub_register_command_prio
@@ -275,7 +275,20 @@ Get comand and arguments from configuration in grub core image, execute the comm
 1. search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root
 2. set prefix=($root)/boot/grub
 
+Call context of grub_load_config
 ```grub_load_config
+grub_load_config
+    |--grub_parser_execute
+        |--getline
+        |--grub_rescue_parse_line
+            |--grub_parser_split_cmdline
+            |--grub_command_find
+            |--cmd->func                            //involve command function if exists
+```
+
+```grub_load_config
+grub-core/kern/main.c:70
+
 static void
 grub_load_config (void)
 {
@@ -284,228 +297,249 @@ grub_load_config (void)
   {
     /* Not an embedded config, skip.  */
     if (header->type != OBJ_TYPE_CONFIG)
-(gdb) break if header->type == 2
-Breakpoint 3 at 0xcc76: file kern/main.c, line 77.
-(gdb) c
-Continuing.
-
-Breakpoint 3, grub_load_config () at kern/main.c:77
-77	    if (header->type != OBJ_TYPE_CONFIG)
-(gdb) n
       continue;
 
     grub_parser_execute ((char *) header +
                          sizeof (struct grub_module_header));
-(gdb) p (char *) header + sizeof (struct grub_module_header)
-$2 = 0x10b760 "search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root  \nset prefix=($root)/boot/grub\n"
-(gdb) s
-grub_parser_execute () at kern/parser.c:236
-236	grub_parser_execute (char *source)
-(gdb) n
-259	  while (source)
-(gdb) 
-263	      getline (&line, 0);
-(gdb) n
-264	      grub_rescue_parse_line (line, getline);
-(gdb) p line
-$3 = 0x7ff81f0 "search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root  "
-(gdb) s
-grub_rescue_parse_line (
-    line=0x7ff81f0 "search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root  ", getline=getline@entry=0x7ff98) at kern/rescue_parser.c:36
-36	  if (grub_parser_split_cmdline (line, getline, &n, &args) || n < 0)
-(gdb) s
-grub_parser_split_cmdline (
-    cmdline=cmdline@entry=0x7ff81f0 "search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root  ", getline=getline@entry=0x7ff98, argc=argc@entry=0x7ff6c, 
-    argv=0x7ff70) at kern/parser.c:102
-102	{
-(gdb) n
-103	  grub_parser_state_t state = GRUB_PARSER_STATE_TEXT;
-(gdb) 
-107	  char *bp = buffer;
-(gdb) n
-108	  char *rd = (char *) cmdline;
-(gdb) 
-110	  char *vp = varname;
-(gdb) 
-146	  *argc = 0;
-(gdb) n
-149	      if (!rd || !*rd)
-(gdb) n
-157	      if (!rd)
-(gdb) 
-160	      for (; *rd; rd++)
-(gdb) p rd
-$4 = 0x7ff81f0 "search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root  "
-(gdb) n
-165		  newstate = grub_parser_cmdline_state (state, *rd, &use);
-(gdb) s
-grub_parser_cmdline_state (state=GRUB_PARSER_STATE_TEXT, c=115 's', 
-    result=result@entry=0x7fa5b "") at kern/parser.c:70
-70	  for (transition = state_transitions; transition->from_state; transition++)
-(gdb) p state_transitions 
-$5 = {{from_state = GRUB_PARSER_STATE_TEXT, 
-    to_state = GRUB_PARSER_STATE_QUOTE, input = 39 '\'', keep_value = 0}, {
-    from_state = GRUB_PARSER_STATE_TEXT, to_state = GRUB_PARSER_STATE_DQUOTE, 
-    input = 34 '"', keep_value = 0}, {from_state = GRUB_PARSER_STATE_TEXT, 
-    to_state = GRUB_PARSER_STATE_VAR, input = 36 '$', keep_value = 0}, {
-    from_state = GRUB_PARSER_STATE_TEXT, to_state = GRUB_PARSER_STATE_ESC, 
-    input = 92 '\\', keep_value = 0}, {from_state = GRUB_PARSER_STATE_ESC, 
-    to_state = GRUB_PARSER_STATE_TEXT, input = 0 '\000', keep_value = 1}, {
-    from_state = GRUB_PARSER_STATE_QUOTE, to_state = GRUB_PARSER_STATE_TEXT, 
-    input = 39 '\'', keep_value = 0}, {from_state = GRUB_PARSER_STATE_DQUOTE, 
-    to_state = GRUB_PARSER_STATE_TEXT, input = 34 '"', keep_value = 0}, {
-    from_state = GRUB_PARSER_STATE_DQUOTE, to_state = GRUB_PARSER_STATE_QVAR, 
-    input = 36 '$', keep_value = 0}, {from_state = GRUB_PARSER_STATE_VAR, 
-    to_state = GRUB_PARSER_STATE_VARNAME2, input = 123 '{', keep_value = 0}, {
-    from_state = GRUB_PARSER_STATE_VAR, to_state = GRUB_PARSER_STATE_VARNAME, 
-    input = 0 '\000', keep_value = 1}, {
-    from_state = GRUB_PARSER_STATE_VARNAME, 
-    to_state = GRUB_PARSER_STATE_TEXT, input = 32 ' ', keep_value = 1}, {
-    from_state = GRUB_PARSER_STATE_VARNAME, 
-    to_state = GRUB_PARSER_STATE_TEXT, input = 9 '\t', keep_value = 1}, {
-    from_state = GRUB_PARSER_STATE_VARNAME2, 
-    to_state = GRUB_PARSER_STATE_TEXT, input = 125 '}', keep_value = 0}, {
----Type <return> to continue, or q <return> to quit---
-    from_state = GRUB_PARSER_STATE_QVAR, 
-    to_state = GRUB_PARSER_STATE_QVARNAME2, input = 123 '{', keep_value = 0}, 
-  {from_state = GRUB_PARSER_STATE_QVAR, 
-    to_state = GRUB_PARSER_STATE_QVARNAME, input = 0 '\000', keep_value = 1}, 
-  {from_state = GRUB_PARSER_STATE_QVARNAME, 
-    to_state = GRUB_PARSER_STATE_TEXT, input = 34 '"', keep_value = 0}, {
-    from_state = GRUB_PARSER_STATE_QVARNAME, 
-    to_state = GRUB_PARSER_STATE_DQUOTE, input = 32 ' ', keep_value = 1}, {
-    from_state = GRUB_PARSER_STATE_QVARNAME, 
-    to_state = GRUB_PARSER_STATE_DQUOTE, input = 9 '\t', keep_value = 1}, {
-    from_state = GRUB_PARSER_STATE_QVARNAME2, 
-    to_state = GRUB_PARSER_STATE_DQUOTE, input = 125 '}', keep_value = 0}, {
-    from_state = 0, to_state = 0, input = 0 '\000', keep_value = 0}}
-(gdb) break kern/parser.c:88
-Breakpoint 4 at 0xddb0: file kern/parser.c, line 88.
-(gdb) c
-Continuing.
-
-Breakpoint 4, grub_parser_cmdline_state (state=GRUB_PARSER_STATE_TEXT, 
-    c=115 's', result=result@entry=0x7fa5b "") at kern/parser.c:89
-89	    transition = &default_transition;
-(gdb) p transition->from_state 
-$6 = 0
-(gdb) n
-92	    *result = c;
-(gdb) p transition->keep_value 
-$7 = 1
-(gdb) n
-95	  return transition->to_state;
-(gdb) 
-96	}
-(gdb) 
-grub_parser_split_cmdline (
-    cmdline=cmdline@entry=0x7ff81f0 "search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root  ", getline=getline@entry=0x7ff98, argc=argc@entry=0x7ff6c, 
-    argv=0x7ff70) at kern/parser.c:170
-170		  add_var (newstate);
-(gdb) p newstate 
-$9 = GRUB_PARSER_STATE_TEXT
-(gdb) n
-172		  if (check_varstate (newstate))
-(gdb) n
-179		      if (newstate == GRUB_PARSER_STATE_TEXT
-(gdb) n
-180			  && state != GRUB_PARSER_STATE_ESC && grub_isspace (use))
-(gdb) 
-190		      else if (use)
-(gdb) 
-191			*(bp++) = use;
-(gdb) p bp
-$10 = 0x7fb34 ""
-(gdb) n
-193		  state = newstate;
-(gdb) p bp
-$11 = 0x7fb35 ""
-(gdb) p (char*)0x7fb34
-$12 = 0x7fb34 "s"
--------------------------------------------------------------------------------------------------------------
-......
--------------------------------------------------------------------------------------------------------------
-(gdb) 
-179		      if (newstate == GRUB_PARSER_STATE_TEXT
-(gdb) 
-180			  && state != GRUB_PARSER_STATE_ESC && grub_isspace (use))
-(gdb) p use
-$11 = 32 ' '
-(gdb) n
-184			  if (bp != buffer && *(bp - 1))
-(gdb) p buffer 
-$12 = "search.fs_uuid", '\000' <repeats 706 times>...
-(gdb) n
-186			      *(bp++) = '\0';
-(gdb) 
-187			      (*argc)++;
-(gdb) p argc
-$13 = (int *) 0x7ff6c
-(gdb) p *argc
-$14 = 0
-(gdb) n
-193		  state = newstate;
-(gdb) p *argc
-$15 = 1
-(gdb) break kern/parser.c:200
-Breakpoint 5 at 0xde29: file kern/parser.c, line 200.
-(gdb) c
-Continuing.
-
-Breakpoint 5, grub_parser_split_cmdline (
-    cmdline=cmdline@entry=0x7ff81f0 "search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root  ", getline=getline@entry=0x7ff98, argc=argc@entry=0x7ff6c, 
-    argv=0x7ff70) at kern/parser.c:200
-200	  add_var (GRUB_PARSER_STATE_TEXT);
-(gdb) p buffer 
-$16 = "search.fs_uuid\000a6f72da4-5a32-4b43-9a02-d9447c833f94\000root", '\000' <repeats 664 times>...
-(gdb) p *argc
-$18 = 3
-Breakpoint 6 at 0xdfdc: file kern/parser.c, line 232.
-(gdb) c
-Continuing.
-
-Breakpoint 6, grub_parser_split_cmdline (
-    cmdline=cmdline@entry=0x7ff81f0 "search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root  ", getline=getline@entry=0x7ff98, argc=argc@entry=0x7ff6c, 
-    argv=0x7ff70) at kern/parser.c:232
-232	  return 0;
-(gdb) p *argv[0]
-$32 = 0x7ff81a0 "search.fs_uuid"
-(gdb) p *argv[1]
-$33 = 0x10b79b "set prefix=($root)/boot/grub\n"
-(gdb) p *argv[2]
-$34 = 0x10b79b "set prefix=($root)/boot/grub\n"
-(gdb) p *argv[3]
-$35 = 0x7ffec "\360\377\a"
-(gdb) p *argc
-$36 = 3
-(gdb) n
-233	}
-(gdb) 
-grub_rescue_parse_line (
-    line=0x7ff81f0 "search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root  ", getline=getline@entry=0x7ff98) at kern/rescue_parser.c:39
-39	  if (n == 0)
-(gdb) p n
-$37 = 3
-(gdb) n
-44	  if (n == 1 && grub_strchr (line, '='))
-(gdb) n
-54	  name = args[0];
-(gdb) 
-57	  if (*name == '\0')
-(gdb) p name
-$38 = 0x7ff81a0 "search.fs_uuid"
-(gdb) n
-60	  cmd = grub_command_find (name);
-(gdb) n
-63	      (cmd->func) (cmd, n - 1, &args[1]);
-(gdb) p args[1]
-$41 = 0x7ff81af "a6f72da4-5a32-4b43-9a02-d9447c833f94"
-(gdb) p args[2]
-$42 = 0x7ff81d4 "root"
-(gdb) 
-
-
     break;
   }
 }
+
+-------------------------------------------------------------------------------------------------------------
+
+grub-core/kern/parser.c:235
+
+grub_err_t
+grub_parser_execute (char *source)
+{
+  auto grub_err_t getline (char **line, int cont);
+  grub_err_t getline (char **line, int cont __attribute__ ((unused)))
+  {
+    char *p;
+
+    if (!source)
+      {
+        *line = 0;
+        return 0;
+      }
+
+    p = grub_strchr (source, '\n');
+
+    if (p)
+      *line = grub_strndup (source, p - source);
+    else
+      *line = grub_strdup (source);
+    source = p ? p + 1 : 0;
+    return 0;
+  }
+
+  while (source)
+(gdb) p source 
+$1 = 0x10b760 "search.fs_uuid a6f72da4-5a32-4b43-9a02-d9447c833f94 root  \nset prefix=($root)/boot/grub\n"
+    {
+      char *line;
+
+      getline (&line, 0);
+      grub_rescue_parse_line (line, getline);
+      grub_free (line);
+    }
+
+  return grub_errno;
+}
+
+-------------------------------------------------------------------------------------------------------------
+
+grub-core/kern/rescue_parser.c:28
+
+grub_err_t
+grub_rescue_parse_line (char *line, grub_reader_getline_t getline)
+{
+  char *name;
+  int n;
+  grub_command_t cmd;
+  char **args;
+
+  if (grub_parser_split_cmdline (line, getline, &n, &args) || n < 0)
+    return grub_errno;
+
+  if (n == 0)
+    return GRUB_ERR_NONE;
+
+  /* In case of an assignment set the environment accordingly
+     instead of calling a function.  */
+  if (n == 1 && grub_strchr (line, '='))
+    {
+      char *val = grub_strchr (args[0], '=');
+      val[0] = 0;
+      grub_env_set (args[0], val + 1);
+      val[0] = '=';
+      goto quit;
+    }
+
+  /* Get the command name.  */
+  name = args[0];
+
+  /* If nothing is specified, restart.  */
+  if (*name == '\0')
+    goto quit;
+
+  cmd = grub_command_find (name);
+  if (cmd)
+    {
+      (cmd->func) (cmd, n - 1, &args[1]);
+    }
+  else
+    {
+      grub_printf_ (N_("Unknown command `%s'.\n"), name);
+      if (grub_command_find ("help"))
+        grub_printf ("Try `help' for usage\n");
+    }
+
+ quit:
+  grub_free (args[0]);
+  grub_free (args);
+
+  return grub_errno;
+}
+
+-------------------------------------------------------------------------------------------------------------
+
+grub-core/kern/parser.c:99
+
+grub_err_t
+grub_parser_split_cmdline (const char *cmdline, grub_reader_getline_t getline,
+                           int *argc, char ***argv)
+{
+  grub_parser_state_t state = GRUB_PARSER_STATE_TEXT;
+  /* XXX: Fixed size buffer, perhaps this buffer should be dynamically
+     allocated.  */
+  char buffer[1024];
+  char *bp = buffer;
+  char *rd = (char *) cmdline;
+  char varname[200];
+  char *vp = varname;
+  char *args;
+  int i;
+
+  auto int check_varstate (grub_parser_state_t s);
+
+  int check_varstate (grub_parser_state_t s)
+  {
+    return (s == GRUB_PARSER_STATE_VARNAME
+            || s == GRUB_PARSER_STATE_VARNAME2
+            || s == GRUB_PARSER_STATE_QVARNAME
+            || s == GRUB_PARSER_STATE_QVARNAME2);
+  }
+
+  auto void add_var (grub_parser_state_t newstate);
+
+  void add_var (grub_parser_state_t newstate)
+  {
+    const char *val;
+
+    /* Check if a variable was being read in and the end of the name
+       was reached.  */
+    if (!(check_varstate (state) && !check_varstate (newstate)))
+      return;
+
+    *(vp++) = '\0';
+    val = grub_env_get (varname);
+    vp = varname;
+    if (!val)
+      return;
+
+    /* Insert the contents of the variable in the buffer.  */
+    for (; *val; val++)
+      *(bp++) = *val;
+  }
+
+  *argc = 0;
+  do
+    {
+      if (!rd || !*rd)
+        {
+          if (getline)
+            getline (&rd, 1);
+          else
+            break;
+        }
+
+      if (!rd)
+        break;
+
+      for (; *rd; rd++)
+        {
+          grub_parser_state_t newstate;
+          char use;
+
+          newstate = grub_parser_cmdline_state (state, *rd, &use);
+
+          /* If a variable was being processed and this character does
+             not describe the variable anymore, write the variable to
+             the buffer.  */
+          add_var (newstate);
+
+          if (check_varstate (newstate))
+            {
+              if (use)
+                *(vp++) = use;
+            }
+          else
+            {
+              if (newstate == GRUB_PARSER_STATE_TEXT
+                  && state != GRUB_PARSER_STATE_ESC && grub_isspace (use))
+                {
+                  /* Don't add more than one argument if multiple
+                     spaces are used.  */
+                  if (bp != buffer && *(bp - 1))
+                    {
+                      *(bp++) = '\0';
+                      (*argc)++;
+                    }
+                }
+              else if (use)
+                *(bp++) = use;
+            }
+          state = newstate;
+        }
+    }
+  while (state != GRUB_PARSER_STATE_TEXT && !check_varstate (state));
+
+  /* A special case for when the last character was part of a
+     variable.  */
+  add_var (GRUB_PARSER_STATE_TEXT);
+
+  if (bp != buffer && *(bp - 1))
+    {
+      *(bp++) = '\0';
+      (*argc)++;
+    }
+
+  /* Reserve memory for the return values.  */
+  args = grub_malloc (bp - buffer);
+  if (!args)
+    return grub_errno;
+  grub_memcpy (args, buffer, bp - buffer);
+
+  *argv = grub_malloc (sizeof (char *) * (*argc + 1));
+  if (!*argv)
+    {
+      grub_free (args);
+      return grub_errno;
+    }
+
+  /* The arguments are separated with 0's, setup argv so it points to
+     the right values.  */
+  bp = args;
+  for (i = 0; i < *argc; i++)
+    {
+      (*argv)[i] = bp;
+      while (*bp)
+        bp++;
+      bp++;
+    }
+
+  return 0;
+}
+
 ```
