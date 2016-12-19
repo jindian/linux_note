@@ -42,8 +42,11 @@ grub_load_normal_mode:
                         |--read_fs_list
                         |--read_crypto_list
                         |--read_terminal_list
-                    |--grub_gettext_reread_prefix
-                        |--grub_gettext_init_ext
+                        |--grub_gettext_reread_prefix
+                            |--grub_gettext_init_ext
+                    |--grub_register_variable_hook
+                    |--read_config_file
+
 
 ```
 
