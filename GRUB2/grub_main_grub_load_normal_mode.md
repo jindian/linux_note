@@ -42,6 +42,8 @@ grub_load_normal_mode:
                         |--read_fs_list
                         |--read_crypto_list
                         |--read_terminal_list
+                    |--grub_gettext_reread_prefix
+                        |--grub_gettext_init_ext
 
 ```
 
@@ -625,6 +627,8 @@ read_terminal_list (const char *prefix)
 
   filename = grub_xasprintf ("%s/" GRUB_TARGET_CPU "-" GRUB_PLATFORM
                              "/terminal.lst", prefix);
+(gdb) p filename
+$63 = 0x7ff1ab0 "(hd0,msdos1)/boot/grub/i386-pc/terminal.lst"
   if (!filename)
     {
       grub_errno = GRUB_ERR_NONE;
@@ -711,6 +715,72 @@ read_terminal_list (const char *prefix)
   grub_file_close (file);
 
   grub_errno = GRUB_ERR_NONE;
+}
+
+-------------------------------------------------------------------------------------------------------------
+
+grub-core/gettext/gettext.c:436
+
+void
+grub_gettext_reread_prefix (const char *val)
+{
+  grub_err_t err;
+  err = grub_gettext_init_ext (&main_context, grub_env_get ("lang"),
+                               grub_env_get ("locale_dir"),
+                               val);
+  if (err)
+    grub_print_error ();
+}
+
+-------------------------------------------------------------------------------------------------------------
+
+grub-core/gettext/gettext.c:374
+
+static grub_err_t
+grub_gettext_init_ext (struct grub_gettext_context *ctx,
+                       const char *locale,
+                       const char *locale_dir, const char *prefix)
+Breakpoint 4, grub_gettext_init_ext (ctx=0x7ff28d0 <main_context>, 
+    locale=0x7ff1d70 "", locale_dir=0x7ff1ea0 "", 
+    prefix=0x7ff8030 "(hd0,msdos1)/boot/grub") at gettext/gettext.c:378
+{
+  const char *part1, *part2;
+  grub_err_t err;
+
+  grub_gettext_delete_list (ctx);
+
+  if (!locale || locale[0] == 0)
+    return 0;
+
+  part1 = locale_dir;
+  part2 = "";
+  if (!part1 || part1[0] == 0)
+    {
+      part1 = prefix;
+      part2 = "/locale";
+    }
+
+  if (!part1 || part1[0] == 0)
+    return 0;
+
+  err = grub_mofile_open_lang (ctx, part1, part2, locale);
+
+  /* ll_CC didn't work, so try ll.  */
+  if (err)
+    {
+      char *lang = grub_strdup (locale);
+      char *underscore = lang ? grub_strchr (lang, '_') : 0;
+
+      if (underscore)
+        {
+          *underscore = '\0';
+          grub_errno = GRUB_ERR_NONE;
+          err = grub_mofile_open_lang (ctx, part1, part2, lang);
+        }
+
+      grub_free (lang);
+    }
+  return err;
 }
 
 ```
