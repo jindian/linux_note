@@ -20,6 +20,13 @@ Get values from grub modules combined with grub core image, set root and prefix 
 3. Get boot location with grub_machine_get_bootlocation.
 4. Set prefix and root environment variables.
 
+Call stack of grub_set_prefix_and_root:
+```grub_set_prefix_and_root
+grub_set_prefix_and_root
+    |--grub_register_variable_hook
+    |--grub_machine_get_bootlocation
+    |--grub_env_set
+```
 
 ```grub_set_prefix_and_root
 grub-core/kern/main.c:101
