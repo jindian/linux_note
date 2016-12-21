@@ -54,6 +54,7 @@ grub_load_normal_mode:
                             |--run_menu                 //wait for response from end user or timeout
                             |--grub_menu_get_entry      //get selected entry after run menu
                             |--grub_menu_execute_entry  //execute selected entry
+                            |--grub_command_execute ("boot", 0, 0)
 ```
 
 Result of grub_show_menu:
@@ -864,5 +865,132 @@ show_menu (grub_menu_t menu, int nested, int autobooted)
     }
 
   return GRUB_ERR_NONE;
+}
+
+-------------------------------------------------------------------------------------------------------------
+
+grub-core/normal/menu.c:154
+
+/* Run a menu entry.  */
+static void
+grub_menu_execute_entry(grub_menu_entry_t entry, int auto_boot)
+{
+  grub_err_t err = GRUB_ERR_NONE;
+  int errs_before;
+  grub_menu_t menu = NULL;
+  char *optr, *buf, *oldchosen = NULL, *olddefault = NULL;
+  const char *ptr, *chosen, *def;
+  grub_size_t sz = 0;
+
+  if (entry->restricted)
+    err = grub_auth_check_authentication (entry->users);
+
+  if (err)
+    {
+      grub_print_error ();
+      grub_errno = GRUB_ERR_NONE;
+      return;
+    }
+
+  errs_before = grub_err_printed_errors;
+
+  chosen = grub_env_get ("chosen");
+  def = grub_env_get ("default");
+
+  if (entry->submenu)
+    {
+      grub_env_context_open ();
+      menu = grub_zalloc (sizeof (*menu));
+      if (! menu)
+        return;
+      grub_env_set_menu (menu);
+      if (auto_boot)
+        grub_env_set ("timeout", "0");
+    }
+
+  for (ptr = entry->id; *ptr; ptr++)
+    sz += (*ptr == '>') ? 2 : 1;
+  if (chosen)
+    {
+      oldchosen = grub_strdup (chosen);
+      if (!oldchosen)
+        grub_print_error ();
+    }
+  if (def)
+    {
+      olddefault = grub_strdup (def);
+      if (!olddefault)
+        grub_print_error ();
+    }
+  sz++;
+  if (chosen)
+    sz += grub_strlen (chosen);
+  sz++;
+  buf = grub_malloc (sz);
+  if (!buf)
+    grub_print_error ();
+  else
+    {
+      optr = buf;
+      if (chosen)
+        {
+          optr = grub_stpcpy (optr, chosen);
+          *optr++ = '>';
+        }
+      for (ptr = entry->id; *ptr; ptr++)
+        {
+          if (*ptr == '>')
+            *optr++ = '>';
+          *optr++ = *ptr;
+        }
+      *optr = 0;
+      grub_env_set ("chosen", buf);
+      grub_env_export ("chosen");
+      grub_free (buf);
+    }
+
+  for (ptr = def; ptr && *ptr; ptr++)
+    {
+      if (ptr[0] == '>' && ptr[1] == '>')
+        {
+          ptr++;
+          continue;
+        }
+      if (ptr[0] == '>')
+        break;
+    }
+
+  if (ptr && ptr[0] && ptr[1])
+    grub_env_set ("default", ptr + 1);
+  else
+    grub_env_unset ("default");
+
+  grub_script_execute_sourcecode (entry->sourcecode, entry->argc, entry->args);
+
+  if (errs_before != grub_err_printed_errors)
+    grub_wait_after_message ();
+
+  if (grub_errno == GRUB_ERR_NONE && grub_loader_is_loaded ())
+    /* Implicit execution of boot, only if something is loaded.  */
+    grub_command_execute ("boot", 0, 0);
+
+  if (entry->submenu)
+    {
+      if (menu && menu->size)
+        {
+          grub_show_menu (menu, 1, auto_boot);
+          grub_normal_free_menu (menu);
+        }
+      grub_env_context_close ();
+    }
+  if (oldchosen)
+    grub_env_set ("chosen", oldchosen);
+  else
+    grub_env_unset ("chosen");
+  if (olddefault)
+    grub_env_set ("default", olddefault);
+  else
+    grub_env_unset ("default");
+  grub_env_unset ("timeout");
 }
 ```
