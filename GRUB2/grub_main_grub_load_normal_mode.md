@@ -909,16 +909,24 @@ grub_menu_execute_entry(grub_menu_entry_t entry, int auto_boot)
     }
 
   for (ptr = entry->id; *ptr; ptr++)
+(gdb) p entry->id
+$11 = 0x7feff10 "linux OS"
     sz += (*ptr == '>') ? 2 : 1;
   if (chosen)
+(gdb) p chosen
+$20 = 0x0
     {
       oldchosen = grub_strdup (chosen);
       if (!oldchosen)
         grub_print_error ();
     }
   if (def)
+(gdb) p def
+$21 = 0x7ff0250 "0"
     {
       olddefault = grub_strdup (def);
+(gdb) p olddefault 
+$23 = 0x7ff0ad0 "0"
       if (!olddefault)
         grub_print_error ();
     }
@@ -927,6 +935,8 @@ grub_menu_execute_entry(grub_menu_entry_t entry, int auto_boot)
     sz += grub_strlen (chosen);
   sz++;
   buf = grub_malloc (sz);
+(gdb) p sz
+$25 = 10
   if (!buf)
     grub_print_error ();
   else
@@ -945,6 +955,8 @@ grub_menu_execute_entry(grub_menu_entry_t entry, int auto_boot)
         }
       *optr = 0;
       grub_env_set ("chosen", buf);
+(gdb) p buf
+$28 = 0x7ff0a70 "linux OS"
       grub_env_export ("chosen");
       grub_free (buf);
     }
@@ -966,6 +978,14 @@ grub_menu_execute_entry(grub_menu_entry_t entry, int auto_boot)
     grub_env_unset ("default");
 
   grub_script_execute_sourcecode (entry->sourcecode, entry->argc, entry->args);
+(gdb) p entry->sourcecode 
+$29 = 0x7ff0000 "setparams 'linux OS'\n\n    set root=(hd0,1)\n    linux /boot/vmlinuz-2.6.32.69 root=/dev/sda\n    initrd /boot/initrd.img-2.6.32.69\n"
+(gdb) p entry->argc
+$30 = 1
+(gdb) p entry->args
+$31 = (char **) 0x7fefef0
+(gdb) p *entry->args
+$32 = 0x7fefed0 "linux OS"
 
   if (errs_before != grub_err_printed_errors)
     grub_wait_after_message ();
@@ -993,4 +1013,81 @@ grub_menu_execute_entry(grub_menu_entry_t entry, int auto_boot)
     grub_env_unset ("default");
   grub_env_unset ("timeout");
 }
+```
+
+Before execute grub_commad_execute ("boot", 0, 0), print all loaded modules as follow:
+```loaded_modules_before_boot
+(gdb) print_all_modules 
+$33 = 0x7fe0e20 "linux"
+$34 = (void (*)(struct grub_dl *)) 0x7f73296
+$35 = 0x7fdacb0 "vbe"
+$36 = (void (*)(struct grub_dl *)) 0x7f7ee36
+$37 = 0x7fdab20 "video_fb"
+$38 = (void (*)(struct grub_dl *)) 0x0
+$39 = 0x7fdd930 "relocator"
+$40 = (void (*)(struct grub_dl *)) 0x0
+$41 = 0x7fdd7c0 "mmap"
+$42 = (void (*)(struct grub_dl *)) 0x7fdc8ba
+$43 = 0x7fe0c90 "video"
+$44 = (void (*)(struct grub_dl *)) 0x0
+$45 = 0x7ff7ec0 "normal"
+$46 = (void (*)(struct grub_dl *)) 0x7f0ec78 <grub_mod_init>
+$47 = 0x7f0ac00 "gzio"
+$48 = (void (*)(struct grub_dl *)) 0x7f081a9 <grub_mod_init>
+$49 = 0x7ff30d0 "gettext"
+$50 = (void (*)(struct grub_dl *)) 0x7ff2692 <grub_mod_init>
+$51 = 0x7ff42c0 "terminal"
+$52 = (void (*)(struct grub_dl *)) 0x7ff39c6 <grub_mod_init>
+$53 = 0x7ff5c50 "crypto"
+$54 = (void (*)(struct grub_dl *)) 0x0
+$33 = 0x7fe0e20 "linux"
+$34 = (void (*)(struct grub_dl *)) 0x7f73296
+$35 = 0x7fdacb0 "vbe"
+$36 = (void (*)(struct grub_dl *)) 0x7f7ee36
+$37 = 0x7fdab20 "video_fb"
+$38 = (void (*)(struct grub_dl *)) 0x0
+$39 = 0x7fdd930 "relocator"
+$40 = (void (*)(struct grub_dl *)) 0x0
+$41 = 0x7fdd7c0 "mmap"
+$42 = (void (*)(struct grub_dl *)) 0x7fdc8ba
+$43 = 0x7fe0c90 "video"
+$44 = (void (*)(struct grub_dl *)) 0x0
+$45 = 0x7ff7ec0 "normal"
+$46 = (void (*)(struct grub_dl *)) 0x7f0ec78 <grub_mod_init>
+$47 = 0x7f0ac00 "gzio"
+$48 = (void (*)(struct grub_dl *)) 0x7f081a9 <grub_mod_init>
+$49 = 0x7ff30d0 "gettext"
+$50 = (void (*)(struct grub_dl *)) 0x7ff2692 <grub_mod_init>
+$51 = 0x7ff42c0 "terminal"
+$52 = (void (*)(struct grub_dl *)) 0x7ff39c6 <grub_mod_init>
+$53 = 0x7ff5c50 "crypto"
+$54 = (void (*)(struct grub_dl *)) 0x0
+$55 = 0x7ff70a0 "extcmd"
+$56 = (void (*)(struct grub_dl *)) 0x0
+$57 = 0x7ff7d50 "boot"
+$58 = (void (*)(struct grub_dl *)) 0x7ff77ca <grub_mod_init>
+$59 = 0x7ff8fd0 "search_fs_uuid"
+$60 = (void (*)(struct grub_dl *)) 0x7ff8977 <grub_mod_init>
+$61 = 0x7ffa0a0 "biosdisk"
+$62 = (void (*)(struct grub_dl *)) 0x7ff9929 <grub_mod_init>
+$63 = 0x7ffa920 "part_msdos"
+$64 = (void (*)(struct grub_dl *)) 0x7ffa558 <grub_mod_init>
+$65 = 0x7ffbe30 "ext2"
+$66 = (void (*)(struct grub_dl *)) 0x7ffb629 <grub_mod_init>
+$67 = 0x7ffc990 "fshelp"
+$68 = (void (*)(struct grub_dl *)) 0x0
+$55 = 0x7ff70a0 "extcmd"
+$56 = (void (*)(struct grub_dl *)) 0x0
+$57 = 0x7ff7d50 "boot"
+$58 = (void (*)(struct grub_dl *)) 0x7ff77ca <grub_mod_init>
+$59 = 0x7ff8fd0 "search_fs_uuid"
+$60 = (void (*)(struct grub_dl *)) 0x7ff8977 <grub_mod_init>
+$61 = 0x7ffa0a0 "biosdisk"
+$62 = (void (*)(struct grub_dl *)) 0x7ff9929 <grub_mod_init>
+$63 = 0x7ffa920 "part_msdos"
+$64 = (void (*)(struct grub_dl *)) 0x7ffa558 <grub_mod_init>
+$65 = 0x7ffbe30 "ext2"
+$66 = (void (*)(struct grub_dl *)) 0x7ffb629 <grub_mod_init>
+$67 = 0x7ffc990 "fshelp"
+$68 = (void (*)(struct grub_dl *)) 0x0
 ```
