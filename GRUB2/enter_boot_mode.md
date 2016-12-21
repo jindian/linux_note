@@ -589,6 +589,9 @@ $82 = (grub_video_adapter_t) 0x0
 ```
 
 ```memory_map
+
+grub-core/loader/i386/linux.c:150
+
 /* Find the optimal number of pages for the memory map. */
 static grub_size_t
 find_mmap_size (void)
@@ -619,7 +622,7 @@ find_mmap_size (void)
 ```
 
 LINKS:
-==================================================================================================================
+=============================================================================================================
 
  * [Sweep line algorithm](https://en.wikipedia.org/wiki/Sweep_line_algorithm)
  * [Scanline rendering](https://en.wikipedia.org/wiki/Scanline_rendering)
