@@ -370,4 +370,153 @@ grub_video_set_mode (modestring=modestring@entry=0x7f734d6 "text",
   state.eip = params->code32_start;
   return grub_relocator32_boot (relocator, state, 0);
 }
+
+-------------------------------------------------------------------------------------------------------------
+
+grub-core/video/video.c:489
+
+grub_err_t
+grub_video_set_mode (const char *modestring,
+                     unsigned int modemask,
+                     unsigned int modevalue)
+{
+  char *tmp;
+  char *next_mode;
+  char *current_mode;
+  char *modevar;
+
+  modevalue &= modemask;
+
+  /* Take copy of env.var. as we don't want to modify that.  */
+  modevar = grub_strdup (modestring);
+
+  /* Initialize next mode.  */
+  next_mode = modevar;
+
+  if (! modevar)
+(gdb) p modevar
+$74 = 0x7fe1980 "text"
+    return grub_errno;
+
+  if (grub_memcmp (next_mode, "keep", sizeof ("keep")) == 0
+(gdb) p next_mode
+$75 = 0x7fe1980 "text"
+      || grub_memcmp (next_mode, "keep,", sizeof ("keep,") - 1) == 0
+      || grub_memcmp (next_mode, "keep;", sizeof ("keep;") - 1) == 0)
+    {
+      int suitable = 1;
+      grub_err_t err;
+
+      if (grub_video_adapter_active)
+        {
+          struct grub_video_mode_info mode_info;
+          grub_memset (&mode_info, 0, sizeof (mode_info));
+          err = grub_video_get_info (&mode_info);
+          if (err)
+            {
+              suitable = 0;
+              grub_errno = GRUB_ERR_NONE;
+            }
+          if ((mode_info.mode_type & modemask) != modevalue)
+            suitable = 0;
+        }
+      else if (((GRUB_VIDEO_MODE_TYPE_PURE_TEXT & modemask) != 0)
+               && ((GRUB_VIDEO_MODE_TYPE_PURE_TEXT & modevalue) == 0))
+        suitable = 0;
+
+      if (suitable)
+        {
+          grub_free (modevar);
+          return GRUB_ERR_NONE;
+        }
+      next_mode += sizeof ("keep") - 1;
+      if (! *next_mode)
+        {
+          grub_free (modevar);
+
+          /* TRANSLATORS: This doesn't imply that there is no available video
+             mode at all. All modes may have been filtered out by some criteria.
+           */
+          return grub_error (GRUB_ERR_BAD_ARGUMENT,
+                             N_("no suitable video mode found"));
+        }
+
+      /* Skip separator. */
+      next_mode++;
+    }
+
+  /* De-activate last set video adapter.  */
+  if (grub_video_adapter_active)
+(gdb) p grub_video_adapter_active 
+$76 = (grub_video_adapter_t) 0x0
+    {
+      /* Finalize adapter.  */
+      grub_video_adapter_active->fini ();
+      if (grub_errno != GRUB_ERR_NONE)
+        grub_errno = GRUB_ERR_NONE;
+
+      /* Mark active adapter as not set.  */
+      grub_video_adapter_active = 0;
+    }
+
+  /* Loop until all modes has been tested out.  */
+  while (next_mode != NULL)
+    {
+      int width = -1;
+      int height = -1;
+      int depth = -1;
+      grub_err_t err;
+      unsigned int flags = modevalue;
+      unsigned int flagmask = modemask;
+
+      /* Use last next_mode as current mode.  */
+      tmp = next_mode;
+
+      /* Save position of next mode and separate modes.  */
+      for (; *next_mode; next_mode++)
+        if (*next_mode == ',' || *next_mode == ';')
+          break;
+      if (*next_mode)
+        {
+          *next_mode = 0;
+          next_mode++;
+        }
+      else
+        next_mode = 0;
+
+      /* Skip whitespace.  */
+      while (grub_isspace (*tmp))
+(gdb) p next_mode
+$77 = 0x0
+(gdb) p tmp
+$78 = 0x7fe1980 "text"
+       tmp++;
+
+      /* Initialize token holders.  */
+      current_mode = tmp;
+
+      /* XXX: we assume that we're in pure text mode if
+         no video mode is initialized. Is it always true? */
+      if (grub_strcmp (current_mode, "text") == 0)
+(gdb) p current_mode
+$79 = 0x7fe1980 "text"
+        {
+          struct grub_video_mode_info mode_info;
+
+          grub_memset (&mode_info, 0, sizeof (mode_info));
+          if (((GRUB_VIDEO_MODE_TYPE_PURE_TEXT & modemask) == 0)
+              || ((GRUB_VIDEO_MODE_TYPE_PURE_TEXT & modevalue) != 0))
+            {
+              /* Valid mode found from adapter, and it has been activated.
+                 Specify it as active adapter.  */
+              grub_video_adapter_active = NULL;
+
+              /* Free memory.  */
+              grub_free (modevar);
+
+              return GRUB_ERR_NONE;
+            }
+        }
+
+......
 ```
