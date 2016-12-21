@@ -65,3 +65,6 @@ $71 = (struct grub_preboot *) 0x0
   return err;
 }
 ```
+
+Next in grub_linux_boot before involving grub_relocator32_boot, what preparations are done before grub transfers control to linux source code?
+
