@@ -11,4 +11,5 @@
   * [grub_main: grub_load_moules](GRUB2/grub_main_grub_load_modules.md)
   * [grub_main: before grub_load_normal_mode](GRUB2/grub_main_before_grub_load_normal_mode.md)
   * [grub_main: grub_load_normal_mode](GRUB2/grub_main_grub_load_normal_mode.md)
+  * [grub_main: enter boot mode](GRUB2/grub_main_enter_boot_mode.md)
 
