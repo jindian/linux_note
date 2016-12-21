@@ -14,7 +14,7 @@ grub_cmd_boot (struct grub_command *cmd __attribute__ ((unused)),
 }
 ```
 
-The context of boot mode in initialization:
+Call context of boot mode in initialization:
 
 ```boot_mode_context
 grub_cmd_boot
@@ -68,7 +68,18 @@ $71 = (struct grub_preboot *) 0x0
 
 Next in grub_linux_boot before involving grub_relocator32_boot, what preparations are done before grub transfers control to linux source code?
 
+1. Set video mode with grub_video_set_mode.
+
+Call context of grub_linux_boot
+```context_grub_linux_boot
+grub_linux_boot
+    |--grub_video_set_mode
+
+```
+
 ```grub_linux_boot
+grub-core/loader/i386/linux.c:372
+
 static grub_err_t
 grub_linux_boot (void)
 {
@@ -105,6 +116,8 @@ grub_linux_boot (void)
   /* Now all graphical modes are acceptable.
      May change in future if we have modes without framebuffer.  */
   if (modevar && *modevar != 0)
+(gdb) p modevar 
+$72 = 0x0
     {
       tmp = grub_xasprintf ("%s;" DEFAULT_VIDEO_MODE, modevar);
       if (! tmp)
@@ -120,6 +133,10 @@ grub_linux_boot (void)
     {
 #if ACCEPTS_PURE_TEXT
       err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0, 0);
+(gdb) s
+grub_video_set_mode (modestring=modestring@entry=0x7f734d6 "text", 
+    modemask=modemask@entry=0, modevalue=modevalue@entry=0)
+    at video/video.c:493
 #else
       err = grub_video_set_mode (DEFAULT_VIDEO_MODE,
                                  GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
