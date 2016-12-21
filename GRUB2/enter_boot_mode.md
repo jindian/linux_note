@@ -75,11 +75,14 @@ Next in grub_linux_boot before involving grub_relocator32_boot, what preparation
 
 
 Call context of grub_linux_boot
+
 ```context_grub_linux_boot
 grub_linux_boot
     |--grub_video_set_mode
     |--grub_linux_setup_video
         |--grub_video_get_driver_id
+    |--find_mmap_size
+        |--grub_mmap_iterate
 
 ```
 
@@ -390,9 +393,9 @@ $90 = 25 '\031'
   state.eip = params->code32_start;
   return grub_relocator32_boot (relocator, state, 0);
 }
+```
 
--------------------------------------------------------------------------------------------------------------
-
+```vedio_parameter_intialization
 grub-core/video/video.c:489
 
 grub_err_t
@@ -583,5 +586,40 @@ $82 = (grub_video_adapter_t) 0x0
     return GRUB_VIDEO_DRIVER_NONE;
   return grub_video_adapter_active->id;
 }
+```
+
+```memory_map
+/* Find the optimal number of pages for the memory map. */
+static grub_size_t
+find_mmap_size (void)
+{
+  grub_size_t count = 0, mmap_size;
+
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
+                                  grub_memory_type_t);
+  int NESTED_FUNC_ATTR hook (grub_uint64_t addr __attribute__ ((unused)),
+                             grub_uint64_t size __attribute__ ((unused)),
+                             grub_memory_type_t type __attribute__ ((unused)))
+    {
+      count++;
+      return 0;
+    }
+
+  grub_mmap_iterate (hook);
+
+  mmap_size = count * sizeof (struct grub_e820_mmap);
+
+  /* Increase the size a bit for safety, because GRUB allocates more on
+     later.  */
+  mmap_size += (1 << 12);
+
+  return page_align (mmap_size);
+}
 
 ```
+
+LINKS:
+==================================================================================================================
+
+ * [Sweep line algorithm](https://en.wikipedia.org/wiki/Sweep_line_algorithm)
+ * [Scanline rendering](https://en.wikipedia.org/wiki/Scanline_rendering)
