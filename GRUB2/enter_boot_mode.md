@@ -69,11 +69,17 @@ $71 = (struct grub_preboot *) 0x0
 Next in grub_linux_boot before involving grub_relocator32_boot, what preparations are done before grub transfers control to linux source code?
 
 1. Set video mode with grub_video_set_mode.
+2. Setup video mode with grub_linux_setup_video
+3. Initialize video parameters
+
+
 
 Call context of grub_linux_boot
 ```context_grub_linux_boot
 grub_linux_boot
     |--grub_video_set_mode
+    |--grub_linux_setup_video
+        |--grub_video_get_driver_id
 
 ```
 
@@ -144,6 +150,8 @@ grub_video_set_mode (modestring=modestring@entry=0x7f734d6 "text",
     }
 
   if (err)
+(gdb) p err
+$80 = GRUB_ERR_NONE
     {
       grub_print_error ();
       grub_puts_ (N_("Booting in blind mode"));
@@ -166,12 +174,16 @@ grub_video_set_mode (modestring=modestring@entry=0x7f734d6 "text",
 
 #ifndef GRUB_MACHINE_IEEE1275
   if (linux_params.have_vga == GRUB_VIDEO_LINUX_TYPE_TEXT)
+(gdb) p linux_params.have_vga
+$84 = 1 '\001'
 #endif
     {
       grub_term_output_t term;
       int found = 0;
       FOR_ACTIVE_TERM_OUTPUTS(term)
         if (grub_strcmp (term->name, "vga_text") == 0
+(gdb) p term->name 
+$85 = 0xe78e "console"
             || grub_strcmp (term->name, "console") == 0
             || grub_strcmp (term->name, "ofconsole") == 0)
           {
@@ -181,6 +193,14 @@ grub_video_set_mode (modestring=modestring@entry=0x7f734d6 "text",
             linux_params.video_width = grub_term_width (term);
             linux_params.video_height = grub_term_height (term);
             found = 1;
+(gdb) p linux_params.video_cursor_x
+$87 = 0 '\000'
+(gdb) p linux_params.video_cursor_y
+$88 = 0 '\000'
+(gdb) p linux_params.video_width
+$89 = 80 'P'
+(gdb) p linux_params.video_height
+$90 = 25 '\031'
             break;
           }
       if (!found)
@@ -519,4 +539,49 @@ $79 = 0x7fe1980 "text"
         }
 
 ......
+
+------------------------------------------------------------------------------------------------------------------
+
+grub-core/loader/i386/linux.c:273
+
+static grub_err_t
+grub_linux_setup_video (struct linux_kernel_params *params)
+{
+  struct grub_video_mode_info mode_info;
+  void *framebuffer;
+  grub_err_t err;
+  grub_video_driver_id_t driver_id;
+  const char *gfxlfbvar = grub_env_get ("gfxpayloadforcelfb");
+
+  driver_id = grub_video_get_driver_id ();
+(gdb) p gfxlfbvar 
+$81 = 0x0
+
+  if (driver_id == GRUB_VIDEO_DRIVER_NONE)
+(gdb) p driver_id 
+$83 = GRUB_VIDEO_DRIVER_NONE
+    return 1;
+    
+  err = grub_video_get_info_and_fini (&mode_info, &framebuffer);
+
+  if (err)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return 1;
+    }
+
+------------------------------------------------------------------------------------------------------------------
+
+grub-core/video/video.c:66
+
+grub_video_driver_id_t
+grub_video_get_driver_id (void)
+{
+  if (! grub_video_adapter_active)
+(gdb) p grub_video_adapter_active 
+$82 = (grub_video_adapter_t) 0x0
+    return GRUB_VIDEO_DRIVER_NONE;
+  return grub_video_adapter_active->id;
+}
+
 ```
