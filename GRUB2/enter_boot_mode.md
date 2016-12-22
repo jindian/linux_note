@@ -223,6 +223,10 @@ $90 = 25 '\031'
   /* Make sure that each size is aligned to a page boundary.  */
   cl_offset = ALIGN_UP (mmap_size + sizeof (linux_params), 4096);
   if (cl_offset < ((grub_size_t) linux_params.setup_sects << GRUB_DISK_SECTOR_BITS))
+(gdb) p sizeof(linux_params)
+$92 = 1020
+(gdb) p cl_offset 
+$93 = 12288
     cl_offset = ALIGN_UP ((grub_size_t) (linux_params.setup_sects
                                          << GRUB_DISK_SECTOR_BITS), 4096);
   real_size = ALIGN_UP (cl_offset + maximal_cmdline_size, 4096);
@@ -235,6 +239,10 @@ $90 = 25 '\031'
 
   grub_dprintf ("linux", "real_size = %x, mmap_size = %x\n",
                 (unsigned) real_size, (unsigned) mmap_size);
+(gdb) p cl_offset 
+$94 = 16384
+(gdb) p real_size 
+$97 = 20480
 
   auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
                                   grub_memory_type_t);
@@ -617,12 +625,19 @@ find_mmap_size (void)
   grub_mmap_iterate (hook);
 
   mmap_size = count * sizeof (struct grub_e820_mmap);
+(gdb) p count
+$1 = 6
+
 
   /* Increase the size a bit for safety, because GRUB allocates more on
      later.  */
   mmap_size += (1 << 12);
 
   return page_align (mmap_size);
+(gdb) p mmap_size
+$2 = 4216
+(gdb) p sizeof (struct grub_e820_mmap)
+$3 = 20
 }
 
 -------------------------------------------------------------------------------------------------------------
