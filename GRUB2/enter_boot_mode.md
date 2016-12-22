@@ -87,6 +87,7 @@ grub_linux_boot
                 |--grub_bios_interrupt
             |--grub_machine_mmap_iterate (fill_hook)       //system mapped memory regions are not continuous, with fill_hook to map all memory.
                 |--grub_bios_interrupt
+    |--grub_mmap_iterate(hook)                             //hook function is different from the one in find_mmap_size, the purpose of the hook function is find memory region for real mode code.
 
 ```
 
