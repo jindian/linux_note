@@ -547,7 +547,7 @@ $79 = 0x7fe1980 "text"
 
 ......
 
-------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------
 
 grub-core/loader/i386/linux.c:273
 
@@ -577,7 +577,7 @@ $83 = GRUB_VIDEO_DRIVER_NONE
       return 1;
     }
 
-------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------
 
 grub-core/video/video.c:66
 
@@ -591,6 +591,8 @@ $82 = (grub_video_adapter_t) 0x0
   return grub_video_adapter_active->id;
 }
 ```
+
+Find number of regions of the entire memory. Inside grub_mmap_iterate, it involves grub_machine_mmap_iterate twice, the first time counts the number of mapping memory in system with BIOS call, mapping memory doesn't reflex entire system memory, and the second time fills data struct scanline_events which mapping entire memory in current system, routine grub_mmap_iterate finally return regions reflexing entire memory, it's done by hook function.
 
 ```memory_map
 
@@ -623,6 +625,197 @@ find_mmap_size (void)
   return page_align (mmap_size);
 }
 
+-------------------------------------------------------------------------------------------------------------
+
+grub-core/mmap/mmap.c:38
+
+grub_err_t
+grub_mmap_iterate (grub_memory_hook_t hook)
+{
+
+  /* This function resolves overlapping regions and sorts the memory map.
+     It uses scanline (sweeping) algorithm.
+  */
+  /* If same page is used by multiple types it's resolved
+     according to priority:
+     1 - free memory
+     2 - memory usable by firmware-aware code
+     3 - unusable memory
+     4 - a range deliberately empty
+  */
+  int priority[] =
+    {
+      [GRUB_MEMORY_AVAILABLE] = 1,
+      [GRUB_MEMORY_RESERVED] = 3,
+      [GRUB_MEMORY_ACPI] = 2,
+      [GRUB_MEMORY_CODE] = 3,
+      [GRUB_MEMORY_NVS] = 3,
+      [GRUB_MEMORY_HOLE] = 4,
+    };
+
+  int i, done;
+
+  /* Scanline events. */
+  struct grub_mmap_scan
+  {
+    /* At which memory address. */
+    grub_uint64_t pos;
+    /* 0 = region starts, 1 = region ends. */
+    int type;
+    /* Which type of memory region? */
+    int memtype;
+  };
+  struct grub_mmap_scan *scanline_events;
+  struct grub_mmap_scan t;
+
+  /* Previous scanline event. */
+  grub_uint64_t lastaddr;
+  int lasttype;
+  /* Current scanline event. */
+  int curtype;
+  /* How many regions of given type overlap at current location? */
+  int present[ARRAY_SIZE (priority)];
+  /* Number of mmap chunks. */
+  int mmap_num;
+
+#ifndef GRUB_MMAP_REGISTER_BY_FIRMWARE
+  struct grub_mmap_region *cur;
+#endif
+
+  auto int NESTED_FUNC_ATTR count_hook (grub_uint64_t, grub_uint64_t,
+                                        grub_uint32_t);
+  int NESTED_FUNC_ATTR count_hook (grub_uint64_t addr __attribute__ ((unused)),
+                                   grub_uint64_t size __attribute__ ((unused)),
+                                   grub_memory_type_t type __attribute__ ((unused)))
+  {
+    mmap_num++;
+    return 0;
+  }
+
+  auto int NESTED_FUNC_ATTR fill_hook (grub_uint64_t, grub_uint64_t,
+                                        grub_uint32_t);
+  int NESTED_FUNC_ATTR fill_hook (grub_uint64_t addr,
+                                  grub_uint64_t size,
+                                  grub_memory_type_t type)
+  {
+    scanline_events[i].pos = addr;
+    scanline_events[i].type = 0;
+    if (type < ARRAY_SIZE (priority) && priority[type])
+      scanline_events[i].memtype = type;
+    else
+      {
+        grub_dprintf ("mmap", "Unknown memory type %d. Assuming unusable\n",
+                      type);
+        scanline_events[i].memtype = GRUB_MEMORY_RESERVED;
+      }
+    i++;
+
+    scanline_events[i].pos = addr + size;
+    scanline_events[i].type = 1;
+    scanline_events[i].memtype = scanline_events[i - 1].memtype;
+    i++;
+
+    return 0;
+  }
+
+  mmap_num = 0;
+
+#ifndef GRUB_MMAP_REGISTER_BY_FIRMWARE
+  for (cur = grub_mmap_overlays; cur; cur = cur->next)
+    mmap_num++;
+#endif
+
+  grub_machine_mmap_iterate (count_hook);
+
+  /* Initialize variables. */
+  grub_memset (present, 0, sizeof (present));
+  scanline_events = (struct grub_mmap_scan *)
+    grub_malloc (sizeof (struct grub_mmap_scan) * 2 * mmap_num);
+
+  if (! scanline_events)
+    return grub_errno;
+
+  i = 0;
+#ifndef GRUB_MMAP_REGISTER_BY_FIRMWARE
+  /* Register scanline events. */
+  for (cur = grub_mmap_overlays; cur; cur = cur->next)
+    {
+      scanline_events[i].pos = cur->start;
+      scanline_events[i].type = 0;
+      if (cur->type < ARRAY_SIZE (priority) && priority[cur->type])
+        scanline_events[i].memtype = cur->type;
+      else
+        scanline_events[i].memtype = GRUB_MEMORY_RESERVED;
+      i++;
+
+      scanline_events[i].pos = cur->end;
+      scanline_events[i].type = 1;
+      scanline_events[i].memtype = scanline_events[i - 1].memtype;
+      i++;
+    }
+#endif /* ! GRUB_MMAP_REGISTER_BY_FIRMWARE */
+
+  grub_machine_mmap_iterate (fill_hook);
+
+  /* Primitive bubble sort. It has complexity O(n^2) but since we're
+     unlikely to have more than 100 chunks it's probably one of the
+     fastest for one purpose. */
+  done = 1;
+  while (done)
+    {
+      done = 0;
+      for (i = 0; i < 2 * mmap_num - 1; i++)
+        if (scanline_events[i + 1].pos < scanline_events[i].pos
+            || (scanline_events[i + 1].pos == scanline_events[i].pos
+                && scanline_events[i + 1].type == 0
+                && scanline_events[i].type == 1))
+          {
+            t = scanline_events[i + 1];
+            scanline_events[i + 1] = scanline_events[i];
+            scanline_events[i] = t;
+            done = 1;
+          }
+    }
+
+  lastaddr = scanline_events[0].pos;
+  lasttype = scanline_events[0].memtype;
+  for (i = 0; i < 2 * mmap_num; i++)
+    {
+      unsigned k;
+      /* Process event. */
+      if (scanline_events[i].type)
+        present[scanline_events[i].memtype]--;
+      else
+        present[scanline_events[i].memtype]++;
+
+      /* Determine current region type. */
+      curtype = -1;
+      for (k = 0; k < ARRAY_SIZE (priority); k++)
+        if (present[k] && (curtype == -1 || priority[k] > priority[curtype]))
+          curtype = k;
+
+      /* Announce region to the hook if necessary. */
+      if ((curtype == -1 || curtype != lasttype)
+          && lastaddr != scanline_events[i].pos
+          && lasttype != -1
+          && lasttype != GRUB_MEMORY_HOLE
+          && hook (lastaddr, scanline_events[i].pos - lastaddr, lasttype))
+        {
+          grub_free (scanline_events);
+          return GRUB_ERR_NONE;
+        }
+
+      /* Update last values if necessary. */
+      if (curtype == -1 || curtype != lasttype)
+        {
+          lasttype = curtype;
+          lastaddr = scanline_events[i].pos;
+        }
+    }
+
+  grub_free (scanline_events);
+  return GRUB_ERR_NONE;
+}
 ```
 
 LINKS:
