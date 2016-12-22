@@ -731,6 +731,8 @@ grub_mmap_iterate (grub_memory_hook_t hook)
   grub_memset (present, 0, sizeof (present));
   scanline_events = (struct grub_mmap_scan *)
     grub_malloc (sizeof (struct grub_mmap_scan) * 2 * mmap_num);
+(gdb) p mmap_num 
+$1 = 6
 
   if (! scanline_events)
     return grub_errno;
@@ -765,6 +767,44 @@ grub_mmap_iterate (grub_memory_hook_t hook)
     {
       done = 0;
       for (i = 0; i < 2 * mmap_num - 1; i++)
+(gdb) print_scanline_events_in_grub_mmap_iterate 
+$3 = 0x0
+$4 = 0x0
+$5 = 0x1
+$6 = 0x9fc00
+$7 = 0x1
+$8 = 0x1
+$9 = 0x9fc00
+$10 = 0x0
+$11 = 0x2
+$12 = 0xa0000
+$13 = 0x1
+$14 = 0x2
+$15 = 0xf0000
+$16 = 0x0
+$17 = 0x2
+$18 = 0x100000
+$19 = 0x1
+$20 = 0x2
+$21 = 0x100000
+$22 = 0x0
+$23 = 0x1
+$24 = 0x7ffe000
+$25 = 0x1
+$26 = 0x1
+$27 = 0x7ffe000
+$28 = 0x0
+$29 = 0x2
+$30 = 0x8000000
+$31 = 0x1
+$32 = 0x2
+$33 = 0xfffc0000
+$34 = 0x0
+$35 = 0x2
+$36 = 0x100000000
+$37 = 0x1
+$38 = 0x2
+
         if (scanline_events[i + 1].pos < scanline_events[i].pos
             || (scanline_events[i + 1].pos == scanline_events[i].pos
                 && scanline_events[i + 1].type == 0
@@ -778,6 +818,44 @@ grub_mmap_iterate (grub_memory_hook_t hook)
     }
 
   lastaddr = scanline_events[0].pos;
+(gdb) print_scanline_events_in_grub_mmap_iterate 
+$39 = 0x0
+$40 = 0x0
+$41 = 0x1
+$42 = 0x9fc00
+$43 = 0x0
+$44 = 0x2
+$45 = 0x9fc00
+$46 = 0x1
+$47 = 0x1
+$48 = 0xa0000
+$49 = 0x1
+$50 = 0x2
+$51 = 0xf0000
+$52 = 0x0
+$53 = 0x2
+$54 = 0x100000
+$55 = 0x0
+$56 = 0x1
+$57 = 0x100000
+$58 = 0x1
+$59 = 0x2
+$60 = 0x7ffe000
+$61 = 0x0
+$62 = 0x2
+$63 = 0x7ffe000
+$64 = 0x1
+$65 = 0x1
+$66 = 0x8000000
+$67 = 0x1
+$68 = 0x2
+$69 = 0xfffc0000
+$70 = 0x0
+$71 = 0x2
+$72 = 0x100000000
+$73 = 0x1
+$74 = 0x2
+
   lasttype = scanline_events[0].memtype;
   for (i = 0; i < 2 * mmap_num; i++)
     {
@@ -816,6 +894,26 @@ grub_mmap_iterate (grub_memory_hook_t hook)
   grub_free (scanline_events);
   return GRUB_ERR_NONE;
 }
+
+```
+
+Add print_scanline_events_in_grub_mmap_iterate in gdb_grub.in, it helps print content of entire scanline_events.
+
+```print_scanline_events_in_grub_mmap_iterate
+define print_scanline_events_in_grub_mmap_iterate
+        set $idx = 0
+        set $all_events = 2*mmap_num
+        while ($idx < $all_events)
+                print /x scanline_events[$idx].pos
+                print /x scanline_events[$idx].type
+                print /x scanline_events[$idx].memtype
+                set $idx = $idx + 1
+        end
+end
+document print_scanline_events_in_grub_mmap_iterate
+        Print scanline_events in grub_mmap_iterate
+end
+
 ```
 
 LINKS:
