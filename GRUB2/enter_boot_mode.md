@@ -82,11 +82,11 @@ grub_linux_boot
     |--grub_linux_setup_video
         |--grub_video_get_driver_id
     |--find_mmap_size
-        |--grub_mmap_iterate(hook)
-        |--grub_machine_mmap_iterate (count_hook)      //count number of mapped memory
-            |--grub_bios_interrupt
-        |--grub_machine_mmap_iterate (fill_hook)       //system mapped memory regions are not continuous, with fill_hook to map all memory.
-            |--grub_bios_interrupt
+        |--grub_mmap_iterate(hook)                         //get number of regions of entire memory
+            |--grub_machine_mmap_iterate (count_hook)      //count number of mapped memory
+                |--grub_bios_interrupt
+            |--grub_machine_mmap_iterate (fill_hook)       //system mapped memory regions are not continuous, with fill_hook to map all memory.
+                |--grub_bios_interrupt
 
 ```
 
