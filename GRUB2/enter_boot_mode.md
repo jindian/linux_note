@@ -85,9 +85,9 @@ grub_linux_boot
         |--grub_mmap_iterate(hook)                         //get number of regions of entire memory
             |--grub_machine_mmap_iterate (count_hook)      //count number of mapped memory
                 |--grub_bios_interrupt
-            |--grub_machine_mmap_iterate (fill_hook)       //system mapped memory regions are not continuous, with fill_hook to map all memory.
+            |--grub_machine_mmap_iterate (fill_hook)       //with fill_hook to map all memory
                 |--grub_bios_interrupt
-    |--grub_mmap_iterate(hook)                             //hook function is different from the one in find_mmap_size, the purpose of the hook function is find memory region for real mode code.
+    |--grub_mmap_iterate(hook)                             //find memory region for real mode code.
 
 ```
 
@@ -603,7 +603,7 @@ $82 = (grub_video_adapter_t) 0x0
 
 Find number of regions of the entire memory. Inside grub_mmap_iterate, it involves grub_machine_mmap_iterate twice, the first time counts the number of mapping memory in system with BIOS call, mapping memory doesn't reflex entire system memory, and the second time fills data struct scanline_events which mapping entire memory in current system, routine grub_mmap_iterate finally return regions reflexing entire memory, it's done by hook function.
 
-```memory_map
+```memory_mapping
 
 grub-core/loader/i386/linux.c:150
 
@@ -929,6 +929,46 @@ end
 document print_scanline_events_in_grub_mmap_iterate
         Print scanline_events in grub_mmap_iterate
 end
+
+```
+
+
+
+```real_mode_code_space
+
+grub-core/loader/i386/linux.c:495
+
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
+                                  grub_memory_type_t);
+  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size,
+                             grub_memory_type_t type)
+    {
+      /* We must put real mode code in the traditional space.  */
+      if (type != GRUB_MEMORY_AVAILABLE || addr > 0x90000)
+        return 0;
+
+      if (addr + size < 0x10000)
+        return 0;
+
+      if (addr < 0x10000)
+        {
+          size += addr - 0x10000;
+          addr = 0x10000;
+        }
+
+      if (addr + size > 0x90000)
+        size = 0x90000 - addr;
+
+      if (real_size + efi_mmap_size > size)
+        return 0;
+
+      grub_dprintf ("linux", "addr = %lx, size = %x, need_size = %x\n",
+                    (unsigned long) addr,
+                    (unsigned) size,
+                    (unsigned) (real_size + efi_mmap_size));
+      real_mode_target = ((addr + size) - (real_size + efi_mmap_size));
+      return 1;
+    }
 
 ```
 
