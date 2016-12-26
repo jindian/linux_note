@@ -90,6 +90,7 @@ grub_linux_boot
     |--grub_mmap_iterate(hook)                             //find memory region for real mode code.
     |--grub_relocator_alloc_chunk_addr
     |--get_virtual_current_address
+    |--|--grub_mmap_iterate(fill_hook)                     //add memory regions to e820 map 
 
 ```
 
@@ -365,6 +366,8 @@ $237 = 0x7fda8b0 "BOOT_IMAGE=/boot/vmlinuz-2.6.32.69 root=/dev/sda"
   if (grub_mmap_iterate (hook_fill))
     return grub_errno;
   params->mmap_size = e820_num;
+(gdb) p e820_num 
+$241 = 6
 
 #ifdef GRUB_MACHINE_EFI
   {
@@ -1003,7 +1006,7 @@ grub-core/loader/i386/linux.c:495
 
 ```
 
-Allocates memory start from real_mode_target
+Allocates memory start from real_mode_target.
 
 ```grub_relocator_alloc_chunk_addr
 
@@ -1194,6 +1197,82 @@ malloc_in_range (struct grub_relocator *rel,
                  grub_addr_t start, grub_addr_t end, grub_addr_t align,
                  grub_size_t size, struct grub_relocator_chunk *res,
                  int from_low_priv, int collisioncheck)
+```
+
+Add memory regions to e820 map with hook_fill
+
+```add_to_e820_map
+  auto int NESTED_FUNC_ATTR hook_fill (grub_uint64_t, grub_uint64_t,
+                                  grub_memory_type_t);
+  int NESTED_FUNC_ATTR hook_fill (grub_uint64_t addr, grub_uint64_t size,
+                                  grub_memory_type_t type)
+    {
+      grub_uint32_t e820_type;
+      switch (type)
+        {
+        case GRUB_MEMORY_AVAILABLE:
+          e820_type = GRUB_E820_RAM;
+          break;
+
+        case GRUB_MEMORY_ACPI:
+          e820_type = GRUB_E820_ACPI;
+          break;
+
+        case GRUB_MEMORY_NVS:
+          e820_type = GRUB_E820_NVS;
+          break;
+
+        case GRUB_MEMORY_BADRAM:
+          e820_type = GRUB_E820_BADRAM;
+          break;
+
+        default:
+          e820_type = GRUB_E820_RESERVED;
+        }
+      if (grub_e820_add_region (params->e820_map, &e820_num,
+                                addr, size, e820_type))
+        return 1;
+
+      return 0;
+    }
+
+-------------------------------------------------------------------------------------------------------------
+
+Breakpoint 12, hook_fill (addr=0, size=654336, type=GRUB_MEMORY_AVAILABLE)
+    at loader/i386/linux.c:594
+Breakpoint 12, hook_fill (addr=654336, size=1024, type=GRUB_MEMORY_RESERVED)
+    at loader/i386/linux.c:594
+Breakpoint 12, hook_fill (addr=983040, size=65536, type=GRUB_MEMORY_RESERVED)
+    at loader/i386/linux.c:594
+Breakpoint 12, hook_fill (addr=1048576, size=133160960, 
+    type=GRUB_MEMORY_AVAILABLE) at loader/i386/linux.c:594
+Breakpoint 12, hook_fill (addr=134209536, size=8192, 
+    type=GRUB_MEMORY_RESERVED) at loader/i386/linux.c:594
+Breakpoint 12, hook_fill (addr=4294705152, size=262144, 
+    type=GRUB_MEMORY_RESERVED) at loader/i386/linux.c:594
+
+grub-core/loader/i386/linux.c:253
+
+static grub_err_t
+grub_e820_add_region (struct grub_e820_mmap *e820_map, int *e820_num,
+                      grub_uint64_t start, grub_uint64_t size,
+                      grub_uint32_t type)
+{
+  int n = *e820_num;
+
+  if ((n > 0) && (e820_map[n - 1].addr + e820_map[n - 1].size == start) &&
+      (e820_map[n - 1].type == type))
+      e820_map[n - 1].size += size;
+  else
+    {
+      e820_map[n].addr = start;
+      e820_map[n].size = size;
+      e820_map[n].type = type;
+      (*e820_num)++;
+    }
+  return GRUB_ERR_NONE;
+}
+
 ```
 
 
