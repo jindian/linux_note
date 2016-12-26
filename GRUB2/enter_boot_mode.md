@@ -293,6 +293,12 @@ $97 = 20480
                 (unsigned long) real_mode_target,
                 (unsigned) real_size,
                 (unsigned) efi_mmap_size);
+(gdb) p /x real_mode_target 
+$3 = 0x8b000
+(gdb) p /x real_size 
+$4 = 0x5000
+(gdb) p /x efi_mmap_size 
+$5 = 0x0
 
   if (! real_mode_target)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot allocate real mode pages");
@@ -303,6 +309,22 @@ $97 = 20480
                                            real_mode_target,
                                            (real_size + efi_mmap_size));
     if (err)
+(gdb) p ch.next 
+$6 = (struct grub_relocator_chunk *) 0x7fda990
+(gdb) p /x ch.size
+$7 = 0x5000
+(gdb) p /x ch.srcv
+$8 = 0x7feae60
+(gdb) p /x ch.target
+$9 = 0x8b000
+(gdb) p /x ch.nsubchunks
+$10 = 0x1
+(gdb) p /x ch.src
+$11 = 0x7feae60
+(gdb) p /x ch.subchunks
+$12 = 0x7fa2d60
+(gdb) p err
+$13 = GRUB_ERR_NONE
      return err;
     real_mode_mem = get_virtual_current_address (ch);
   }
@@ -311,6 +333,8 @@ $97 = 20480
 $228 = (void *) 0x7feae60
 (gdb) p efi_mmap_buf 
 $235 = (void *) 0x7fefe60
+(gdb) p /x real_size 
+$20 = 0x5000
 
   grub_dprintf ("linux", "real_mode_mem = %lx\n",
                 (unsigned long) real_mode_mem);
@@ -958,25 +982,15 @@ document print_scanline_events_in_grub_mmap_iterate
 end
 ```
 
-The input parameters of the hook function to find the target address of real mode code as follow
-
-```input_parameters_of_hook_real_mode_target
-(gdb) p lastaddr 
-$136 = 0
-(gdb) p /x scanline_events[i].pos
-$138 = 0x9fc00
-(gdb) p /x lasttype 
-$139 = 0x1
-```
-
 The result of real_mode_target
+
 ```result_of_real_mode_target
 (gdb) p /x real_mode_target 
-$141 = 0x8b000
-(gdb) p real_size 
-$142 = 20480
-(gdb) p efi_mmap_size 
-$143 = 0
+$3 = 0x8b000
+(gdb) p /x real_size 
+$4 = 0x5000
+(gdb) p /x efi_mmap_size 
+$5 = 0x0
 ```
 
 The region of real mode code is betwen 0x10000 and 0x90000
@@ -1016,7 +1030,6 @@ grub-core/loader/i386/linux.c:495
       real_mode_target = ((addr + size) - (real_size + efi_mmap_size));
       return 1;
     }
-
 ```
 
 Allocates memory start from real_mode_target.
