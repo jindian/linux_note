@@ -932,7 +932,28 @@ end
 
 ```
 
+The input parameters of the hook function to find the target address of real mode code as follow
 
+```input_parameters_of_hook_real_mode_target
+(gdb) p lastaddr 
+$136 = 0
+(gdb) p /x scanline_events[i].pos
+$138 = 0x9fc00
+(gdb) p /x lasttype 
+$139 = 0x1
+```
+
+The result of real_mode_target
+```result_of_real_mode_target
+(gdb) p /x real_mode_target 
+$141 = 0x8b000
+(gdb) p real_size 
+$142 = 20480
+(gdb) p efi_mmap_size 
+$143 = 0
+```
+
+The region of real mode code is betwen 0x10000 and 0x90000
 
 ```real_mode_code_space
 
