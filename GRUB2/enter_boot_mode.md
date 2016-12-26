@@ -303,6 +303,10 @@ $97 = 20480
     real_mode_mem = get_virtual_current_address (ch);
   }
   efi_mmap_buf = (grub_uint8_t *) real_mode_mem + real_size;
+(gdb) p real_mode_mem 
+$228 = (void *) 0x7feae60
+(gdb) p efi_mmap_buf 
+$235 = (void *) 0x7fefe60
 
   grub_dprintf ("linux", "real_mode_mem = %lx\n",
                 (unsigned long) real_mode_mem);
@@ -318,6 +322,10 @@ $97 = 20480
 
   grub_dprintf ("linux", "code32_start = %x\n",
                 (unsigned) params->code32_start);
+(gdb) p /x params->code32_start 
+$236 = 0x1000000
+(gdb) p linux_cmdline 
+$237 = 0x7fda8b0 "BOOT_IMAGE=/boot/vmlinuz-2.6.32.69 root=/dev/sda"
 
   auto int NESTED_FUNC_ATTR hook_fill (grub_uint64_t, grub_uint64_t,
                                   grub_memory_type_t);
@@ -1133,8 +1141,6 @@ $217 = 0x5000
 $218 = 0x7fe1860
 (gdb) p /x chunk->next 
 $219 = 0x7fda880
-(gdb) p /x chunk->srcv 
-$220 = 0x0
 (gdb) p *out
 $224 = (grub_relocator_chunk_t) 0x7fe1860
 }
