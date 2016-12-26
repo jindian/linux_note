@@ -625,9 +625,9 @@ $82 = (grub_video_adapter_t) 0x0
 }
 ```
 
-Find number of regions of the entire memory. Inside grub_mmap_iterate, it involves grub_machine_mmap_iterate twice, the first time counts the number of mapping memory in system with BIOS call, mapping memory doesn't reflex entire system memory, and the second time fills data struct scanline_events which mapping entire memory in current system, routine grub_mmap_iterate finally return regions reflexing entire memory, it's done by hook function.
+Find size of memory used for mapping system memory with find_mmap_size.
 
-```memory_mapping
+```find_memory_size_for_mapping_system_memory
 
 grub-core/loader/i386/linux.c:150
 
@@ -664,8 +664,11 @@ $2 = 4216
 (gdb) p sizeof (struct grub_e820_mmap)
 $3 = 20
 }
+```
 
--------------------------------------------------------------------------------------------------------------
+grub_mmap_iterate is used several times in grub_linux_boot, not only in find_mmap_size. Inside grub_mmap_iterate, it queries system memory with BIOS call in grub_machine_mmap_iterate to get number of mapped memory regions in current system, then allocates memory to save memory information reflexing all memory in the system and sort them. Different purposes are satisfied with dedicated hook function to grub_mmap_iterate.
+
+```grub_mmap_iterate
 
 grub-core/mmap/mmap.c:38
 
@@ -953,7 +956,6 @@ end
 document print_scanline_events_in_grub_mmap_iterate
         Print scanline_events in grub_mmap_iterate
 end
-
 ```
 
 The input parameters of the hook function to find the target address of real mode code as follow
