@@ -71,6 +71,8 @@ Next in grub_linux_boot before involving grub_relocator32_boot, what preparation
 1. Set video mode with grub_video_set_mode.
 2. Setup video mode with grub_linux_setup_video
 3. Initialize video parameters
+4. Allocate memory for linux parameters and added memory regions to e820 map
+5. Get relstart and involve it to transfer control to linux code
 
 
 
@@ -92,6 +94,10 @@ grub_linux_boot
     |--get_virtual_current_address
     |--grub_mmap_iterate(fill_hook)                        //add memory regions to e820 map 
     |--grub_relocator32_boot
+        |--grub_relocator_alloc_chunk_align                //allocate memory for relocate code
+        |--grub_relocator_prepare_relocs
+        |--((void (*) (void)) relst) ()                    //involve real start of linux
+
 
 ```
 
