@@ -68,9 +68,9 @@ $71 = (struct grub_preboot *) 0x0
 
 Next in grub_linux_boot before involving grub_relocator32_boot, what preparations are done before grub transfers control to linux source code?
 
-1. Set video mode with grub_video_set_mode.
-2. Setup video mode with grub_linux_setup_video
-3. Initialize video parameters
+1. Set video mode with grub_video_set_mode with configuration in environment parameter
+2. Setup video mode with grub_linux_setup_video to linux_params
+3. Initialize video parameters of linux_params
 4. Allocate memory for linux parameters and added memory regions to e820 map
 5. Get relstart and involve it to transfer control to linux code
 
@@ -157,10 +157,6 @@ $72 = 0x0
     {
 #if ACCEPTS_PURE_TEXT
       err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0, 0);
-(gdb) s
-grub_video_set_mode (modestring=modestring@entry=0x7f734d6 "text", 
-    modemask=modemask@entry=0, modevalue=modevalue@entry=0)
-    at video/video.c:493
 #else
       err = grub_video_set_mode (DEFAULT_VIDEO_MODE,
                                  GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
@@ -429,6 +425,11 @@ $241 = 6
 ```
 
 ```vedio_parameter_intialization
+
+grub_video_set_mode (modestring=modestring@entry=0x7f734d6 "text", 
+    modemask=modemask@entry=0, modevalue=modevalue@entry=0)
+    at video/video.c:493
+
 grub-core/video/video.c:489
 
 grub_err_t
@@ -577,6 +578,9 @@ $79 = 0x7fe1980 "text"
 ......
 
 -------------------------------------------------------------------------------------------------------------
+
+grub_linux_setup_video (params=0x7f73ad8 <linux_params>)
+    at loader/i386/linux.c:280
 
 grub-core/loader/i386/linux.c:273
 
