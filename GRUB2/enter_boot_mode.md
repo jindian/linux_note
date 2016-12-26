@@ -1303,6 +1303,208 @@ grub_e820_add_region (struct grub_e820_mmap *e820_map, int *e820_num,
 
 ```
 
+In grub_relocator allocate memory for the destination of relocated code and move relocate code to destionation from grub_relocator32_start which defined in relocator32.S.
+
+```grub_relocator32_boot
+
+grub_relocator32_boot (rel=0x7fdb210, state=..., avoid_efi_bootservices=0)
+    at lib/i386/relocator.c:167
+
+grub-core/lib/i386/relocator.c:156
+
+grub_err_t
+grub_relocator32_boot (struct grub_relocator *rel,
+                       struct grub_relocator32_state state,
+                       int avoid_efi_bootservices)
+{
+  grub_err_t err;
+  void *relst;
+  grub_relocator_chunk_t ch;
+
+  err = grub_relocator_alloc_chunk_align (rel, &ch, 0,
+                                          (0xffffffff - RELOCATOR_SIZEOF (32))
+                                          + 1, RELOCATOR_SIZEOF (32), 16,
+                                          GRUB_RELOCATOR_PREFERENCE_NONE,
+                                          avoid_efi_bootservices);
+  if (err)
+    return err;
+
+  grub_relocator32_eax = state.eax;
+  grub_relocator32_ebx = state.ebx;
+  grub_relocator32_ecx = state.ecx;
+  grub_relocator32_edx = state.edx;
+  grub_relocator32_eip = state.eip;
+  grub_relocator32_esp = state.esp;
+  grub_relocator32_ebp = state.ebp;
+  grub_relocator32_esi = state.esi;
+  grub_relocator32_edi = state.edi;
+
+  grub_memmove (get_virtual_current_address (ch), &grub_relocator32_start,
+                RELOCATOR_SIZEOF (32));
+(gdb) p ch.srcv 
+$21 = (void *) 0x9df000
+(gdb) p &grub_relocator32_start 
+$22 = (grub_uint8_t *) 0x7f96600 <grub_relocator32_start> "\211\306\005\t"
+
+  err = grub_relocator_prepare_relocs (rel, get_physical_target_address (ch),
+                                       &relst, NULL);
+  if (err)
+    return err;
+
+  asm volatile ("cli");
+  ((void (*) (void)) relst) ();
+
+  /* Not reached.  */
+  return GRUB_ERR_NONE;
+}
+
+-------------------------------------------------------------------------------------------------------------
+
+grub_memmove (dest=0x9df000, src=0x7f96600 <grub_relocator32_start>, 
+    n=n@entry=208) at kern/misc.c:52
+
+grub-core/kern/misc.c:46
+
+void *
+grub_memmove (void *dest, const void *src, grub_size_t n)
+{
+  char *d = (char *) dest;
+  const char *s = (const char *) src;
+
+  if (d < s)
+    while (n--)
+      *d++ = *s++;
+  else
+    {
+      d += n;
+      s += n;
+
+      while (n--)
+        *--d = *--s;
+    }
+
+  return dest;
+}
+
+-------------------------------------------------------------------------------------------------------------
+
+grub_relocator_prepare_relocs (rel=rel@entry=0x7fdb210, addr=10350592, 
+    relstart=relstart@entry=0x7fbac, relsize=0x0) at lib/relocator.c:1488
+
+grub-core/lib/relocator.c:1485
+
+grub_err_t
+grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
+                               void **relstart, grub_size_t *relsize)
+{
+  grub_uint8_t *rels;
+  grub_uint8_t *rels0;
+  struct grub_relocator_chunk *sorted;
+  grub_size_t nchunks = 0;
+  unsigned j;
+  struct grub_relocator_chunk movers_chunk;
+
+  grub_dprintf ("relocator", "Preparing relocs (size=%ld)\n",
+                (unsigned long) rel->relocators_size);
+
+  if (!malloc_in_range (rel, 0, ~(grub_addr_t)0 - rel->relocators_size + 1,
+                        grub_relocator_align,
+                        rel->relocators_size, &movers_chunk, 1, 1))
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
+  movers_chunk.srcv = rels = rels0
+    = grub_map_memory (movers_chunk.src, movers_chunk.size);
+
+  if (relsize)
+    *relsize = rel->relocators_size;
+
+  grub_dprintf ("relocator", "Relocs allocated at %p\n", movers_chunk.srcv);
+
+  {
+    unsigned i;
+    grub_size_t count[257];
+    struct grub_relocator_chunk *from, *to, *tmp;
+
+    grub_memset (count, 0, sizeof (count));
+
+    {
+        struct grub_relocator_chunk *chunk;
+        for (chunk = rel->chunks; chunk; chunk = chunk->next)
+          {
+            grub_dprintf ("relocator", "chunk %p->%p, 0x%lx\n",
+                          (void *) chunk->src, (void *) chunk->target,
+                          (unsigned long) chunk->size);
+            nchunks++;
+            count[(chunk->src & 0xff) + 1]++;
+          }
+    }
+    from = grub_malloc (nchunks * sizeof (sorted[0]));
+    to = grub_malloc (nchunks * sizeof (sorted[0]));
+    if (!from || !to)
+      {
+        grub_free (from);
+        grub_free (to);
+        return grub_errno;
+      }
+
+    for (j = 0; j < 256; j++)
+      count[j+1] += count[j];
+
+    {
+      struct grub_relocator_chunk *chunk;
+      for (chunk = rel->chunks; chunk; chunk = chunk->next)
+        from[count[chunk->src & 0xff]++] = *chunk;
+    }
+
+    for (i = 1; i < GRUB_CPU_SIZEOF_VOID_P; i++)
+      {
+        grub_memset (count, 0, sizeof (count));
+        for (j = 0; j < nchunks; j++)
+          count[((from[j].src >> (8 * i)) & 0xff) + 1]++;
+        for (j = 0; j < 256; j++)
+          count[j+1] += count[j];
+        for (j = 0; j < nchunks; j++)
+          to[count[(from[j].src >> (8 * i)) & 0xff]++] = from[j];
+        tmp = to;
+        to = from;
+        from = tmp;
+      }
+    sorted = from;
+    grub_free (to);
+  }
+
+  for (j = 0; j < nchunks; j++)
+    {
+      grub_dprintf ("relocator", "sorted chunk %p->%p, 0x%lx\n",
+                    (void *) sorted[j].src, (void *) sorted[j].target,
+                    (unsigned long) sorted[j].size);
+      if (sorted[j].src < sorted[j].target)
+        {
+          grub_cpu_relocator_backward ((void *) rels,
+                                       sorted[j].srcv,
+                                       grub_map_memory (sorted[j].target,
+                                                        sorted[j].size),
+                                       sorted[j].size);
+          rels += grub_relocator_backward_size;
+        }
+      if (sorted[j].src > sorted[j].target)
+        {
+          grub_cpu_relocator_forward ((void *) rels,
+                                      sorted[j].srcv,
+                                      grub_map_memory (sorted[j].target,
+                                                       sorted[j].size),
+                                      sorted[j].size);
+          rels += grub_relocator_forward_size;
+        }
+      if (sorted[j].src == sorted[j].target)
+        grub_arch_sync_caches (sorted[j].srcv, sorted[j].size);
+    }
+  grub_cpu_relocator_jumper ((void *) rels, (grub_addr_t) addr);
+  *relstart = rels0;
+  grub_free (sorted);
+  return GRUB_ERR_NONE;
+}
+
+```
 
 LINKS:
 =============================================================================================================
