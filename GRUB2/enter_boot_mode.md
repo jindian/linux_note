@@ -90,7 +90,8 @@ grub_linux_boot
     |--grub_mmap_iterate(hook)                             //find memory region for real mode code.
     |--grub_relocator_alloc_chunk_addr
     |--get_virtual_current_address
-    |--|--grub_mmap_iterate(fill_hook)                     //add memory regions to e820 map 
+    |--grub_mmap_iterate(fill_hook)                        //add memory regions to e820 map 
+    |--grub_relocator32_boot
 
 ```
 
@@ -1244,12 +1245,12 @@ Breakpoint 12, hook_fill (addr=654336, size=1024, type=GRUB_MEMORY_RESERVED)
     at loader/i386/linux.c:594
 Breakpoint 12, hook_fill (addr=983040, size=65536, type=GRUB_MEMORY_RESERVED)
     at loader/i386/linux.c:594
-Breakpoint 12, hook_fill (addr=1048576, size=133160960, 
-    type=GRUB_MEMORY_AVAILABLE) at loader/i386/linux.c:594
-Breakpoint 12, hook_fill (addr=134209536, size=8192, 
-    type=GRUB_MEMORY_RESERVED) at loader/i386/linux.c:594
-Breakpoint 12, hook_fill (addr=4294705152, size=262144, 
-    type=GRUB_MEMORY_RESERVED) at loader/i386/linux.c:594
+Breakpoint 12, hook_fill (addr=1048576, size=133160960, type=GRUB_MEMORY_AVAILABLE) 
+    at loader/i386/linux.c:594
+Breakpoint 12, hook_fill (addr=134209536, size=8192, type=GRUB_MEMORY_RESERVED)
+    at loader/i386/linux.c:594
+Breakpoint 12, hook_fill (addr=4294705152, size=262144, type=GRUB_MEMORY_RESERVED)
+    at loader/i386/linux.c:594
 
 grub-core/loader/i386/linux.c:253
 
