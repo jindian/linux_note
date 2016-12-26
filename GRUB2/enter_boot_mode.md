@@ -88,6 +88,8 @@ grub_linux_boot
             |--grub_machine_mmap_iterate (fill_hook)       //with fill_hook to map all memory
                 |--grub_bios_interrupt
     |--grub_mmap_iterate(hook)                             //find memory region for real mode code.
+    |--grub_relocator_alloc_chunk_addr
+    |--get_virtual_current_address
 
 ```
 
@@ -992,6 +994,179 @@ grub-core/loader/i386/linux.c:495
     }
 
 ```
+
+Allocates memory start from real_mode_target
+
+```grub_relocator_alloc_chunk_addr
+
+grub_relocator_alloc_chunk_addr (rel=0x7fdb100, out=out@entry=0x7fc84, 
+    target=569344, size=20480) at lib/relocator.c:1219
+
+grub-core/lib/relocator.c:1211
+
+grub_err_t
+grub_relocator_alloc_chunk_addr (struct grub_relocator *rel,
+                                 grub_relocator_chunk_t *out,
+                                 grub_phys_addr_t target, grub_size_t size)
+{
+  struct grub_relocator_chunk *chunk;
+  grub_phys_addr_t min_addr = 0, max_addr;
+
+  if (target > ~size)
+    return grub_error (GRUB_ERR_BUG, "address is out of range");
+
+  adjust_limits (rel, &min_addr, &max_addr, target, target);
+
+  for (chunk = rel->chunks; chunk; chunk = chunk->next)
+    if ((chunk->target <= target && target < chunk->target + chunk->size)
+        || (target <= chunk->target && chunk->target < target + size))
+      return grub_error (GRUB_ERR_BUG, "overlap detected");
+
+  chunk = grub_malloc (sizeof (struct grub_relocator_chunk));
+  if (!chunk)
+    return grub_errno;
+
+  grub_dprintf ("relocator",
+                "min_addr = 0x%llx, max_addr = 0x%llx, target = 0x%llx\n",
+                (unsigned long long) min_addr, (unsigned long long) max_addr,
+                (unsigned long long) target);
+(gdb) p /x min_addr 
+$179 = 0x0
+(gdb) p /x max_addr 
+$180 = 0x100000
+(gdb) p /x target 
+$181 = 0x8b000
+
+  do
+    {
+      /* A trick to improve Linux allocation.  */
+#if defined (__i386__) || defined (__x86_64__)
+      if (target < 0x100000)
+        if (malloc_in_range (rel, rel->highestnonpostaddr, ~(grub_addr_t)0, 1,
+                             size, chunk, 0, 1))
+          {
+            if (rel->postchunks > chunk->src)
+              rel->postchunks = chunk->src;
+            break;
+          }
+#endif
+      if (malloc_in_range (rel, target, max_addr, 1, size, chunk, 1, 0))
+        break;
+
+      if (malloc_in_range (rel, min_addr, target, 1, size, chunk, 0, 0))
+        break;
+
+      if (malloc_in_range (rel, rel->highestnonpostaddr, ~(grub_addr_t)0, 1,
+                           size, chunk, 0, 1))
+        {
+          if (rel->postchunks > chunk->src)
+            rel->postchunks = chunk->src;
+          break;
+        }
+
+      grub_dprintf ("relocator", "not allocated\n");
+      grub_free (chunk);
+      return grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
+    }
+  while (0);
+
+  grub_dprintf ("relocator", "allocated 0x%llx/0x%llx\n",
+                (unsigned long long) chunk->src, (unsigned long long) target);
+
+  if (rel->highestaddr < target + size)
+    rel->highestaddr = target + size;
+
+  if (rel->highestaddr < chunk->src + size)
+    rel->highestaddr = chunk->src + size;
+
+  if (chunk->src < rel->postchunks)
+    {
+      if (rel->highestnonpostaddr < target + size)
+        rel->highestnonpostaddr = target + size;
+
+      if (rel->highestnonpostaddr < chunk->src + size)
+        rel->highestnonpostaddr = chunk->src + size;
+    }
+
+  grub_dprintf ("relocator", "relocators_size=%ld\n",
+                (unsigned long) rel->relocators_size);
+
+  if (chunk->src < target)
+    rel->relocators_size += grub_relocator_backward_size;
+  if (chunk->src > target)
+    rel->relocators_size += grub_relocator_forward_size;
+
+  grub_dprintf ("relocator", "relocators_size=%ld\n",
+                (unsigned long) rel->relocators_size);
+
+  chunk->target = target;
+  chunk->size = size;
+  chunk->next = rel->chunks;
+  rel->chunks = chunk;
+  grub_dprintf ("relocator", "cur = %p, next = %p\n", rel->chunks,
+                rel->chunks->next);
+
+  chunk->srcv = grub_map_memory (chunk->src, chunk->size);
+  *out = chunk;
+#ifdef DEBUG_RELOCATOR
+  grub_memset (chunk->srcv, 0xfa, chunk->size);
+  grub_mm_check ();
+#endif
+  return GRUB_ERR_NONE;
+}
+
+-------------------------------------------------------------------------------------------------------------
+
+adjust_limits (rel=rel@entry=0x7fdb100, min_addr=min_addr@entry=0x7fbbc, 
+    max_addr=max_addr@entry=0x7fbc0, in_min=569344, in_max=569344)
+    at lib/relocator.c:1195
+
+grub-core/lib/relocator.c:1188
+
+static void
+adjust_limits (struct grub_relocator *rel,
+               grub_phys_addr_t *min_addr, grub_phys_addr_t *max_addr,
+               grub_phys_addr_t in_min, grub_phys_addr_t in_max)
+{
+  struct grub_relocator_chunk *chunk;
+
+  *min_addr = 0;
+  *max_addr = rel->postchunks;
+
+(gdb) p /x *min_addr 
+$154 = 0x0
+(gdb) p /x *max_addr 
+$155 = 0xffffffff
+
+  /* Keep chunks in memory in the same order as they'll be after relocation.  */
+  for (chunk = rel->chunks; chunk; chunk = chunk->next)
+    {
+      if (chunk->target > in_max && chunk->src < *max_addr
+          && chunk->src < rel->postchunks)
+        *max_addr = chunk->src;
+      if (chunk->target + chunk->size <= in_min
+          && chunk->src + chunk->size > *min_addr
+          && chunk->src < rel->postchunks)
+        *min_addr = chunk->src + chunk->size;
+    }
+(gdb) p /x *max_addr 
+$168 = 0x100000
+(gdb) p /x *min_addr 
+$169 = 0x0
+}
+
+-------------------------------------------------------------------------------------------------------------
+
+malloc_in_range (rel=rel@entry=0x7fdb100, start=0, end=end@entry=4294967295, 
+    align=1, size=20480, res=0x7fe1860, from_low_priv=0, collisioncheck=1)
+    at lib/relocator.c:431
+
+grub-core/lib/relocator.c:415
+
+
+
+```
+
 
 LINKS:
 =============================================================================================================
