@@ -1077,9 +1077,19 @@ $181 = 0x8b000
     rel->highestaddr = target + size;
 
   if (rel->highestaddr < chunk->src + size)
+(gdb) p /x rel->highestaddr
+$206 = 0x90000
+(gdb) p /x chunk->src
+$208 = 0x7feae60
+(gdb) p /x size
+$209 = 0x5000
     rel->highestaddr = chunk->src + size;
 
   if (chunk->src < rel->postchunks)
+(gdb) p /x rel->highestaddr 
+$211 = 0x7fefe60
+(gdb) p /x rel->postchunks 
+$213 = 0x7feae60
     {
       if (rel->highestnonpostaddr < target + size)
         rel->highestnonpostaddr = target + size;
@@ -1098,6 +1108,8 @@ $181 = 0x8b000
 
   grub_dprintf ("relocator", "relocators_size=%ld\n",
                 (unsigned long) rel->relocators_size);
+(gdb) p rel->relocators_size 
+$215 = 61
 
   chunk->target = target;
   chunk->size = size;
@@ -1113,6 +1125,18 @@ $181 = 0x8b000
   grub_mm_check ();
 #endif
   return GRUB_ERR_NONE;
+(gdb) p /x chunk->target 
+$216 = 0x8b000
+(gdb) p /x chunk->size
+$217 = 0x5000
+(gdb) p /x rel->chunks 
+$218 = 0x7fe1860
+(gdb) p /x chunk->next 
+$219 = 0x7fda880
+(gdb) p /x chunk->srcv 
+$220 = 0x0
+(gdb) p *out
+$224 = (grub_relocator_chunk_t) 0x7fe1860
 }
 
 -------------------------------------------------------------------------------------------------------------
@@ -1156,13 +1180,6 @@ $169 = 0x0
 }
 
 -------------------------------------------------------------------------------------------------------------
-
-malloc_in_range (rel=rel@entry=0x7fdb100, start=0, end=end@entry=4294967295, 
-    align=1, size=20480, res=0x7fe1860, from_low_priv=0, collisioncheck=1)
-    at lib/relocator.c:431
-
-grub-core/lib/relocator.c:415
-
 
 
 ```
