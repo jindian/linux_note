@@ -1181,7 +1181,13 @@ $169 = 0x0
 
 -------------------------------------------------------------------------------------------------------------
 
+grub-core/lib/relocator.c:415
 
+static int
+malloc_in_range (struct grub_relocator *rel,
+                 grub_addr_t start, grub_addr_t end, grub_addr_t align,
+                 grub_size_t size, struct grub_relocator_chunk *res,
+                 int from_low_priv, int collisioncheck)
 ```
 
 
