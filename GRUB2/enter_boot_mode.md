@@ -1406,6 +1406,10 @@ grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
 
   grub_dprintf ("relocator", "Preparing relocs (size=%ld)\n",
                 (unsigned long) rel->relocators_size);
+(gdb) p /x rel->relocators_size 
+$26 = 0x3d
+(gdb) p grub_relocator_align 
+$27 = 1
 
   if (!malloc_in_range (rel, 0, ~(grub_addr_t)0 - rel->relocators_size + 1,
                         grub_relocator_align,
@@ -1415,7 +1419,15 @@ grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
     = grub_map_memory (movers_chunk.src, movers_chunk.size);
 
   if (relsize)
+(gdb) p /x movers_chunk.src
+$30 = 0x9df0d0
+(gdb) p /x movers_chunk.size
+$31 = 0x3d
+(gdb) p movers_chunk.srcv
+$33 = (void *) 0x9df0d0
     *relsize = rel->relocators_size;
+(gdb) p /x rel->relocators_size 
+$37 = 0x3d
 
   grub_dprintf ("relocator", "Relocs allocated at %p\n", movers_chunk.srcv);
 
@@ -1438,6 +1450,10 @@ grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
           }
     }
     from = grub_malloc (nchunks * sizeof (sorted[0]));
+(gdb) p nchunks 
+$38 = 4
+(gdb) p sizeof (sorted[0])
+$39 = 28
     to = grub_malloc (nchunks * sizeof (sorted[0]));
     if (!from || !to)
       {
@@ -1499,8 +1515,12 @@ grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
         grub_arch_sync_caches (sorted[j].srcv, sorted[j].size);
     }
   grub_cpu_relocator_jumper ((void *) rels, (grub_addr_t) addr);
+(gdb) p /x addr
+$64 = 0x9df000
   *relstart = rels0;
   grub_free (sorted);
+(gdb) p *relstart 
+$67 = (void *) 0x9df0d0
   return GRUB_ERR_NONE;
 }
 
