@@ -1665,8 +1665,35 @@ $12 = {0, 3, 0 <repeats 95 times>, 1, 0 <repeats 159 times>}
       for (chunk = rel->chunks; chunk; chunk = chunk->next)
 (gdb) p count
 $14 = {0, 3 <repeats 96 times>, 4 <repeats 160 times>}
+(gdb) p from[0]
+$3 = {next = 0x40, src = 2817, srcv = 0x44, target = 3585, size = 72, 
+  subchunks = 0x1201, nsubchunks = 76}
+(gdb) p from[1]
+$4 = {next = 0x1401, src = 80, srcv = 0x3801, target = 84, size = 4097, 
+  subchunks = 0x58, nsubchunks = 6145}
+(gdb) p from[2]
+$5 = {next = 0x5c, src = 15105, srcv = 0x60, target = 10753, size = 100, 
+  subchunks = 0x2901, nsubchunks = 104}
+(gdb) p from[3]
+$6 = {next = 0x2f01, src = 108, srcv = 0x101, target = 112, size = 257, 
+  subchunks = 0x74, nsubchunks = 257}
         from[count[chunk->src & 0xff]++] = *chunk;
     }
+
+(gdb) p from[0]
+$53 = {next = 0x40, src = 2817, srcv = 0x44, target = 3585, size = 72, 
+  subchunks = 0x1201, nsubchunks = 76}
+(gdb) p from[1]
+$54 = {next = 0x1401, src = 80, srcv = 0x3801, target = 84, size = 4097, 
+  subchunks = 0x58, nsubchunks = 6145}
+(gdb) p from[2]
+$55 = {next = 0x7fe1970, src = 10350592, srcv = 0x9df000, target = 10350592, 
+  size = 208, subchunks = 0x7f930c0, nsubchunks = 1}
+(gdb) p from[3]
+$56 = {next = 0x2f01, src = 108, srcv = 0x101, target = 112, size = 257, 
+  subchunks = 0x74, nsubchunks = 257}
+(gdb) p count
+$57 = {6, 3 <repeats 95 times>, 5, 4 <repeats 160 times>}
 
     for (i = 1; i < GRUB_CPU_SIZEOF_VOID_P; i++)
       {
