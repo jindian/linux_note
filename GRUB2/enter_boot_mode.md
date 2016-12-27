@@ -1378,6 +1378,16 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel,
   struct grub_relocator_chunk *chunk;
 
   if (max_addr > ~size)
+(gdb) p /x min_addr
+$1 = 0x0
+(gdb) p /x max_addr
+$2 = 0xffffff30
+(gdb) p /x size
+$3 = 0xd0
+(gdb) p /x align 
+$4 = 0x10
+(gdb) p preference 
+$5 = 0
     max_addr = ~size;
 
 #ifdef GRUB_MACHINE_PCBIOS
@@ -1386,6 +1396,10 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel,
 #endif
 
   grub_dprintf ("relocator", "chunks = %p\n", rel->chunks);
+(gdb) p /x max_addr
+$6 = 0xffffff2f
+(gdb) p /x min_addr
+$7 = 0x1000
 
   chunk = grub_malloc (sizeof (struct grub_relocator_chunk));
   if (!chunk)
@@ -1399,6 +1413,10 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel,
 		    (unsigned long long) chunk->src,
 		    (unsigned long long) chunk->src);
       grub_dprintf ("relocator", "chunks = %p\n", rel->chunks);
+(gdb) p /x chunk->src
+$9 = 0x9df000
+(gdb) p /x rel->chunks 
+$10 = 0x7fe1970
       chunk->target = chunk->src;
       chunk->size = size;
       chunk->next = rel->chunks;
@@ -1406,6 +1424,20 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel,
       chunk->srcv = grub_map_memory (chunk->src, chunk->size);
       *out = chunk;
       return GRUB_ERR_NONE;
+(gdb) p /x chunk->target 
+$11 = 0x9df000
+(gdb) p /x chunk->size
+size      size_t    sizetype  
+(gdb) p /x chunk->size
+$12 = 0xd0
+(gdb) p /x chunk->next 
+$13 = 0x7fe1970
+(gdb) p /x rel->chunks 
+$14 = 0x7fa46f0
+(gdb) p /x chunk
+$15 = 0x7fa46f0
+(gdb) p /x chunk->srcv 
+$16 = 0x9df000
     }
 
   adjust_limits (rel, &min_addr2, &max_addr2, min_addr, max_addr);
