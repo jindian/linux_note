@@ -1,5 +1,5 @@
 Enter Boot Mode
-==============================================================================================================
+=============================================================================================================
 
 The entry of boot mode is grub_cmd_boot, after end user selected an operating system, grub executes the menu entry and finally involves grub_command_execute with module name 'boot' as input parameter. grub_cmd_boot function as follow, it's very simple just involves grub_loader_boot.
 
@@ -1546,9 +1546,9 @@ $16 = 0x9df000
 #endif
   return GRUB_ERR_NONE;
 }
+```
 
--------------------------------------------------------------------------------------------------------------
-
+```grub_memmove
 grub_memmove (dest=0x9df000, src=0x7f96600 <grub_relocator32_start>, 
     n=n@entry=208) at kern/misc.c:52
 
@@ -1574,9 +1574,15 @@ grub_memmove (void *dest, const void *src, grub_size_t n)
 
   return dest;
 }
+```
 
--------------------------------------------------------------------------------------------------------------
+Result of grub_memmove in destination, address start from 0x9df000 size 0xd0
 
+![grub_memmove_in_grub_relocator32_boot](/GRUB2/grub_memmove_in_grub_relocator32_boot.png)
+
+Continue routines in grub_relocator32_boot
+
+```grub_relocator_prepare_relocs
 grub_relocator_prepare_relocs (rel=rel@entry=0x7fdb210, addr=10350592, 
     relstart=relstart@entry=0x7fbac, relsize=0x0) at lib/relocator.c:1488
 
