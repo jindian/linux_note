@@ -1601,10 +1601,16 @@ grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
 
   grub_dprintf ("relocator", "Preparing relocs (size=%ld)\n",
                 (unsigned long) rel->relocators_size);
-(gdb) p /x rel->relocators_size 
-$26 = 0x3d
+(gdb) p /x addr
+$2 = 0x9df000
+(gdb) p /x relstart 
+$3 = 0x7fbac
+(gdb) p /x relsize 
+$4 = 0x0
+(gdb) p rel->relocators_size 
+$5 = 61
 (gdb) p grub_relocator_align 
-$27 = 1
+$6 = 1
 
   if (!malloc_in_range (rel, 0, ~(grub_addr_t)0 - rel->relocators_size + 1,
                         grub_relocator_align,
@@ -1612,17 +1618,11 @@ $27 = 1
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
   movers_chunk.srcv = rels = rels0
     = grub_map_memory (movers_chunk.src, movers_chunk.size);
+$7 = {next = 0x5600, src = 10350800, srcv = 0x42c0, target = 0, size = 61, 
+  subchunks = 0x7f80df0, nsubchunks = 1}
 
   if (relsize)
-(gdb) p /x movers_chunk.src
-$30 = 0x9df0d0
-(gdb) p /x movers_chunk.size
-$31 = 0x3d
-(gdb) p movers_chunk.srcv
-$33 = (void *) 0x9df0d0
     *relsize = rel->relocators_size;
-(gdb) p /x rel->relocators_size 
-$37 = 0x3d
 
   grub_dprintf ("relocator", "Relocs allocated at %p\n", movers_chunk.srcv);
 
@@ -1646,9 +1646,9 @@ $37 = 0x3d
     }
     from = grub_malloc (nchunks * sizeof (sorted[0]));
 (gdb) p nchunks 
-$38 = 4
-(gdb) p sizeof (sorted[0])
-$39 = 28
+$11 = 4
+(gdb) p count
+$12 = {0, 3, 0 <repeats 95 times>, 1, 0 <repeats 159 times>}
     to = grub_malloc (nchunks * sizeof (sorted[0]));
     if (!from || !to)
       {
@@ -1663,6 +1663,8 @@ $39 = 28
     {
       struct grub_relocator_chunk *chunk;
       for (chunk = rel->chunks; chunk; chunk = chunk->next)
+(gdb) p count
+$14 = {0, 3 <repeats 96 times>, 4 <repeats 160 times>}
         from[count[chunk->src & 0xff]++] = *chunk;
     }
 
