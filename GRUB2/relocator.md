@@ -322,6 +322,12 @@ $1 = {next = 0x5600, src = 10350800, srcv = 0x9df0d0, target = 0, size = 61,
 
     grub_memset (count, 0, sizeof (count));
 
+(gdb) print_chunks 
+chunk: 0x7fa46f0, src = 0x9df000, target = 0x9df000, srcv = 0x9df000, size = 0xd0
+chunk: 0x7fe1970, src = 0x7feae60, target = 0x8b000, srcv = 0x7feae60, size = 0x5000
+chunk: 0x7fda990, src = 0x782d000, target = 0x782d000, srcv = 0x782d000, size = 0x2906cc
+chunk: 0x7fdb1e0, src = 0x100000, target = 0x1000000, srcv = 0x100000, size = 0x8df000
+
     {
         struct grub_relocator_chunk *chunk;
 	for (chunk = rel->chunks; chunk; chunk = chunk->next)
@@ -348,12 +354,26 @@ $3 = {0, 3, 0 <repeats 95 times>, 1, 0 <repeats 159 times>}
 
     for (j = 0; j < 256; j++)
       count[j+1] += count[j];
+(gdb) p count
+$4 = {0, 3 <repeats 96 times>, 4 <repeats 160 times>}
 
     {
       struct grub_relocator_chunk *chunk;
       for (chunk = rel->chunks; chunk; chunk = chunk->next)
 	from[count[chunk->src & 0xff]++] = *chunk;
     }
+(gdb) p from[0]
+$5 = {next = 0x7fe1970, src = 10350592, srcv = 0x9df000, target = 10350592, 
+  size = 208, subchunks = 0x7f930c0, nsubchunks = 1}
+(gdb) p from[1]
+$6 = {next = 0x7fdb1e0, src = 126013440, srcv = 0x782d000, 
+  target = 126013440, size = 2688716, subchunks = 0x7fb5c40, nsubchunks = 1}
+(gdb) p from[2]
+$7 = {next = 0x0, src = 1048576, srcv = 0x100000, target = 16777216, 
+  size = 9302016, subchunks = 0x7fd99d0, nsubchunks = 1}
+(gdb) p from[3]
+$8 = {next = 0x7fda990, src = 134131296, srcv = 0x7feae60, target = 569344, 
+  size = 20480, subchunks = 0x7fa2d60, nsubchunks = 1}
 
     for (i = 1; i < GRUB_CPU_SIZEOF_VOID_P; i++)
       {
@@ -368,6 +388,19 @@ $3 = {0, 3, 0 <repeats 95 times>, 1, 0 <repeats 159 times>}
 	to = from;
 	from = tmp;
       }
+(gdb) p from[0]
+$9 = {next = 0x0, src = 1048576, srcv = 0x100000, target = 16777216, 
+  size = 9302016, subchunks = 0x7fd99d0, nsubchunks = 1}
+(gdb) p from[1]
+$10 = {next = 0x7fe1970, src = 10350592, srcv = 0x9df000, target = 10350592, 
+  size = 208, subchunks = 0x7f930c0, nsubchunks = 1}
+(gdb) p from[2]
+$11 = {next = 0x7fdb1e0, src = 126013440, srcv = 0x782d000, 
+  target = 126013440, size = 2688716, subchunks = 0x7fb5c40, nsubchunks = 1}
+(gdb) p from[3]
+$12 = {next = 0x7fda990, src = 134131296, srcv = 0x7feae60, target = 569344, 
+  size = 20480, subchunks = 0x7fa2d60, nsubchunks = 1}
+
     sorted = from;
     grub_free (to);
   }
@@ -400,6 +433,10 @@ $3 = {0, 3, 0 <repeats 95 times>, 1, 0 <repeats 159 times>}
     }
   grub_cpu_relocator_jumper ((void *) rels, (grub_addr_t) addr);
   *relstart = rels0;
+(gdb) p rels
+$13 = (grub_uint8_t *) 0x9df106 "\270"
+(gdb) p *relstart 
+$14 = (void *) 0x9df0d0
   grub_free (sorted);
   return GRUB_ERR_NONE;
 }
