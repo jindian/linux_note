@@ -1,7 +1,6 @@
-Enter Boot Mode
-=============================================================================================================
+# Enter Boot Mode
 
-The entry of boot mode is grub_cmd_boot, after end user selected an operating system, grub executes the menu entry and finally involves grub_command_execute with module name 'boot' as input parameter. grub_cmd_boot function as follow, it's very simple just involves grub_loader_boot.
+The entry of boot mode is grub\_cmd\_boot, after end user selected an operating system, grub executes the menu entry and finally involves grub\_command\_execute with module name 'boot' as input parameter. grub\_cmd\_boot function as follow, it's very simple just involves grub\_loader\_boot.
 
 ```grub_cmd_boot
 /* boot */
@@ -66,19 +65,17 @@ $71 = (struct grub_preboot *) 0x0
 }
 ```
 
-Next in grub_linux_boot before involving grub_relocator32_boot, what preparations are done before grub transfers control to linux source code?
+Next in grub\_linux\_boot before involving grub\_relocator32\_boot, what preparations are done before grub transfers control to linux source code?
 
-1. Set video mode with grub_video_set_mode with configuration in environment parameter
-2. Setup video mode with grub_linux_setup_video to linux_params
-3. Initialize video parameters of linux_params
+1. Set video mode with grub\_video\_set\_mode with configuration in environment parameter
+2. Setup video mode with grub\_linux\_setup\_video to linux\_params
+3. Initialize video parameters of linux\_params
 4. Allocate memory in specific memory area for real mode code
 5. Save linux parameters and linux command line to real mode memory
 6. Add system memory region to e820 memory map in real mode memory
-5. Initialize registers and involve grub_relocator32_boot
+7. Initialize registers and involve grub\_relocator32\_boot
 
-
-
-Call context of grub_linux_boot
+Call context of grub\_linux\_boot
 
 ```context_grub_linux_boot
 grub_linux_boot
@@ -98,9 +95,8 @@ grub_linux_boot
     |--grub_relocator32_boot
         |--grub_relocator_alloc_chunk_align                //allocate memory for relocate code
         |--grub_relocator_prepare_relocs
-        |--((void (*) (void)) relst) ()                    //involve real start of linux
-
-
+        |--grub_cpu_relocator_jumper                       //set assembly instructions in specified address
+        |--((void (*) (void)) relst) ()
 ```
 
 ```grub_linux_boot
@@ -451,7 +447,6 @@ $241 = 6
 ```
 
 ```vedio_parameter_intialization
-
 grub_video_set_mode (modestring=modestring@entry=0x7f734d6 "text", 
     modemask=modemask@entry=0, modevalue=modevalue@entry=0)
     at video/video.c:493
@@ -627,7 +622,7 @@ $81 = 0x0
 (gdb) p driver_id 
 $83 = GRUB_VIDEO_DRIVER_NONE
     return 1;
-    
+
   err = grub_video_get_info_and_fini (&mode_info, &framebuffer);
 
   if (err)
@@ -651,10 +646,9 @@ $82 = (grub_video_adapter_t) 0x0
 }
 ```
 
-Find size of memory used for mapping system memory with find_mmap_size.
+Find size of memory used for mapping system memory with find\_mmap\_size.
 
 ```find_memory_size_for_mapping_system_memory
-
 grub-core/loader/i386/linux.c:150
 
 /* Find the optimal number of pages for the memory map. */
@@ -692,10 +686,9 @@ $3 = 20
 }
 ```
 
-grub_mmap_iterate is used several times in grub_linux_boot, not only in find_mmap_size. Inside grub_mmap_iterate, it queries system memory with BIOS call in grub_machine_mmap_iterate to get number of mapped memory regions in current system, then allocates memory to save memory information reflexing all memory in the system and sort them. Different purposes are satisfied with dedicated hook function to grub_mmap_iterate.
+grub\_mmap\_iterate is used several times in grub\_linux\_boot, not only in find\_mmap\_size. Inside grub\_mmap\_iterate, it queries system memory with BIOS call in grub\_machine\_mmap\_iterate to get number of mapped memory regions in current system, then allocates memory to save memory information reflexing all memory in the system and sort them. Different purposes are satisfied with dedicated hook function to grub\_mmap\_iterate.
 
 ```grub_mmap_iterate
-
 grub-core/mmap/mmap.c:38
 
 grub_err_t
@@ -963,10 +956,9 @@ $74 = 0x2
   grub_free (scanline_events);
   return GRUB_ERR_NONE;
 }
-
 ```
 
-Add print_scanline_events_in_grub_mmap_iterate in gdb_grub.in, it helps print content of entire scanline_events.
+Add print\_scanline\_events\_in\_grub\_mmap\_iterate in gdb\_grub.in, it helps print content of entire scanline\_events.
 
 ```print_scanline_events_in_grub_mmap_iterate
 define print_scanline_events_in_grub_mmap_iterate
@@ -984,7 +976,7 @@ document print_scanline_events_in_grub_mmap_iterate
 end
 ```
 
-The result of real_mode_target
+The result of real\_mode\_target
 
 ```result_of_real_mode_target
 (gdb) p /x real_mode_target 
@@ -998,7 +990,6 @@ $5 = 0x0
 The region of real mode code is betwen 0x10000 and 0x90000
 
 ```real_mode_code_space
-
 grub-core/loader/i386/linux.c:495
 
   auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
@@ -1034,10 +1025,9 @@ grub-core/loader/i386/linux.c:495
     }
 ```
 
-Allocates memory start from real_mode_target.
+Allocates memory start from real\_mode\_target.
 
 ```grub_relocator_alloc_chunk_addr
-
 grub_relocator_alloc_chunk_addr (rel=0x7fdb100, out=out@entry=0x7fc84, 
     target=569344, size=20480) at lib/relocator.c:1219
 
@@ -1227,10 +1217,10 @@ malloc_in_range (struct grub_relocator *rel,
                  int from_low_priv, int collisioncheck)
 ```
 
-Add memory regions to e820 map with hook_fill
+Add memory regions to e820 map with hook\_fill
 
 ```add_to_e820_map
-  auto int NESTED_FUNC_ATTR hook_fill (grub_uint64_t, grub_uint64_t,
+auto int NESTED_FUNC_ATTR hook_fill (grub_uint64_t, grub_uint64_t,
                                   grub_memory_type_t);
   int NESTED_FUNC_ATTR hook_fill (grub_uint64_t addr, grub_uint64_t size,
                                   grub_memory_type_t type)
@@ -1300,11 +1290,12 @@ grub_e820_add_region (struct grub_e820_mmap *e820_map, int *e820_num,
     }
   return GRUB_ERR_NONE;
 }
-
 ```
 
-LINKS:
-=============================================================================================================
+# LINKS:
 
- * [Sweep line algorithm](https://en.wikipedia.org/wiki/Sweep_line_algorithm)
- * [Scanline rendering](https://en.wikipedia.org/wiki/Scanline_rendering)
+* [Sweep line algorithm](https://en.wikipedia.org/wiki/Sweep_line_algorithm)
+* [Scanline rendering](https://en.wikipedia.org/wiki/Scanline_rendering)
+
+
+
