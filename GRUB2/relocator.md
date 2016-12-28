@@ -1,10 +1,8 @@
-Relocator, prepare before transfer to linux
-========================================================================================================================================
+# Relocator, prepare before transfer to linux
 
-In grub_relocator allocate memory for the destination of relocated code and move relocate code to destionation from grub_relocator32_start which defined in relocator32.S.
+In grub\_relocator allocate memory for the destination of relocated code and move relocate code to destionation from grub\_relocator32\_start which defined in relocator32.S.
 
 ```grub_relocator32_boot
-
 grub_relocator32_boot (rel=0x7fdb210, state=..., avoid_efi_bootservices=0)
     at lib/i386/relocator.c:167
 
@@ -65,12 +63,12 @@ grub-core/lib/relocator.c:1316
 
 grub_err_t
 grub_relocator_alloc_chunk_align (struct grub_relocator *rel,
-				  grub_relocator_chunk_t *out,
-				  grub_phys_addr_t min_addr,
-				  grub_phys_addr_t max_addr,
-				  grub_size_t size, grub_size_t align,
-				  int preference,
-				  int avoid_efi_boot_services)
+                  grub_relocator_chunk_t *out,
+                  grub_phys_addr_t min_addr,
+                  grub_phys_addr_t max_addr,
+                  grub_size_t size, grub_size_t align,
+                  int preference,
+                  int avoid_efi_boot_services)
 {
   grub_addr_t min_addr2 = 0, max_addr2;
   struct grub_relocator_chunk *chunk;
@@ -104,12 +102,12 @@ $7 = 0x1000
     return grub_errno;
 
   if (malloc_in_range (rel, min_addr, max_addr, align,
-		       size, chunk,
-		       preference != GRUB_RELOCATOR_PREFERENCE_HIGH, 1))
+               size, chunk,
+               preference != GRUB_RELOCATOR_PREFERENCE_HIGH, 1))
     {
       grub_dprintf ("relocator", "allocated 0x%llx/0x%llx\n",
-		    (unsigned long long) chunk->src,
-		    (unsigned long long) chunk->src);
+            (unsigned long long) chunk->src,
+            (unsigned long long) chunk->src);
       grub_dprintf ("relocator", "chunks = %p\n", rel->chunks);
 (gdb) p /x chunk->src
 $9 = 0x9df000
@@ -140,22 +138,22 @@ $16 = 0x9df000
 
   adjust_limits (rel, &min_addr2, &max_addr2, min_addr, max_addr);
   grub_dprintf ("relocator", "Adjusted limits from %lx-%lx to %lx-%lx\n",
-		(unsigned long) min_addr, (unsigned long) max_addr,
-		(unsigned long) min_addr2, (unsigned long) max_addr2);
+        (unsigned long) min_addr, (unsigned long) max_addr,
+        (unsigned long) min_addr2, (unsigned long) max_addr2);
 
   do
     {
       if (malloc_in_range (rel, min_addr2, max_addr2, align,
-			   size, chunk, 1, 1))
-	break;
+               size, chunk, 1, 1))
+    break;
 
       if (malloc_in_range (rel, rel->highestnonpostaddr, ~(grub_addr_t)0, 1,
-			   size, chunk, 0, 1))
-	{
-	  if (rel->postchunks > chunk->src)
-	    rel->postchunks = chunk->src;
-	  break;
-	}
+               size, chunk, 0, 1))
+    {
+      if (rel->postchunks > chunk->src)
+        rel->postchunks = chunk->src;
+      break;
+    }
 
       return grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
     }
@@ -164,27 +162,27 @@ $16 = 0x9df000
   {
     int found = 0;
     auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
-				    grub_memory_type_t);
+                    grub_memory_type_t);
     int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t sz,
-			       grub_memory_type_t type)
+                   grub_memory_type_t type)
     {
       grub_uint64_t candidate;
       if (type != GRUB_MEMORY_AVAILABLE)
-	return 0;
+    return 0;
       candidate = ALIGN_UP (addr, align);
       if (candidate < min_addr)
-	candidate = ALIGN_UP (min_addr, align);
+    candidate = ALIGN_UP (min_addr, align);
       if (candidate + size > addr + sz
-	  || candidate > ALIGN_DOWN (max_addr, align))
-	return 0;
+      || candidate > ALIGN_DOWN (max_addr, align))
+    return 0;
       if (preference == GRUB_RELOCATOR_PREFERENCE_HIGH)
-	candidate = ALIGN_DOWN (min (addr + sz - size, max_addr), align);
+    candidate = ALIGN_DOWN (min (addr + sz - size, max_addr), align);
       if (!found || (preference == GRUB_RELOCATOR_PREFERENCE_HIGH
-		     && candidate > chunk->target))
-	chunk->target = candidate;
+             && candidate > chunk->target))
+    chunk->target = candidate;
       if (!found || (preference == GRUB_RELOCATOR_PREFERENCE_LOW
-		     && candidate < chunk->target))
-	chunk->target = candidate;
+             && candidate < chunk->target))
+    chunk->target = candidate;
       found = 1;
       return 0;
     }
@@ -205,23 +203,23 @@ $16 = 0x9df000
     {
       struct grub_relocator_chunk *chunk2;
       for (chunk2 = rel->chunks; chunk2; chunk2 = chunk2->next)
-	if ((chunk2->target <= chunk->target
-	     && chunk->target < chunk2->target + chunk2->size)
-	    || (chunk->target <= chunk2->target && chunk2->target
-		< chunk->target + size))
-	  {
-	    if (preference == GRUB_RELOCATOR_PREFERENCE_HIGH)
-	      chunk->target = ALIGN_DOWN (chunk2->target, align);
-	    else
-	      chunk->target = ALIGN_UP (chunk2->target + chunk2->size, align);
-	    break;
-	  }
+    if ((chunk2->target <= chunk->target
+         && chunk->target < chunk2->target + chunk2->size)
+        || (chunk->target <= chunk2->target && chunk2->target
+        < chunk->target + size))
+      {
+        if (preference == GRUB_RELOCATOR_PREFERENCE_HIGH)
+          chunk->target = ALIGN_DOWN (chunk2->target, align);
+        else
+          chunk->target = ALIGN_UP (chunk2->target + chunk2->size, align);
+        break;
+      }
       if (!chunk2)
-	break;
+    break;
     }
 
   grub_dprintf ("relocator", "relocators_size=%ld\n",
-		(unsigned long) rel->relocators_size);
+        (unsigned long) rel->relocators_size);
 
   if (chunk->src < chunk->target)
     rel->relocators_size += grub_relocator_backward_size;
@@ -229,13 +227,13 @@ $16 = 0x9df000
     rel->relocators_size += grub_relocator_forward_size;
 
   grub_dprintf ("relocator", "relocators_size=%ld\n",
-		(unsigned long) rel->relocators_size);
+        (unsigned long) rel->relocators_size);
 
   chunk->size = size;
   chunk->next = rel->chunks;
   rel->chunks = chunk;
   grub_dprintf ("relocator", "cur = %p, next = %p\n", rel->chunks,
-		rel->chunks->next);
+        rel->chunks->next);
   chunk->srcv = grub_map_memory (chunk->src, chunk->size);
   *out = chunk;
 #ifdef DEBUG_RELOCATOR
@@ -245,6 +243,8 @@ $16 = 0x9df000
   return GRUB_ERR_NONE;
 }
 ```
+
+Copy content from source to destination with grub_memmove
 
 ```grub_memmove
 grub_memmove (dest=0x9df000, src=0x7f96600 <grub_relocator32_start>, 
@@ -274,11 +274,11 @@ grub_memmove (void *dest, const void *src, grub_size_t n)
 }
 ```
 
-Result of grub_memmove in destination, address start from 0x9df000 size 0xd0
+Result of grub\_memmove in destination, address start from 0x9df000 size 0xd0
 
 ![grub_memmove_in_grub_relocator32_boot](/GRUB2/grub_memmove_in_grub_relocator32_boot.png)
 
-Continue routines in grub_relocator32_boot
+Continue routines in grub\_relocator32\_boot
 
 ```grub_relocator_prepare_relocs
 grub_relocator_prepare_relocs (rel=rel@entry=0x7fdb210, addr=10350592, 
@@ -445,5 +445,7 @@ $64 = 0x9df000
 $67 = (void *) 0x9df0d0
   return GRUB_ERR_NONE;
 }
-
 ```
+
+
+
