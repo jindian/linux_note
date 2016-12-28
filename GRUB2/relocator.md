@@ -48,21 +48,21 @@ $22 = (grub_uint8_t *) 0x7f96600 <grub_relocator32_start> "\211\306\005\t"
     return err;
 
 (gdb) x/10i $eip
-   0x7f9e3a5 <grub_relocator32_boot+183>:	cli    
-   0x7f9e3a6 <grub_relocator32_boot+184>:	call *-0x10(%ebp)
-   0x7f9e3a9 <grub_relocator32_boot+187>:	
+   0x7f9e3a5 <grub_relocator32_boot+183>:    cli    
+   0x7f9e3a6 <grub_relocator32_boot+184>:    call *-0x10(%ebp)
+   0x7f9e3a9 <grub_relocator32_boot+187>:    
     jmp    0x7f9e3ad <grub_relocator32_boot+191>
-   0x7f9e3ab <grub_relocator32_boot+189>:	mov    %eax,%ebx
-   0x7f9e3ad <grub_relocator32_boot+191>:	lea    -0x8(%ebp),%esp
-   0x7f9e3b0 <grub_relocator32_boot+194>:	mov    %ebx,%eax
-   0x7f9e3b2 <grub_relocator32_boot+196>:	pop    %ebx
-   0x7f9e3b3 <grub_relocator32_boot+197>:	pop    %esi
-   0x7f9e3b4 <grub_relocator32_boot+198>:	pop    %ebp
-   0x7f9e3b5 <grub_relocator32_boot+199>:	ret    $0x28
+   0x7f9e3ab <grub_relocator32_boot+189>:    mov    %eax,%ebx
+   0x7f9e3ad <grub_relocator32_boot+191>:    lea    -0x8(%ebp),%esp
+   0x7f9e3b0 <grub_relocator32_boot+194>:    mov    %ebx,%eax
+   0x7f9e3b2 <grub_relocator32_boot+196>:    pop    %ebx
+   0x7f9e3b3 <grub_relocator32_boot+197>:    pop    %esi
+   0x7f9e3b4 <grub_relocator32_boot+198>:    pop    %ebp
+   0x7f9e3b5 <grub_relocator32_boot+199>:    ret    $0x28
 (gdb) info registers ebp
-ebp            0x7fbbc	0x7fbbc
+ebp            0x7fbbc    0x7fbbc
 (gdb) x/w 0x7fbbc-0x10
-0x7fbac:	0x009df0d0
+0x7fbac:    0x009df0d0
   asm volatile ("cli");
   ((void (*) (void)) relst) ();
 
@@ -260,7 +260,7 @@ $16 = 0x9df000
 }
 ```
 
-Copy content from source to destination with grub_memmove
+Copy content from source to destination with grub\_memmove
 
 ```grub_memmove
 grub_memmove (dest=0x9df000, src=0x7f96600 <grub_relocator32_start>, 
@@ -304,7 +304,7 @@ grub-core/lib/relocator.c:1485
 
 grub_err_t
 grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
-			       void **relstart, grub_size_t *relsize)
+                   void **relstart, grub_size_t *relsize)
 {
   grub_uint8_t *rels;
   grub_uint8_t *rels0;
@@ -314,11 +314,11 @@ grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
   struct grub_relocator_chunk movers_chunk;
 
   grub_dprintf ("relocator", "Preparing relocs (size=%ld)\n",
-		(unsigned long) rel->relocators_size);
+        (unsigned long) rel->relocators_size);
 
   if (!malloc_in_range (rel, 0, ~(grub_addr_t)0 - rel->relocators_size + 1,
-			grub_relocator_align,
-			rel->relocators_size, &movers_chunk, 1, 1))
+            grub_relocator_align,
+            rel->relocators_size, &movers_chunk, 1, 1))
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
   movers_chunk.srcv = rels = rels0
     = grub_map_memory (movers_chunk.src, movers_chunk.size);
@@ -330,7 +330,7 @@ $1 = {next = 0x5600, src = 10350800, srcv = 0x9df0d0, target = 0, size = 61,
     *relsize = rel->relocators_size;
 
   grub_dprintf ("relocator", "Relocs allocated at %p\n", movers_chunk.srcv);
-  
+
   {
     unsigned i;
     grub_size_t count[257];
@@ -346,14 +346,14 @@ chunk: 0x7fdb1e0, src = 0x100000, target = 0x1000000, srcv = 0x100000, size = 0x
 
     {
         struct grub_relocator_chunk *chunk;
-	for (chunk = rel->chunks; chunk; chunk = chunk->next)
-	  {
-	    grub_dprintf ("relocator", "chunk %p->%p, 0x%lx\n", 
-			  (void *) chunk->src, (void *) chunk->target,
-			  (unsigned long) chunk->size);
-	    nchunks++;
-	    count[(chunk->src & 0xff) + 1]++;
-	  }
+    for (chunk = rel->chunks; chunk; chunk = chunk->next)
+      {
+        grub_dprintf ("relocator", "chunk %p->%p, 0x%lx\n", 
+              (void *) chunk->src, (void *) chunk->target,
+              (unsigned long) chunk->size);
+        nchunks++;
+        count[(chunk->src & 0xff) + 1]++;
+      }
     }
 (gdb) p nchunks
 $2 = 4
@@ -363,9 +363,9 @@ $3 = {0, 3, 0 <repeats 95 times>, 1, 0 <repeats 159 times>}
     to = grub_malloc (nchunks * sizeof (sorted[0]));
     if (!from || !to)
       {
-	grub_free (from);
-	grub_free (to);
-	return grub_errno;
+    grub_free (from);
+    grub_free (to);
+    return grub_errno;
       }
 
     for (j = 0; j < 256; j++)
@@ -376,7 +376,7 @@ $4 = {0, 3 <repeats 96 times>, 4 <repeats 160 times>}
     {
       struct grub_relocator_chunk *chunk;
       for (chunk = rel->chunks; chunk; chunk = chunk->next)
-	from[count[chunk->src & 0xff]++] = *chunk;
+    from[count[chunk->src & 0xff]++] = *chunk;
     }
 (gdb) p from[0]
 $5 = {next = 0x7fe1970, src = 10350592, srcv = 0x9df000, target = 10350592, 
@@ -393,16 +393,16 @@ $8 = {next = 0x7fda990, src = 134131296, srcv = 0x7feae60, target = 569344,
 
     for (i = 1; i < GRUB_CPU_SIZEOF_VOID_P; i++)
       {
-	grub_memset (count, 0, sizeof (count));
-	for (j = 0; j < nchunks; j++)
-	  count[((from[j].src >> (8 * i)) & 0xff) + 1]++;
-	for (j = 0; j < 256; j++)
-	  count[j+1] += count[j];
-	for (j = 0; j < nchunks; j++)
-	  to[count[(from[j].src >> (8 * i)) & 0xff]++] = from[j];
-	tmp = to;
-	to = from;
-	from = tmp;
+    grub_memset (count, 0, sizeof (count));
+    for (j = 0; j < nchunks; j++)
+      count[((from[j].src >> (8 * i)) & 0xff) + 1]++;
+    for (j = 0; j < 256; j++)
+      count[j+1] += count[j];
+    for (j = 0; j < nchunks; j++)
+      to[count[(from[j].src >> (8 * i)) & 0xff]++] = from[j];
+    tmp = to;
+    to = from;
+    from = tmp;
       }
 (gdb) p from[0]
 $9 = {next = 0x0, src = 1048576, srcv = 0x100000, target = 16777216, 
@@ -424,28 +424,28 @@ $12 = {next = 0x7fda990, src = 134131296, srcv = 0x7feae60, target = 569344,
   for (j = 0; j < nchunks; j++)
     {
       grub_dprintf ("relocator", "sorted chunk %p->%p, 0x%lx\n", 
-		    (void *) sorted[j].src, (void *) sorted[j].target,
-		    (unsigned long) sorted[j].size);
+            (void *) sorted[j].src, (void *) sorted[j].target,
+            (unsigned long) sorted[j].size);
       if (sorted[j].src < sorted[j].target)
-	{
-	  grub_cpu_relocator_backward ((void *) rels,
-				       sorted[j].srcv,
-				       grub_map_memory (sorted[j].target,
-							sorted[j].size),
-				       sorted[j].size);
-	  rels += grub_relocator_backward_size;
-	}
+    {
+      grub_cpu_relocator_backward ((void *) rels,
+                       sorted[j].srcv,
+                       grub_map_memory (sorted[j].target,
+                            sorted[j].size),
+                       sorted[j].size);
+      rels += grub_relocator_backward_size;
+    }
       if (sorted[j].src > sorted[j].target)
-	{
-	  grub_cpu_relocator_forward ((void *) rels,
-				      sorted[j].srcv,
-				      grub_map_memory (sorted[j].target,
-						       sorted[j].size),
-				      sorted[j].size);
-	  rels += grub_relocator_forward_size;
-	}
+    {
+      grub_cpu_relocator_forward ((void *) rels,
+                      sorted[j].srcv,
+                      grub_map_memory (sorted[j].target,
+                               sorted[j].size),
+                      sorted[j].size);
+      rels += grub_relocator_forward_size;
+    }
       if (sorted[j].src == sorted[j].target)
-	grub_arch_sync_caches (sorted[j].srcv, sorted[j].size);
+    grub_arch_sync_caches (sorted[j].srcv, sorted[j].size);
     }
   grub_cpu_relocator_jumper ((void *) rels, (grub_addr_t) addr);
   *relstart = rels0;
@@ -458,35 +458,35 @@ $14 = (void *) 0x9df0d0
 }
 ```
 
-grub_cpu_relocator_backward and grub_cpu_relocator_forward are similar, set values defined in grub-core/lib/i386/relocator_asm.S and move memory from source address to destination one.
+grub\_cpu\_relocator\_backward and grub\_cpu\_relocator\_forward are similar, set values defined in grub-core/lib/i386/relocator\_asm.S and move memory from source address to destination one.
 
 ```grub_cpu_relocator_backward_grub_cpu_relocator_forward
 grub-core/lib/i386/relocator.c:130
 
 void
 grub_cpu_relocator_backward (void *ptr, void *src, void *dest,
-			     grub_size_t size)
+                 grub_size_t size)
 {
   grub_relocator_backward_dest = dest;
   grub_relocator_backward_src = src;
   grub_relocator_backward_chunk_size = size;
 
   grub_memmove (ptr,
-		&grub_relocator_backward_start,
-		RELOCATOR_SIZEOF (_backward));
+        &grub_relocator_backward_start,
+        RELOCATOR_SIZEOF (_backward));
 }
 
 void
 grub_cpu_relocator_forward (void *ptr, void *src, void *dest,
-			     grub_size_t size)
+                 grub_size_t size)
 {
   grub_relocator_forward_dest = dest;
   grub_relocator_forward_src = src;
   grub_relocator_forward_chunk_size = size;
 
   grub_memmove (ptr,
-		&grub_relocator_forward_start,
-		RELOCATOR_SIZEOF (_forward));
+        &grub_relocator_forward_start,
+        RELOCATOR_SIZEOF (_forward));
 }
 ```
 
@@ -524,24 +524,26 @@ grub_cpu_relocator_jumper (void *rels, grub_addr_t addr)
   *(grub_uint8_t *) ptr = 0xe0;
   ptr++;
 (gdb) x/b 0x9df106
-0x9df106:	0xb8
+0x9df106:    0xb8
 (gdb) x/w 0x9df107
-0x9df107:	0x009df000
+0x9df107:    0x009df000
 (gdb) x/b 0x9df107+4
-0x9df10b:	0xff
+0x9df10b:    0xff
 (gdb) x/b 0x9df107+5
-0x9df10c:	0xe0
+0x9df10c:    0xe0
 (gdb) x/10i 0x9df106
-   0x9df106:	mov    $0x9df000,%eax
-   0x9df10b:	jmp    *%eax
-   0x9df10d:	add    %al,(%eax)
-   0x9df10f:	add    %dl,0x7eb4a(%eax)
-   0x9df115:	add    %al,(%eax)
-   0x9df117:	add    %al,(%ebx)
-   0x9df119:	add    %al,(%eax)
-   0x9df11b:	add    %ah,%al
-   0x9df11d:	out    %al,(%dx)
-   0x9df11e:	popa   
+   0x9df106:    mov    $0x9df000,%eax
+   0x9df10b:    jmp    *%eax
+   0x9df10d:    add    %al,(%eax)
+   0x9df10f:    add    %dl,0x7eb4a(%eax)
+   0x9df115:    add    %al,(%eax)
+   0x9df117:    add    %al,(%ebx)
+   0x9df119:    add    %al,(%eax)
+   0x9df11b:    add    %ah,%al
+   0x9df11d:    out    %al,(%dx)
+   0x9df11e:    popa   
 }
 ```
+
+
 
