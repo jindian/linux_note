@@ -47,6 +47,22 @@ $22 = (grub_uint8_t *) 0x7f96600 <grub_relocator32_start> "\211\306\005\t"
   if (err)
     return err;
 
+(gdb) x/10i $eip
+   0x7f9e3a5 <grub_relocator32_boot+183>:	cli    
+   0x7f9e3a6 <grub_relocator32_boot+184>:	call *-0x10(%ebp)
+   0x7f9e3a9 <grub_relocator32_boot+187>:	
+    jmp    0x7f9e3ad <grub_relocator32_boot+191>
+   0x7f9e3ab <grub_relocator32_boot+189>:	mov    %eax,%ebx
+   0x7f9e3ad <grub_relocator32_boot+191>:	lea    -0x8(%ebp),%esp
+   0x7f9e3b0 <grub_relocator32_boot+194>:	mov    %ebx,%eax
+   0x7f9e3b2 <grub_relocator32_boot+196>:	pop    %ebx
+   0x7f9e3b3 <grub_relocator32_boot+197>:	pop    %esi
+   0x7f9e3b4 <grub_relocator32_boot+198>:	pop    %ebp
+   0x7f9e3b5 <grub_relocator32_boot+199>:	ret    $0x28
+(gdb) info registers ebp
+ebp            0x7fbbc	0x7fbbc
+(gdb) x/w 0x7fbbc-0x10
+0x7fbac:	0x009df0d0
   asm volatile ("cli");
   ((void (*) (void)) relst) ();
 
@@ -442,5 +458,90 @@ $14 = (void *) 0x9df0d0
 }
 ```
 
+grub_cpu_relocator_backward and grub_cpu_relocator_forward are similar, set values defined in grub-core/lib/i386/relocator_asm.S and move memory from source address to destination one.
 
+```grub_cpu_relocator_backward_grub_cpu_relocator_forward
+grub-core/lib/i386/relocator.c:130
+
+void
+grub_cpu_relocator_backward (void *ptr, void *src, void *dest,
+			     grub_size_t size)
+{
+  grub_relocator_backward_dest = dest;
+  grub_relocator_backward_src = src;
+  grub_relocator_backward_chunk_size = size;
+
+  grub_memmove (ptr,
+		&grub_relocator_backward_start,
+		RELOCATOR_SIZEOF (_backward));
+}
+
+void
+grub_cpu_relocator_forward (void *ptr, void *src, void *dest,
+			     grub_size_t size)
+{
+  grub_relocator_forward_dest = dest;
+  grub_relocator_forward_src = src;
+  grub_relocator_forward_chunk_size = size;
+
+  grub_memmove (ptr,
+		&grub_relocator_forward_start,
+		RELOCATOR_SIZEOF (_forward));
+}
+```
+
+Set the assembly instructions from address 0x9df106.
+
+```grub_cpu_relocator_jumper
+Breakpoint 6, grub_cpu_relocator_jumper (rels=rels@entry=0x9df106, 
+    addr=addr@entry=10350592) at lib/i386/relocator.c:105
+
+grub-core/lib/i386/relocator.c:103
+
+void
+grub_cpu_relocator_jumper (void *rels, grub_addr_t addr)
+{
+  grub_uint8_t *ptr;
+  ptr = rels;
+#ifdef __x86_64__
+  /* movq imm64, %rax (for relocator) */
+  *(grub_uint8_t *) ptr = 0x48;
+  ptr++;
+  *(grub_uint8_t *) ptr = 0xb8;
+  ptr++;
+  *(grub_uint64_t *) ptr = addr;
+  ptr += sizeof (grub_uint64_t);
+#else
+  /* movl imm32, %eax (for relocator) */
+  *(grub_uint8_t *) ptr = 0xb8;
+  ptr++;
+  *(grub_uint32_t *) ptr = addr;
+  ptr += sizeof (grub_uint32_t);
+#endif
+  /* jmp $eax/$rax */
+  *(grub_uint8_t *) ptr = 0xff;
+  ptr++;
+  *(grub_uint8_t *) ptr = 0xe0;
+  ptr++;
+(gdb) x/b 0x9df106
+0x9df106:	0xb8
+(gdb) x/w 0x9df107
+0x9df107:	0x009df000
+(gdb) x/b 0x9df107+4
+0x9df10b:	0xff
+(gdb) x/b 0x9df107+5
+0x9df10c:	0xe0
+(gdb) x/10i 0x9df106
+   0x9df106:	mov    $0x9df000,%eax
+   0x9df10b:	jmp    *%eax
+   0x9df10d:	add    %al,(%eax)
+   0x9df10f:	add    %dl,0x7eb4a(%eax)
+   0x9df115:	add    %al,(%eax)
+   0x9df117:	add    %al,(%ebx)
+   0x9df119:	add    %al,(%eax)
+   0x9df11b:	add    %ah,%al
+   0x9df11d:	out    %al,(%dx)
+   0x9df11e:	popa   
+}
+```
 
