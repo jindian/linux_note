@@ -1,6 +1,7 @@
 # linux\_note
 
 Debug linux startup with gdb  
+
 Knowledge of assembly, shell, C are needed
 
 # Links
