@@ -260,7 +260,7 @@ $16 = 0x9df000
 }
 ```
 
-Copy content from source to destination with grub\_memmove
+Copy instructions started from grub_relocator32_start to adderss 0x9df000, length 208, 
 
 ```grub_memmove
 grub_memmove (dest=0x9df000, src=0x7f96600 <grub_relocator32_start>, 
@@ -289,10 +289,191 @@ grub_memmove (void *dest, const void *src, grub_size_t n)
   return dest;
 }
 ```
-
 Result of grub\_memmove in destination, address start from 0x9df000 size 0xd0
 
 ![grub_memmove_in_grub_relocator32_boot](/GRUB2/grub_memmove_in_grub_relocator32_boot.png)
+
+Instructions starting from 0x9df000 as follow:
+
+```assembly
+   0x9df000:	mov    %eax,%esi
+   0x9df002:	add    $0x9,%eax
+   0x9df007:	jmp    *%eax
+   0x9df009:	lea    0x48(%esi),%eax
+   0x9df00f:	mov    %eax,0x40(%esi)
+   0x9df015:	lea    0xb0(%esi),%eax
+   0x9df01b:	mov    %eax,0x32(%esi)
+   0x9df021:	lgdtl  0x30(%esi)
+   0x9df028:	ljmp   *0x40(%esi)
+(gdb) info registers esi
+esi            0x9df000	 10350592
+(gdb) x/w 0x9df000+0x40
+0x9df040:	0x009df048
+   0x9df02e:	xchg   %ax,%ax
+   0x9df030:	and    %al,(%eax)
+   0x9df032:	add    %al,(%eax)
+   0x9df034:	add    %al,(%eax)
+   0x9df036:	lea    0x0(%esi),%esi
+   0x9df039:	lea    0x0(%edi,%eiz,1),%edi
+   0x9df040:	add    %al,(%eax)
+   0x9df042:	add    %al,(%eax)
+   0x9df044:	adc    %al,(%eax)
+   0x9df046:	add    %al,(%eax)
+   0x9df048:	mov    $0x18,%eax
+   0x9df04d:	mov    %eax,%ds
+   0x9df04f:	mov    %eax,%es
+   0x9df051:	mov    %eax,%fs
+   0x9df053:	mov    %eax,%gs
+   0x9df055:	mov    %eax,%ss
+   0x9df057:	mov    %cr0,%eax
+   0x9df05a:	and    $0x7fffffff,%eax
+   0x9df05f:	mov    %eax,%cr0
+   0x9df062:	mov    %cr4,%eax
+   0x9df065:	and    $0xffffffdf,%eax
+   0x9df068:	mov    %eax,%cr4
+   0x9df06b:	jmp    0x9df06d
+   0x9df06d:	mov    $0x8b000,%eax
+   0x9df072:	mov    %eax,%esp
+   0x9df074:	mov    $0x0,%eax
+   0x9df079:	mov    %eax,%ebp
+   0x9df07b:	mov    $0x8b000,%eax
+   0x9df080:	mov    %eax,%esi
+   0x9df082:	mov    $0x0,%eax
+   0x9df087:	mov    %eax,%edi
+   0x9df089:	mov    $0x7fcbc,%eax
+   0x9df08e:	mov    $0x0,%ebx
+   0x9df093:	mov    $0x7fe1880,%ecx
+   0x9df098:	mov    $0x400,%edx
+   0x9df09d:	cld    
+   0x9df09e:	ljmp   $0x10,$0x1000000
+   0x9df0a5:	lea    0x0(%esi,%eiz,1),%esi
+   0x9df0a9:	lea    0x0(%edi,%eiz,1),%edi
+   0x9df0b0:	add    %al,(%eax)
+```
+
+Original assembly code of above instructions in memory as follow, where PREAMBLE and RELOAD_GDT defined in grub-core/lib/i386/relocator_common.S
+
+
+```relocator32_assembly
+grub-core/lib/i386/relocator32.S:19
+
+/* The code segment of the protected mode.  */
+#define CODE_SEGMENT	0x10
+
+/* The data segment of the protected mode.  */
+#define DATA_SEGMENT	0x18
+
+#include "relocator_common.S"
+
+	.p2align	4	/* force 16-byte alignment */
+
+VARIABLE(grub_relocator32_start)
+	PREAMBLE
+
+	RELOAD_GDT
+	.code32
+	/* Update other registers. */
+	movl	$DATA_SEGMENT, %eax
+	movl	%eax, %ds
+	movl	%eax, %es
+	movl	%eax, %fs
+	movl	%eax, %gs
+	movl	%eax, %ss
+
+	DISABLE_PAGING
+
+#ifdef __x86_64__
+	/* Disable amd64. */
+	movl	$GRUB_MEMORY_CPU_AMD64_MSR, %ecx
+	rdmsr
+	andl	$(~GRUB_MEMORY_CPU_AMD64_MSR_ON), %eax
+	wrmsr
+#endif
+
+	/* Turn off PAE. */
+	movl	%cr4, %eax
+	andl	$(~GRUB_MEMORY_CPU_CR4_PAE_ON), %eax
+	movl	%eax, %cr4
+
+	jmp	LOCAL(cont2)
+LOCAL(cont2):
+	.code32
+
+	/* mov imm32, %eax */
+	.byte	0xb8
+VARIABLE(grub_relocator32_esp)
+	.long	0
+
+	movl	%eax, %esp
+
+	/* mov imm32, %eax */
+	.byte	0xb8
+VARIABLE(grub_relocator32_ebp)
+	.long	0
+
+	movl	%eax, %ebp
+
+	/* mov imm32, %eax */
+	.byte	0xb8
+VARIABLE(grub_relocator32_esi)
+	.long	0
+
+	movl	%eax, %esi
+
+	/* mov imm32, %eax */
+	.byte	0xb8
+VARIABLE(grub_relocator32_edi)
+	.long	0
+
+	movl	%eax, %edi
+
+	/* mov imm32, %eax */
+	.byte	0xb8
+VARIABLE(grub_relocator32_eax)
+	.long	0
+
+	/* mov imm32, %ebx */
+	.byte	0xbb
+VARIABLE(grub_relocator32_ebx)
+	.long	0
+
+	/* mov imm32, %ecx */
+	.byte	0xb9
+VARIABLE(grub_relocator32_ecx)
+	.long	0
+
+	/* mov imm32, %edx */
+	.byte	0xba
+VARIABLE(grub_relocator32_edx)
+	.long	0
+
+	/* Cleared direction flag is of no problem with any current
+	   payload and makes this implementation easier.  */
+	cld
+
+	.byte	0xea
+VARIABLE(grub_relocator32_eip)
+	.long	0
+	.word	CODE_SEGMENT
+
+	/* GDT. Copied from loader/i386/linux.c. */
+	.p2align	4
+LOCAL(gdt):
+	/* NULL.  */
+	.byte 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+
+	/* Reserved.  */
+	.byte 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+
+	/* Code segment.  */
+	.byte 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x9A, 0xCF, 0x00
+
+	/* Data segment.  */
+	.byte 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x92, 0xCF, 0x00
+LOCAL(gdt_end):
+
+VARIABLE(grub_relocator32_end)
+```
 
 Continue routines in grub\_relocator32\_boot
 
@@ -664,56 +845,5 @@ VARIABLE(grub_relocator_forward_chunk_size)
         rep
         movsb
 VARIABLE(grub_relocator_forward_end)
-
-```
-
-```assembly
-   0x9df000:	mov    %eax,%esi
-   0x9df002:	add    $0x9,%eax
-   0x9df007:	jmp    *%eax
-   0x9df009:	lea    0x48(%esi),%eax
-   0x9df00f:	mov    %eax,0x40(%esi)
-   0x9df015:	lea    0xb0(%esi),%eax
-   0x9df01b:	mov    %eax,0x32(%esi)
-   0x9df021:	lgdtl  0x30(%esi)
-   0x9df028:	ljmp   *0x40(%esi)
-(gdb) info registers esi
-esi            0x9df000	 10350592
-(gdb) x/w 0x9df000+0x40
-0x9df040:	0x009df048
-   0x9df02e:	xchg   %ax,%ax
-```
-
-```assembly
-   0x9df048:	mov    $0x18,%eax
-   0x9df04d:	mov    %eax,%ds
-   0x9df04f:	mov    %eax,%es
-   0x9df051:	mov    %eax,%fs
-   0x9df053:	mov    %eax,%gs
-   0x9df055:	mov    %eax,%ss
-   0x9df057:	mov    %cr0,%eax
-   0x9df05a:	and    $0x7fffffff,%eax
-   0x9df05f:	mov    %eax,%cr0
-   0x9df062:	mov    %cr4,%eax
-   0x9df065:	and    $0xffffffdf,%eax
-   0x9df068:	mov    %eax,%cr4
-   0x9df06b:	jmp    0x9df06d
-   0x9df06d:	mov    $0x8b000,%eax
-   0x9df072:	mov    %eax,%esp
-   0x9df074:	mov    $0x0,%eax
-   0x9df079:	mov    %eax,%ebp
-   0x9df07b:	mov    $0x8b000,%eax
-   0x9df080:	mov    %eax,%esi
-   0x9df082:	mov    $0x0,%eax
-   0x9df087:	mov    %eax,%edi
-   0x9df089:	mov    $0x7fcbc,%eax
-   0x9df08e:	mov    $0x0,%ebx
-   0x9df093:	mov    $0x7fe1880,%ecx
-   0x9df098:	mov    $0x400,%edx
-   0x9df09d:	cld    
-   0x9df09e:	ljmp   $0x10,$0x1000000
-   0x9df0a5:	lea    0x0(%esi,%eiz,1),%esi
-   0x9df0a9:	lea    0x0(%edi,%eiz,1),%edi
-   0x9df0b0:	add    %al,(%eax)
 
 ```
