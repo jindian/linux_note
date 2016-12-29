@@ -458,7 +458,7 @@ $14 = (void *) 0x9df0d0
 }
 ```
 
-grub\_cpu\_relocator\_backward and grub\_cpu\_relocator\_forward are similar, set values defined in grub-core/lib/i386/relocator\_asm.S and move memory from source address to destination one.
+grub\_cpu\_relocator\_backward and grub\_cpu\_relocator\_forward are similar, set values defined in grub-core/lib/i386/relocator\_asm.S and move the code in relocator_asm.S to destitnation. We will further check the code again lator.
 
 ```grub_cpu_relocator_backward_grub_cpu_relocator_forward
 grub-core/lib/i386/relocator.c:130
@@ -555,6 +555,7 @@ In grub_relocator32_boot, it involves function located at address 0x9df0d0, let'
  
 2. Jump to address 0x9df000
 
+Where is following instructions come from?
 
 ```assembly
    0x9df0d0:	mov    $0x1000000,%eax
@@ -577,7 +578,52 @@ In grub_relocator32_boot, it involves function located at address 0x9df0d0, let'
    0x9df104:	rep movsb %ds:(%esi),%es:(%edi)
    0x9df106:	mov    $0x9df000,%eax
    0x9df10b:	jmp    *%eax
+```
 
+The input parameters of grub_cpu_relocator_backward when it involved first time as follow, source address is 0x100000, destination address is 0x1000000, length is 9302016(0x0x8df000).
+
+```input_parameters_of_grub_cpu_relocator_backward
+grub_cpu_relocator_backward (ptr=ptr@entry=0x9df0d0, src=0x100000, 
+    dest=0x1000000, size=9302016) at lib/i386/relocator.c:135
+```
+
+Inside grub_cpu_relocator_backward, it assigns the addresses and length to specified variables, after that it copies instructions starting from grub_relocator_backward_start to address starting at 0x9df0d0, assembly code from grub_relocator_backward_start to grub_relocator_backward_end shown in following code block.
+
+```assembly
+grub-core/lib/i386/relocator_asm.S:24
+
+VARIABLE(grub_relocator_backward_start)
+        /* mov imm32, %eax */
+        .byte   0xb8
+VARIABLE(grub_relocator_backward_dest)
+        .long   0
+        movl    %eax, %edi
+
+        /* mov imm32, %eax */
+        .byte   0xb8
+VARIABLE(grub_relocator_backward_src)
+        .long   0
+        movl    %eax, %esi
+
+        /* mov imm32, %ecx */
+        .byte   0xb9
+VARIABLE(grub_relocator_backward_chunk_size)
+        .long   0
+
+        add     %ecx, %esi
+        add     %ecx, %edi
+
+
+        /* Backward movsb is implicitly off-by-one.  compensate that.  */
+        sub     $1,     %esi
+        sub     $1,     %edi
+
+        /* Backward copy.  */
+        std
+
+        rep
+        movsb
+VARIABLE(grub_relocator_backward_end)
 ```
 
 ```assembly
