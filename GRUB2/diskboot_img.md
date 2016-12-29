@@ -1,5 +1,5 @@
-Disk boot image
-================================
+# Disk boot image
+
 Disk boot image is used as the first sector of the core image when booting from a hard disk. It reads the rest of the core image into memory and starts the kernel. Size of boot image is 512 bytes.
 
 Parameters of read rest grub kernel from disk start from 0x81f4.
