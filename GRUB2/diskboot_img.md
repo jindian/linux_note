@@ -351,3 +351,6 @@ LOCAL(bootit):
         ljmp    $0, $(GRUB_BOOT_MACHINE_KERNEL_ADDR + 0x200)
 
 ```
+
+# Links
+  * [GRUB image files](https://www.gnu.org/software/grub/manual/html_node/Images.html#Images)
