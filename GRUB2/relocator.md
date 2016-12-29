@@ -626,6 +626,42 @@ VARIABLE(grub_relocator_backward_chunk_size)
 VARIABLE(grub_relocator_backward_end)
 ```
 
+The source and target address of array sorted is same, let's check the fourth item of the array, this time grub involves grub_cpu_relocator_forward, the input parameters as follow:
+
+```input_parameters_of_grub_cpu_relocator_forward
+grub_cpu_relocator_forward (ptr=ptr@entry=0x9df0f0, src=0x7feae60, 
+    dest=0x8b000, size=20480) at lib/i386/relocator.c:148
+```
+
+Yes, it's similar behavior with grub_cpu_relocator_backward. Instructions between grub_relocator_forward_start and grub_relocator_forward_end shown in following block.
+
+```assembly
+VARIABLE(grub_relocator_forward_start)
+        /* mov imm32, %eax */
+        .byte   0xb8
+VARIABLE(grub_relocator_forward_dest)
+        .long   0
+        movl    %eax, %edi
+
+        /* mov imm32, %rax */
+        .byte   0xb8
+VARIABLE(grub_relocator_forward_src)
+        .long   0
+        movl    %eax, %esi
+
+        /* mov imm32, %ecx */
+        .byte   0xb9
+VARIABLE(grub_relocator_forward_chunk_size)
+        .long   0
+
+        /* Forward copy.  */
+        cld
+        rep
+        movsb
+VARIABLE(grub_relocator_forward_end)
+
+```
+
 ```assembly
    0x9df000:	mov    %eax,%esi
    0x9df002:	add    $0x9,%eax
