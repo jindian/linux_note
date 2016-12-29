@@ -1,6 +1,6 @@
-# Relocator
+# Relocate instructions
 
-Why relocator needed?
+Why relocation needed?
 
 grub_relocator32_start and grub_relocator32_end are defined in grub-core/lib/i386/relocator32.S
 
