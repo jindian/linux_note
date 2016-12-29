@@ -1,5 +1,5 @@
-grub_main: grub_load_normal_mode
-==============================================================================================================
+# grub_main: grub_load_normal_mode
+
 
 In grub_load_normal_mode, grub initialization load normal module and execute it.
 
@@ -1017,78 +1017,30 @@ $32 = 0x7fefed0 "linux OS"
 ```
 
 Before execute grub_commad_execute ("boot", 0, 0), print all loaded modules as follow:
+
 ```loaded_modules_before_boot
 (gdb) print_all_modules 
-$33 = 0x7fe0e20 "linux"
-$34 = (void (*)(struct grub_dl *)) 0x7f73296
-$35 = 0x7fdacb0 "vbe"
-$36 = (void (*)(struct grub_dl *)) 0x7f7ee36
-$37 = 0x7fdab20 "video_fb"
-$38 = (void (*)(struct grub_dl *)) 0x0
-$39 = 0x7fdd930 "relocator"
-$40 = (void (*)(struct grub_dl *)) 0x0
-$41 = 0x7fdd7c0 "mmap"
-$42 = (void (*)(struct grub_dl *)) 0x7fdc8ba
-$43 = 0x7fe0c90 "video"
-$44 = (void (*)(struct grub_dl *)) 0x0
-$45 = 0x7ff7ec0 "normal"
-$46 = (void (*)(struct grub_dl *)) 0x7f0ec78 <grub_mod_init>
-$47 = 0x7f0ac00 "gzio"
-$48 = (void (*)(struct grub_dl *)) 0x7f081a9 <grub_mod_init>
-$49 = 0x7ff30d0 "gettext"
-$50 = (void (*)(struct grub_dl *)) 0x7ff2692 <grub_mod_init>
-$51 = 0x7ff42c0 "terminal"
-$52 = (void (*)(struct grub_dl *)) 0x7ff39c6 <grub_mod_init>
-$53 = 0x7ff5c50 "crypto"
-$54 = (void (*)(struct grub_dl *)) 0x0
-$33 = 0x7fe0e20 "linux"
-$34 = (void (*)(struct grub_dl *)) 0x7f73296
-$35 = 0x7fdacb0 "vbe"
-$36 = (void (*)(struct grub_dl *)) 0x7f7ee36
-$37 = 0x7fdab20 "video_fb"
-$38 = (void (*)(struct grub_dl *)) 0x0
-$39 = 0x7fdd930 "relocator"
-$40 = (void (*)(struct grub_dl *)) 0x0
-$41 = 0x7fdd7c0 "mmap"
-$42 = (void (*)(struct grub_dl *)) 0x7fdc8ba
-$43 = 0x7fe0c90 "video"
-$44 = (void (*)(struct grub_dl *)) 0x0
-$45 = 0x7ff7ec0 "normal"
-$46 = (void (*)(struct grub_dl *)) 0x7f0ec78 <grub_mod_init>
-$47 = 0x7f0ac00 "gzio"
-$48 = (void (*)(struct grub_dl *)) 0x7f081a9 <grub_mod_init>
-$49 = 0x7ff30d0 "gettext"
-$50 = (void (*)(struct grub_dl *)) 0x7ff2692 <grub_mod_init>
-$51 = 0x7ff42c0 "terminal"
-$52 = (void (*)(struct grub_dl *)) 0x7ff39c6 <grub_mod_init>
-$53 = 0x7ff5c50 "crypto"
-$54 = (void (*)(struct grub_dl *)) 0x0
-$55 = 0x7ff70a0 "extcmd"
-$56 = (void (*)(struct grub_dl *)) 0x0
-$57 = 0x7ff7d50 "boot"
-$58 = (void (*)(struct grub_dl *)) 0x7ff77ca <grub_mod_init>
-$59 = 0x7ff8fd0 "search_fs_uuid"
-$60 = (void (*)(struct grub_dl *)) 0x7ff8977 <grub_mod_init>
-$61 = 0x7ffa0a0 "biosdisk"
-$62 = (void (*)(struct grub_dl *)) 0x7ff9929 <grub_mod_init>
-$63 = 0x7ffa920 "part_msdos"
-$64 = (void (*)(struct grub_dl *)) 0x7ffa558 <grub_mod_init>
-$65 = 0x7ffbe30 "ext2"
-$66 = (void (*)(struct grub_dl *)) 0x7ffb629 <grub_mod_init>
-$67 = 0x7ffc990 "fshelp"
-$68 = (void (*)(struct grub_dl *)) 0x0
-$55 = 0x7ff70a0 "extcmd"
-$56 = (void (*)(struct grub_dl *)) 0x0
-$57 = 0x7ff7d50 "boot"
-$58 = (void (*)(struct grub_dl *)) 0x7ff77ca <grub_mod_init>
-$59 = 0x7ff8fd0 "search_fs_uuid"
-$60 = (void (*)(struct grub_dl *)) 0x7ff8977 <grub_mod_init>
-$61 = 0x7ffa0a0 "biosdisk"
-$62 = (void (*)(struct grub_dl *)) 0x7ff9929 <grub_mod_init>
-$63 = 0x7ffa920 "part_msdos"
-$64 = (void (*)(struct grub_dl *)) 0x7ffa558 <grub_mod_init>
-$65 = 0x7ffbe30 "ext2"
-$66 = (void (*)(struct grub_dl *)) 0x7ffb629 <grub_mod_init>
-$67 = 0x7ffc990 "fshelp"
-$68 = (void (*)(struct grub_dl *)) 0x0
+linux: linux->init: 0x7f73296
+vbe: vbe->init: 0x7f7ee36
+video_fb: video_fb->init: 0x0
+relocator: relocator->init: 0x0
+mmap: mmap->init: 0x7fdcfda
+video: video->init: 0x0
+normal: normal->init: 0x7f0ec78
+gzio: gzio->init: 0x7f081a9
+gettext: gettext->init: 0x7ff2692
+terminal: terminal->init: 0x7ff39c6
+crypto: crypto->init: 0x0
+extcmd: extcmd->init: 0x0
+boot: boot->init: 0x7ff77ca
+search_fs_uuid: search_fs_uuid->init: 0x7ff8977
+biosdisk: biosdisk->init: 0x7ff9929
+part_msdos: part_msdos->init: 0x7ffa558
+ext2: ext2->init: 0x7ffb629
+fshelp: fshelp->init: 0x0
 ```
+
+Load linux mode introduced in a seprate section followed this one.
+
+
+
