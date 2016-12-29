@@ -1,6 +1,6 @@
 # linux\_note
 
-Debug linux startup with gdb  
+Debug grub and linux source code with GDB
 
 Knowledge of assembly, shell, C are needed
 
