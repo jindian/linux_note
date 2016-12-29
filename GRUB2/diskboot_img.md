@@ -1,4 +1,4 @@
-# Disk boot image
+# disk boot image
 
 Disk boot image is used as the first sector of the core image when booting from a hard disk. It reads the rest of the core image into memory and starts the kernel. Size of boot image is 512 bytes.
 
