@@ -1,6 +1,22 @@
-# Relocator, prepare before transfer to linux
+# Relocator
 
-In grub\_relocator allocate memory for the destination of relocated code and move relocate code to destionation from grub\_relocator32\_start which defined in relocator32.S.
+Why relocator needed?
+
+grub_relocator32_start and grub_relocator32_end are defined in grub-core/lib/i386/relocator32.S
+
+grub_relocator_forward_start, grub_relocator_forward_end, grub_relocator_backward_start, grub_relocator_backward_end are defined in grub-core/lib/i386/relocator_asm.S
+
+GRUB initializes variables in above code blocks and copy the code to specified destionantion address, GRUB will execute instructions later before transfering to linux code.
+
+```grub_relocator_code_blocks
+grub_relocator32_start: 0x7f9e080
+grub_relocator32_end: 0x7f9e150
+grub_relocator_forward_start: 0x7f9dee0
+grub_relocator_forward_end: 0x7f9def6
+grub_relocator_backward_start: 0x7f9dec0
+grub_relocator_backward_end: 0x7f9dee0
+```
+
 
 ```grub_relocator32_boot
 grub_relocator32_boot (rel=0x7fdb210, state=..., avoid_efi_bootservices=0)
