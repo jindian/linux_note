@@ -678,7 +678,7 @@ VARIABLE(grub_relocator_forward_end)
    0x9df021:	lgdtl  0x30(%esi)
    0x9df028:	ljmp   *0x40(%esi)
 (gdb) info registers esi
-esi            0x9df000	10350592
+esi            0x9df000	 10350592
 (gdb) x/w 0x9df000+0x40
 0x9df040:	0x009df048
    0x9df02e:	xchg   %ax,%ax
