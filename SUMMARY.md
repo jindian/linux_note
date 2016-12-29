@@ -3,7 +3,7 @@
 * [Introduction](README.md)
 * [GRUB 2](GRUB2/README.md)
     * [Master Boot Record](GRUB2/Master_Boot_Record.md)
-    * [Disk Boot Image](GRUB2/diskboot_img.md)
+    * [disk boot image](GRUB2/diskboot_img.md)
     * [Decompress grub kernel image](GRUB2/decompress_core_image.md)
     * [Decompress grub kernel: lzma decode](GRUB2/lzma_decode.md)
     * [Preparation before grub\_main](GRUB2/before_grub_main.md)
