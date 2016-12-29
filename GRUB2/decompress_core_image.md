@@ -1,5 +1,5 @@
-Decompress grub kernel image
-================================
+# decompress grub kernel image
+
 
 Before continuing real mode code, let's check following parameters first.
 ```assembly

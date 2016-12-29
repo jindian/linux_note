@@ -1,5 +1,5 @@
-Decompress grub kernel: lzma decode
-================================
+# decompress grub kernel: lzma decode
+
 
 Default compression algorithm of grub is lzma(Lempel–Ziv–Markov chain algorithm), This algorithm uses a dictionary compression scheme  and features a high compression ratio, so it is very suitable for embedded applications. Original compressed code located from address 0x8d30, destination address of decompressed code started from address 0x100000, ended at 0x10b7cf.
 
