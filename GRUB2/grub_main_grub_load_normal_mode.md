@@ -54,7 +54,8 @@ grub_load_normal_mode:
                             |--run_menu                 //wait for response from end user or timeout
                             |--grub_menu_get_entry      //get selected entry after run menu
                             |--grub_menu_execute_entry  //execute selected entry
-                            |--grub_command_execute ("boot", 0, 0)
+                                |--grub_script_execute_sourcecode
+                                |--grub_command_execute ("boot", 0, 0)
 ```
 
 Result of grub_show_menu:
