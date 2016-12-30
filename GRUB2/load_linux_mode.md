@@ -42,6 +42,7 @@ $4 = {refcnt = 0, mem = 0x7fb4c70, cmd = 0x7fb4c74, next_siblings = 0x0, childre
 }
 ```
 
+
 ```grub_script_execute
 /* Execute any GRUB pre-parsed command or script.  */
 grub_err_t
