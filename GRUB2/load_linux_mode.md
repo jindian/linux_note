@@ -15,6 +15,8 @@ grub_script_execute_sourcecode
                             |--(ext->func) (&context, argc, args) -> grub_dyncmd_dispatcher
                                 |--grub_dl_load
                                     |--grub_dl_get
+                                    |--grub_dl_load_file
+                                        |--grub_file_open
 
 
 
@@ -378,9 +380,13 @@ grub_dl_load (const char *name)
   const char *grub_dl_dir = grub_env_get ("prefix");
 
   mod = grub_dl_get (name);
+(gdb) p mod
+$18 = (grub_dl_t) 0x0
   if (mod)
     return mod;
 
+(gdb) p grub_dl_dir 
+$19 = 0x7ff8030 "(hd0,msdos1)/boot/grub"
   if (! grub_dl_dir) {
     grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("variable `%s' isn't set"), "prefix");
     return 0;
@@ -388,6 +394,8 @@ grub_dl_load (const char *name)
 
   filename = grub_xasprintf ("%s/" GRUB_TARGET_CPU "-" GRUB_PLATFORM "/%s.mod",
                              grub_dl_dir, name);
+(gdb) p filename 
+$20 = 0x7fe17c0 "(hd0,msdos1)/boot/grub/i386-pc/linux.mod"
   if (! filename)
     return 0;
 
@@ -433,6 +441,137 @@ fshelp: fshelp->init: 0x0
   for (l = grub_dl_head; l; l = l->next)
     if (grub_strcmp (name, l->name) == 0)
       return l;
+
+  return 0;
+}
+```
+
+
+
+```grub_dl_load_file
+
+grub_dl_load_file (filename=0x7fe17c0 "(hd0,msdos1)/boot/grub/i386-pc/linux.mod") at kern/dl.c:671
+
+/* Load a module from the file FILENAME.  */
+grub_dl_t
+grub_dl_load_file (const char *filename)
+{
+  grub_file_t file = NULL;
+  grub_ssize_t size;
+  void *core = 0;
+  grub_dl_t mod = 0;
+
+  file = grub_file_open (filename);
+  if (! file)
+    return 0;
+
+  size = grub_file_size (file);
+  core = grub_malloc (size);
+  if (! core)
+    {
+      grub_file_close (file);
+      return 0;
+    }
+
+  if (grub_file_read (file, core, size) != (int) size)
+    {
+      grub_file_close (file);
+      grub_free (core);
+      return 0;
+    }
+
+  /* We must close this before we try to process dependencies.
+     Some disk backends do not handle gracefully multiple concurrent
+     opens of the same device.  */
+  grub_file_close (file);
+
+  mod = grub_dl_load_core (core, size);
+  grub_free (core);
+  if (! mod)
+    return 0;
+
+  mod->ref_count--;
+  return mod;
+}
+```
+
+
+
+```grub_file_open
+
+grub_file_open (name=0x7fe17c0 "(hd0,msdos1)/boot/grub/i386-pc/linux.mod") at kern/file.c:70
+
+grub-core/kern/file.c:91
+
+grub_file_t
+grub_file_open (const char *name)
+{
+  grub_device_t device = 0;
+  grub_file_t file = 0, last_file = 0;
+  char *device_name;
+  char *file_name;
+  grub_file_filter_id_t filter;
+
+  device_name = grub_file_get_device_name (name);
+  if (grub_errno)
+    goto fail;
+
+  /* Get the file part of NAME.  */
+  file_name = (name[0] == '(') ? grub_strchr (name, ')') : NULL;
+  if (file_name)
+    file_name++;
+  else
+    file_name = (char *) name;
+
+  device = grub_device_open (device_name);
+  grub_free (device_name);
+  if (! device)
+    goto fail;
+
+  file = (grub_file_t) grub_zalloc (sizeof (*file));
+  if (! file)
+    goto fail;
+
+  file->device = device;
+
+  if (device->disk && file_name[0] != '/')
+    /* This is a block list.  */
+    file->fs = &grub_fs_blocklist;
+  else
+    {
+      file->fs = grub_fs_probe (device);
+      if (! file->fs)
+	goto fail;
+    }
+
+  if ((file->fs->open) (file, file_name) != GRUB_ERR_NONE)
+    goto fail;
+
+  for (filter = 0; file && filter < ARRAY_SIZE (grub_file_filters_enabled);
+       filter++)
+    if (grub_file_filters_enabled[filter])
+      {
+	last_file = file;
+	file = grub_file_filters_enabled[filter] (file);
+      }
+  if (!file)
+    grub_file_close (last_file);
+    
+  grub_memcpy (grub_file_filters_enabled, grub_file_filters_all,
+	       sizeof (grub_file_filters_enabled));
+
+  return file;
+
+ fail:
+  if (device)
+    grub_device_close (device);
+
+  /* if (net) grub_net_close (net);  */
+
+  grub_free (file);
+
+  grub_memcpy (grub_file_filters_enabled, grub_file_filters_all,
+	       sizeof (grub_file_filters_enabled));
 
   return 0;
 }
