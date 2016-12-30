@@ -31,6 +31,8 @@ ext2: ext2->init: 0x7ffb629
 fshelp: fshelp->init: 0x0
 ```
 
+Inside grub_script_execute_sourcecode, parse configuration with grub_script_parse and execute it one by one.
+
 ```grub_script_execute_sourcecode
 
 grub-core/script/execute.c:786
@@ -95,75 +97,294 @@ $6 = 0x7ff0000 "setparams 'linux OS'\n\n    set root=(hd0,1)\n    linux /boot/vm
 }
 ```
 
-All parameters of routine grub_script_parse every time it involved
+1. line: "setparams 'linux OS'"
+   parsed_script: {refcnt = 0, mem = 0x7fb53c0, cmd = 0x7fb53c4, next_siblings = 0x0, children = 0x0}
+   
+   function call context
+   grub_script_execute_sourcecode
+       |--grub_script_parse                       //detail of how to parse a line ignored here
+       |--grub_script_execute
+           |--grub_script_execute_cmd
+               |--grub_script_execute_cmdlist
+                   |--grub_script_execute_cmd
+                       |--grub_script_execute_cmdline
+                           |--grub_script_arglist_to_argv
+                           |--grub_command_find
+                           |--(grubcmd->func) (grubcmd, argc, args) -> grub_script_setparams
+                               |--replace_scope
 
-```parameter_of_grub_script_parse
-1.  grub_script_parse (script=0x7ff02e0 "setparams 'linux OS'", 
-        getline=getline@entry=0x7fe74) at script/script.c:350
-```
+2. line: ""
+   parsed_script: {refcnt = 0, mem = 0x7fb5090, cmd = 0x0, next_siblings = 0x0, children = 0x0}
 
+3. line "    set root=(hd0,1)"
+   parsed_script: {refcnt = 0, mem = 0x7fb4fc0, cmd = 0x7fb4fc4, next_siblings = 0x0, children = 0x0}
 
-```grub_script_parse
+```grub_script_execute
+grub_script_execute (script=0x7ff02b0) at script/execute.c:1080
 
-grub-core/script/script.c:340
+grub-core/script/execute.c:1077
 
-/* Parse the script passed in SCRIPT and return the parsed
-   datastructure that is ready to be interpreted.  */
-struct grub_script *
-grub_script_parse (char *script, grub_reader_getline_t getline)
+/* Execute any GRUB pre-parsed command or script.  */
+grub_err_t
+grub_script_execute (struct grub_script *script)
 {
-  struct grub_script *parsed;
-  struct grub_script_mem *membackup;
-  struct grub_lexer_param *lexstate;
-  struct grub_parser_param *parsestate;
-
-  parsed = grub_script_create (0, 0);
-  if (!parsed)
+  if (script == 0)
     return 0;
-(gdb) p *parsed
-$16 = {refcnt = 0, mem = 0x0, cmd = 0x0, next_siblings = 0x0, children = 0x0}
 
-  parsestate = grub_zalloc (sizeof (*parsestate));
-  if (!parsestate)
-    {
-      grub_free (parsed);
-      return 0;
-    }
-$18 = {func_mem = 0x0, err = 0, memused = 0x0, scripts = 0x0, parsed = 0x0, 
-  lexerstate = 0x0}
-
-  /* Initialize the lexer.  */
-  lexstate = grub_script_lexer_init (parsestate, script, getline);
-  if (!lexstate)
-    {
-      grub_free (parsed);
-      grub_free (parsestate);
-      return 0;
-    }
-
-  parsestate->lexerstate = lexstate;
-
-  membackup = grub_script_mem_record (parsestate);
-
-  /* Parse the script.  */
-  if (grub_script_yyparse (parsestate) || parsestate->err)
-    {
-      struct grub_script_mem *memfree;
-      memfree = grub_script_mem_record_stop (parsestate, membackup);
-      grub_script_mem_free (memfree);
-      grub_script_lexer_fini (lexstate);
-      grub_free (parsestate);
-      grub_free (parsed);
-      return 0;
-    }
-
-  parsed->mem = grub_script_mem_record_stop (parsestate, membackup);
-  parsed->cmd = parsestate->parsed;
-  parsed->children = parsestate->scripts;
-
-  grub_script_lexer_fini (lexstate);
-  grub_free (parsestate);
-
-  return parsed;
+  return grub_script_execute_cmd (script->cmd);
 }
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+grub_script_execute_cmd (cmd=0x7fb53c4) at script/execute.c:750
+
+grub-core/script/execute.c:744
+
+static grub_err_t
+grub_script_execute_cmd (struct grub_script_cmd *cmd)
+{
+  int ret;
+  char errnobuf[ERRNO_DIGITS_MAX + 1];
+
+  if (cmd == 0)
+    return 0;
+
+  ret = cmd->exec (cmd);
+
+  grub_snprintf (errnobuf, sizeof (errnobuf), "%d", ret);
+  grub_env_set ("?", errnobuf);
+  return ret;
+}
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+grub_script_execute_cmdlist (list=0x7fb53c4) at script/execute.c:967
+
+/* Execute a block of one or more commands.  */
+grub_err_t
+grub_script_execute_cmdlist (struct grub_script_cmd *list)
+{
+  int ret = 0;
+  struct grub_script_cmd *cmd;
+  
+  /* Loop over every command and execute it.  */
+  for (cmd = list->next; cmd; cmd = cmd->next)
+    {
+      if (active_breaks)
+        break;
+
+      ret = grub_script_execute_cmd (cmd);
+
+(gdb) p function_return 
+$17 = 0
+      if (function_return)
+        break;
+    }
+
+  return ret;
+}
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+Involve grub_script_execute_cmd again, only parameters listed here
+
+grub_script_execute_cmd (cmd=cmd@entry=0x7fb50d4) at script/execute.c:750
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+grub_script_execute_cmdline (cmd=0x7fb50d4) at script/execute.c:859
+
+grub-core/script/execute.c:843
+
+/* Execute a single command line.  */
+grub_err_t
+grub_script_execute_cmdline (struct grub_script_cmd *cmd)
+{
+  struct grub_script_cmdline *cmdline = (struct grub_script_cmdline *) cmd;
+  grub_command_t grubcmd;
+  grub_err_t ret = 0;
+  grub_script_function_t func = 0;
+  char errnobuf[18];
+  char *cmdname;
+  int argc;
+  char **args;
+  int invert;
+  struct grub_script_argv argv = { 0, 0, 0 };
+
+  /* Lookup the command.  */
+  if (grub_script_arglist_to_argv (cmdline->arglist, &argv) || ! argv.args[0])
+    return grub_errno;
+(gdb) p argv
+$6 = {argc = 2, args = 0x7feffa0, script = 0x0}
+(gdb) p argv->args[0]
+$7 = 0x7feff30 "setparams"
+(gdb) p argv->args[1]
+$8 = 0x7fefe70 "linux OS"
+
+  invert = 0;
+  argc = argv.argc - 1;
+  args = argv.args + 1;
+  cmdname = argv.args[0];
+  if (grub_strcmp (cmdname, "!") == 0)
+    {
+      if (argv.argc < 2 || ! argv.args[1])
+	{
+	  grub_script_argv_free (&argv);
+	  return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			     N_("no command is specified"));
+	}
+
+      invert = 1;
+      argc = argv.argc - 2;
+      args = argv.args + 2;
+      cmdname = argv.args[1];
+    }
+  grubcmd = grub_command_find (cmdname);
+(gdb) p cmdname 
+$9 = 0x7feff30 "setparams"
+  if (! grubcmd)
+    {
+      grub_errno = GRUB_ERR_NONE;
+
+      /* It's not a GRUB command, try all functions.  */
+      func = grub_script_function_find (cmdname);
+      if (! func)
+	{
+	  /* As a last resort, try if it is an assignment.  */
+	  char *assign = grub_strdup (cmdname);
+	  char *eq = grub_strchr (assign, '=');
+
+	  if (eq)
+	    {
+	      /* This was set because the command was not found.  */
+	      grub_errno = GRUB_ERR_NONE;
+
+	      /* Create two strings and set the variable.  */
+	      *eq = '\0';
+	      eq++;
+	      grub_script_env_set (assign, eq);
+	    }
+	  grub_free (assign);
+
+	  grub_snprintf (errnobuf, sizeof (errnobuf), "%d", grub_errno);
+	  grub_script_env_set ("?", errnobuf);
+
+	  grub_script_argv_free (&argv);
+	  grub_print_error ();
+
+	  return 0;
+	}
+    }
+
+  /* Execute the GRUB command or function.  */
+  if (grubcmd)
+    {
+      if (grub_extractor_level && !(grubcmd->flags
+				    & GRUB_COMMAND_FLAG_EXTRACTOR))
+	ret = grub_error (GRUB_ERR_EXTRACTOR,
+			  "%s isn't allowed to execute in an extractor",
+			  cmdname);
+      else if ((grubcmd->flags & GRUB_COMMAND_FLAG_BLOCKS) &&
+	       (grubcmd->flags & GRUB_COMMAND_FLAG_EXTCMD))
+	ret = grub_extcmd_dispatcher (grubcmd, argc, args, argv.script);
+      else
+	ret = (grubcmd->func) (grubcmd, argc, args);
+    }
+  else
+    ret = grub_script_function_call (func, argc, args);
+
+  if (invert)
+    {
+      if (ret == GRUB_ERR_TEST_FAILURE)
+	grub_errno = ret = GRUB_ERR_NONE;
+      else if (ret == GRUB_ERR_NONE)
+	ret = grub_error (GRUB_ERR_TEST_FAILURE, N_("false"));
+      else
+	{
+	  grub_print_error ();
+	  ret = GRUB_ERR_NONE;
+	}
+    }
+
+  /* Free arguments.  */
+  grub_script_argv_free (&argv);
+
+  if (grub_errno == GRUB_ERR_TEST_FAILURE)
+    grub_errno = GRUB_ERR_NONE;
+
+  grub_print_error ();
+
+  grub_snprintf (errnobuf, sizeof (errnobuf), "%d", ret);
+  grub_env_set ("?", errnobuf);
+
+  return ret;
+}
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+grub_script_setparams (cmd=<optimized out>, argc=1, args=0x7feffa4)
+    at script/execute.c:191
+
+grub-core/script/execute.c:184
+
+grub_err_t
+grub_script_setparams (grub_command_t cmd __attribute__((unused)),
+		       int argc, char **args)
+{
+  struct grub_script_scope *new_scope;
+  struct grub_script_argv argv = { 0, 0, 0 };
+
+  if (! scope)
+    return GRUB_ERR_INVALID_COMMAND;
+
+  new_scope = grub_malloc (sizeof (*new_scope));
+  if (! new_scope)
+    return grub_errno;
+
+  if (grub_script_argv_make (&argv, argc, args))
+    {
+      grub_free (new_scope);
+      return grub_errno;
+    }
+(gdb) p argv
+$11 = {argc = 1, args = 0x7ff0260, script = 0x0}
+(gdb) p argv->args[0]
+$12 = 0x7feff80 "linux OS"
+
+  new_scope->shifts = 0;
+  new_scope->argv = argv;
+  new_scope->flags = GRUB_SCRIPT_SCOPE_MALLOCED |
+    GRUB_SCRIPT_SCOPE_ARGS_MALLOCED;
+
+  replace_scope (new_scope);
+  return GRUB_ERR_NONE;
+}
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+replace_scope (new_scope=new_scope@entry=0x7ff0280) at script/execute.c:107
+
+grub-core/script/execute.c:104
+
+static void
+replace_scope (struct grub_script_scope *new_scope)
+{
+$14 = {flags = 0, shifts = 134154864, argv = {argc = 1, args = 0x7fefef0, 
+    script = 0x100000}}
+(gdb) p scope->argv.args[0]
+$16 = 0x7fefed0 "linux OS"
+  if (scope)
+    {
+      scope->argv.argc += scope->shifts;
+      scope->argv.args -= scope->shifts;
+
+      if (scope->flags & GRUB_SCRIPT_SCOPE_ARGS_MALLOCED)
+        grub_script_argv_free (&scope->argv);
+
+      if (scope->flags & GRUB_SCRIPT_SCOPE_MALLOCED)
+        grub_free (scope);
+    }
+  scope = new_scope;
+}
+
 ```
