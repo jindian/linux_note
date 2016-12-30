@@ -11,6 +11,7 @@
     * [grub\_main: grub\_load\_moules](GRUB2/grub_main_grub_load_modules.md)
     * [grub\_main: before grub\_load\_normal\_mode](GRUB2/grub_main_before_grub_load_normal_mode.md)
     * [grub\_main: grub\_load\_normal\_mode](GRUB2/grub_main_grub_load_normal_mode.md)
+    * [execute commands in grub configuration](GRUB2/execute_commands_in_grub_configuration.md)
     * [load linux mode](GRUB2/load_linux_mode.md)
     * [enter boot mode](GRUB2/enter_boot_mode.md)
     * [relocate Instructions](GRUB2/relocate_instructions.md)
