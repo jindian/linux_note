@@ -14,6 +14,7 @@ grub_script_execute_sourcecode
                         |--grub_extcmd_dispatcher
                             |--(ext->func) (&context, argc, args) -> grub_dyncmd_dispatcher
                                 |--grub_dl_load
+                                    |--grub_dl_get
 
 
 
@@ -366,48 +367,74 @@ $16 = 0x7fe4160 "linux"
 
 grub_dl_load (name=name@entry=0x7fe4160 "linux") at kern/dl.c:710
 
-grub-core/kern/dl.c:662
+grub-core/kern/dl.c:704
 
-/* Load a module from the file FILENAME.  */
+/* Load a module using a symbolic name.  */
 grub_dl_t
-grub_dl_load_file (const char *filename)
+grub_dl_load (const char *name)
 {
-  grub_file_t file = NULL;
-  grub_ssize_t size;
-  void *core = 0;
-  grub_dl_t mod = 0;
+  char *filename;
+  grub_dl_t mod;
+  const char *grub_dl_dir = grub_env_get ("prefix");
 
-  file = grub_file_open (filename);
-  if (! file)
+  mod = grub_dl_get (name);
+  if (mod)
+    return mod;
+
+  if (! grub_dl_dir) {
+    grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("variable `%s' isn't set"), "prefix");
+    return 0;
+  }
+
+  filename = grub_xasprintf ("%s/" GRUB_TARGET_CPU "-" GRUB_PLATFORM "/%s.mod",
+                             grub_dl_dir, name);
+  if (! filename)
     return 0;
 
-  size = grub_file_size (file);
-  core = grub_malloc (size);
-  if (! core)
-    {
-      grub_file_close (file);
-      return 0;
-    }
+  mod = grub_dl_load_file (filename);
+  grub_free (filename);
 
-  if (grub_file_read (file, core, size) != (int) size)
-    {
-      grub_file_close (file);
-      grub_free (core);
-      return 0;
-    }
-
-  /* We must close this before we try to process dependencies.
-     Some disk backends do not handle gracefully multiple concurrent
-     opens of the same device.  */
-  grub_file_close (file);
-
-  mod = grub_dl_load_core (core, size);
-  grub_free (core);
   if (! mod)
     return 0;
 
-  mod->ref_count--;
+  if (grub_strcmp (mod->name, name) != 0)
+    grub_error (GRUB_ERR_BAD_MODULE, "mismatched names");
+
   return mod;
+}
+```
+
+module linux doesn't exist in grub_dl_head from result of print_all_modules
+
+```grub_dl_get
+
+grub_dl_get (name=name@entry=0x7fe4160 "linux") at kern/dl.c:85
+
+grub-core/kern/dl.c:80
+
+grub_dl_t
+grub_dl_get (const char *name)
+{
+  grub_dl_t l;
+(gdb) print_all_modules 
+normal: normal->init: 0x7f0ec78
+gzio: gzio->init: 0x7f081a9
+gettext: gettext->init: 0x7ff2692
+terminal: terminal->init: 0x7ff39c6
+crypto: crypto->init: 0x0
+extcmd: extcmd->init: 0x0
+boot: boot->init: 0x7ff77ca
+search_fs_uuid: search_fs_uuid->init: 0x7ff8977
+biosdisk: biosdisk->init: 0x7ff9929
+part_msdos: part_msdos->init: 0x7ffa558
+ext2: ext2->init: 0x7ffb629
+fshelp: fshelp->init: 0x0
+
+  for (l = grub_dl_head; l; l = l->next)
+    if (grub_strcmp (name, l->name) == 0)
+      return l;
+
+  return 0;
 }
 ```
 
