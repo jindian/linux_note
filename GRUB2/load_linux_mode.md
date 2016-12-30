@@ -116,9 +116,6 @@ $6 = 0x7ff0000 "setparams 'linux OS'\n\n    set root=(hd0,1)\n    linux /boot/vm
 2. line: ""
    parsed_script: {refcnt = 0, mem = 0x7fb5090, cmd = 0x0, next_siblings = 0x0, children = 0x0}
 
-3. line "    set root=(hd0,1)"
-   parsed_script: {refcnt = 0, mem = 0x7fb4fc0, cmd = 0x7fb4fc4, next_siblings = 0x0, children = 0x0}
-
 ```grub_script_execute
 grub_script_execute (script=0x7ff02b0) at script/execute.c:1080
 
@@ -387,4 +384,126 @@ $16 = 0x7fefed0 "linux OS"
   scope = new_scope;
 }
 
+```
+
+3. line "    set root=(hd0,1)"
+   parsed_script: {refcnt = 0, mem = 0x7fb4fc0, cmd = 0x7fb4fc4, next_siblings = 0x0, children = 0x0}
+
+   grub_script_execute_sourcecode
+       |--grub_script_parse
+       |--grub_script_execute
+           |--grub_script_execute_cmd
+               |--grub_script_execute_cmdlist
+                   |--grub_script_execute_cmd
+                       |--grub_script_execute_cmdline
+                           |--grub_script_arglist_to_argv
+                           |--grub_command_find
+                           |--(grubcmd->func) (grubcmd, argc, args) -> grub_core_cmd_set
+
+
+```grub_script_execute
+
+grub_script_execute (script=0x7feff50) at script/execute.c:1080
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+grub_script_execute_cmd (cmd=0x7fb4fc4) at script/execute.c:750
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+grub_script_execute_cmdlist (list=0x7fb4fc4) at script/execute.c:967
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+grub_script_execute_cmd (cmd=cmd@entry=0x7fb4ce4) at script/execute.c:750
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+grub_script_execute_cmdline (cmd=0x7fb4ce4) at script/execute.c:859
+
+/* Execute a single command line.  */
+grub_err_t
+grub_script_execute_cmdline (struct grub_script_cmd *cmd)
+{
+
+  ......
+
+  /* Lookup the command.  */
+  if (grub_script_arglist_to_argv (cmdline->arglist, &argv) || ! argv.args[0])
+    return grub_errno;
+(gdb) p argv
+$24 = {argc = 2, args = 0x7fe7df0, script = 0x0}
+(gdb) p argv->args[0]
+$25 = 0x7fe1960 "set"
+(gdb) p argv->args[1]
+$26 = 0x7fe1940 "root=(hd0,1)"
+
+  ......
+  
+  grubcmd = grub_command_find (cmdname);
+(gdb) p cmdname
+$23 = 0x7fe1960 "set"
+  
+  ......
+
+  /* Execute the GRUB command or function.  */
+  if (grubcmd)
+    {
+      if (grub_extractor_level && !(grubcmd->flags
+				    & GRUB_COMMAND_FLAG_EXTRACTOR))
+	ret = grub_error (GRUB_ERR_EXTRACTOR,
+			  "%s isn't allowed to execute in an extractor",
+			  cmdname);
+      else if ((grubcmd->flags & GRUB_COMMAND_FLAG_BLOCKS) &&
+	       (grubcmd->flags & GRUB_COMMAND_FLAG_EXTCMD))
+	ret = grub_extcmd_dispatcher (grubcmd, argc, args, argv.script);
+      else
+	ret = (grubcmd->func) (grubcmd, argc, args);
+    }
+  else
+    ret = grub_script_function_call (func, argc, args);
+
+  ......
+
+}
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+grub_core_cmd_set (cmd=0x7ff8320, argc=1, argv=0x7fe7df4) at kern/corecmd.c:35
+
+grub-core/kern/corecmd.c:31
+
+/* set ENVVAR=VALUE */
+static grub_err_t
+grub_core_cmd_set (struct grub_command *cmd __attribute__ ((unused)),
+		   int argc, char *argv[])
+{
+  char *var;
+  char *val;
+
+  auto int print_env (struct grub_env_var *env);
+
+  int print_env (struct grub_env_var *env)
+    {
+      grub_printf ("%s=%s\n", env->name, env->value);
+      return 0;
+    }
+
+  if (argc < 1)
+    {
+      grub_env_iterate (print_env);
+      return 0;
+    }
+
+  var = argv[0];
+  val = grub_strchr (var, '=');
+  if (! val)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "not an assignment");
+
+  val[0] = 0;
+  grub_env_set (var, val + 1);
+  val[0] = '=';
+
+  return 0;
+}
 ```
