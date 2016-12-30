@@ -494,6 +494,8 @@ grub_core_cmd_set (struct grub_command *cmd __attribute__ ((unused)),
       grub_env_iterate (print_env);
       return 0;
     }
+(gdb) p argv[0]
+$27 = 0x7fe1940 "root=(hd0,1)"
 
   var = argv[0];
   val = grub_strchr (var, '=');
@@ -501,6 +503,12 @@ grub_core_cmd_set (struct grub_command *cmd __attribute__ ((unused)),
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "not an assignment");
 
   val[0] = 0;
+(gdb) p var
+$30 = 0x7fe1940 "root"
+(gdb) p val
+$31 = 0x7fe1944 ""
+(gdb) p val+1
+$32 = 0x7fe1945 "(hd0,1)"
   grub_env_set (var, val + 1);
   val[0] = '=';
 
