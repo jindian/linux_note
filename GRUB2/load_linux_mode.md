@@ -17,6 +17,9 @@ grub_script_execute_sourcecode
                                     |--grub_dl_get
                                     |--grub_dl_load_file
                                         |--grub_file_open
+                                            |--grub_file_get_device_name
+                                            |--grub_device_open
+                                            |--grub_fs_probe
 
 
 
@@ -518,6 +521,8 @@ grub_file_open (const char *name)
 
   /* Get the file part of NAME.  */
   file_name = (name[0] == '(') ? grub_strchr (name, ')') : NULL;
+(gdb) p file_name 
+$26 = 0x7fe17cc "/boot/grub/i386-pc/linux.mod"
   if (file_name)
     file_name++;
   else
@@ -533,6 +538,10 @@ grub_file_open (const char *name)
     goto fail;
 
   file->device = device;
+(gdb) p *device->disk 
+$31 = {name = 0x7fe1700 "hd0", dev = 0x7ff9b18 <grub_biosdisk_dev>, 
+  total_sectors = 28800, log_sector_size = 9, id = 128, 
+  partition = 0x7fe1690, read_hook = 0x0, data = 0x7fe16d0}
 
   if (device->disk && file_name[0] != '/')
     /* This is a block list.  */
@@ -573,6 +582,103 @@ grub_file_open (const char *name)
   grub_memcpy (grub_file_filters_enabled, grub_file_filters_all,
 	       sizeof (grub_file_filters_enabled));
 
+  return 0;
+}
+```
+
+
+
+```grub_fs_probe
+
+grub_fs_probe (device=device@entry=0x7fe1780) at kern/fs.c:48
+
+grub-core/kern/fs.c:35
+
+grub_fs_t
+grub_fs_probe (grub_device_t device)
+{
+  grub_fs_t p;
+  auto int dummy_func (const char *filename,
+		       const struct grub_dirhook_info *info);
+
+  int dummy_func (const char *filename __attribute__ ((unused)),
+		  const struct grub_dirhook_info *info  __attribute__ ((unused)))
+    {
+      return 1;
+    }
+
+  if (device->disk)
+    {
+      /* Make it sure not to have an infinite recursive calls.  */
+      static int count = 0;
+
+      for (p = grub_fs_list; p; p = p->next)
+	{
+	  grub_dprintf ("fs", "Detecting %s...\n", p->name);
+
+	  /* This is evil: newly-created just mounted BtrFS after copying all
+	     GRUB files has a very peculiar unrecoverable corruption which
+	     will be fixed at sync but we'd rather not do a global sync and
+	     syncing just files doesn't seem to help. Relax the check for
+	     this time.  */
+#ifdef GRUB_UTIL
+	  if (grub_strcmp (p->name, "btrfs") == 0)
+	    {
+	      char *label = 0;
+	      p->uuid (device, &label);
+	      if (label)
+		grub_free (label);
+	    }
+	  else
+#endif
+	    (p->dir) (device, "/", dummy_func);
+	  if (grub_errno == GRUB_ERR_NONE)
+	    return p;
+
+	  grub_error_push ();
+	  grub_dprintf ("fs", "%s detection failed.\n", p->name);
+	  grub_error_pop ();
+
+	  if (grub_errno != GRUB_ERR_BAD_FS
+	      && grub_errno != GRUB_ERR_OUT_OF_RANGE)
+	    return 0;
+
+	  grub_errno = GRUB_ERR_NONE;
+	}
+
+      /* Let's load modules automatically.  */
+      if (grub_fs_autoload_hook && count == 0)
+	{
+	  count++;
+
+	  while (grub_fs_autoload_hook ())
+	    {
+	      p = grub_fs_list;
+
+	      (p->dir) (device, "/", dummy_func);
+	      if (grub_errno == GRUB_ERR_NONE)
+		{
+		  count--;
+		  return p;
+		}
+
+	      if (grub_errno != GRUB_ERR_BAD_FS
+		  && grub_errno != GRUB_ERR_OUT_OF_RANGE)
+		{
+		  count--;
+		  return 0;
+		}
+
+	      grub_errno = GRUB_ERR_NONE;
+	    }
+
+	  count--;
+	}
+    }
+  else if (device->net && device->net->fs)
+    return device->net->fs;
+
+  grub_error (GRUB_ERR_UNKNOWN_FS, N_("unknown filesystem"));
   return 0;
 }
 ```
