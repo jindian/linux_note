@@ -35,7 +35,7 @@ grub_script_execute_sourcecode
                                             |--grub_dl_add
                                 |--grub_unregister_extcmd
                                 |--grub_command_find
-                                |--grub_cmd_linux
+                                |--grub_cmd_linux                             //it's a important routine in linux startup
                                                     
                                             
 
@@ -634,11 +634,10 @@ grub_cmd_linux (cmd=0x7f71f00, argc=2, argv=0x7fe1884)
 grub-core/loader/i386/linux.c:667
 
 static grub_err_t
-grub_linux_boot (void)
+grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
+		int argc, char *argv[])
 {
-
     ......
-
 }
 ```
 
