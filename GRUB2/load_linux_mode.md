@@ -513,6 +513,82 @@ fshelp: fshelp->init: 0x0
 
 
 
+```grub_dl_load_core
+grub_dl_load_core (addr=addr@entry=0x7fa1c20, size=size@entry=11488) at kern/dl.c:601
+
+grub-core/kern/dl.c:594
+
+/* Load a module from core memory.  */
+grub_dl_t
+grub_dl_load_core (void *addr, grub_size_t size)
+{
+  Elf_Ehdr *e;
+  grub_dl_t mod;
+
+  grub_dprintf ("modules", "module at %p, size 0x%lx\n", addr,
+		(unsigned long) size);
+  e = addr;
+  if (grub_dl_check_header (e, size))
+    return 0;
+
+  if (e->e_type != ET_REL)
+    {
+      grub_error (GRUB_ERR_BAD_MODULE, N_("this ELF file is not of the right type"));
+      return 0;
+    }
+
+  /* Make sure that every section is within the core.  */
+  if (size < e->e_shoff + e->e_shentsize * e->e_shnum)
+    {
+      grub_error (GRUB_ERR_BAD_OS, "ELF sections outside core");
+      return 0;
+    }
+
+  mod = (grub_dl_t) grub_zalloc (sizeof (*mod));
+  if (! mod)
+    return 0;
+
+  mod->ref_count = 1;
+
+  grub_dprintf ("modules", "relocating to %p\n", mod);
+  /* Me, Vladimir Serbinenko, hereby I add this module check as per new
+     GNU module policy. Note that this license check is informative only.
+     Modules have to be licensed under GPLv3 or GPLv3+ (optionally
+     multi-licensed under other licences as well) independently of the
+     presence of this check and solely by linking (module loading in GRUB
+     constitutes linking) and GRUB core being licensed under GPLv3+.
+     Be sure to understand your license obligations.
+  */
+  if (grub_dl_check_license (e)
+      || grub_dl_resolve_name (mod, e)
+      || grub_dl_resolve_dependencies (mod, e)
+      || grub_dl_load_segments (mod, e)
+      || grub_dl_resolve_symbols (mod, e)
+      || grub_arch_dl_relocate_symbols (mod, e))
+    {
+      mod->fini = 0;
+      grub_dl_unload (mod);
+      return 0;
+    }
+
+  grub_dl_flush_cache (mod);
+
+  grub_dprintf ("modules", "module name: %s\n", mod->name);
+  grub_dprintf ("modules", "init function: %p\n", mod->init);
+  grub_dl_call_init (mod);
+
+  if (grub_dl_add (mod))
+    {
+      grub_dl_unload (mod);
+      return 0;
+    }
+
+  return mod;
+}
+```
+
+
+
 ## GRUB file system ext2 introduced in next chapter
 
 # LINKS
