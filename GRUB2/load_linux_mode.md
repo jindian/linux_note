@@ -698,6 +698,7 @@ $33 = (grub_err_t (*)(grub_device_t, const char *, int (*)(const char *,
 
 
 ```grub_ext2_open
+
 grub_ext2_open (file=0x7fe1650, name=0x7fe17cc "/boot/grub/i386-pc/linux.mod") at fs/ext2.c:764
 
 grub-core/fs/ext2.c:756
@@ -755,7 +756,8 @@ grub_ext2_open (struct grub_file *file, const char *name)
 
 
 
-```
+```grub_ext2_mount
+
 grub_ext2_mount (disk=0x7fe1740) at fs/ext2.c:570
 
 grub-core/fs/ext2.c:565
@@ -817,7 +819,8 @@ grub_ext2_mount (grub_disk_t disk)
 
 
 
-```
+```grub_disk_read
+
 grub_disk_read (disk=disk@entry=0x7fe1740, sector=2, offset=0, size=336, buf=0x7fe1450) at kern/disk.c:477
 
 grub-core/kern/disk.c:473
@@ -859,6 +862,14 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
 	     - pos - offset);
       if (len > size)
 	len = size;
+(gdb) p start_sector 
+$24 = 64
+(gdb) p pos
+$25 = 512
+(gdb) p len
+$26 = 336
+(gdb) p offset 
+$27 = 0
       err = grub_disk_read_small (disk, start_sector,
 				  offset + pos, len, buf);
       if (err)
@@ -963,6 +974,169 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
     }
 
   return grub_errno;
+}
+```
+
+
+
+```grub_disk_adjust_range
+
+grub_disk_adjust_range (disk=disk@entry=0x7fe1520, 
+    sector=sector@entry=0x7fc3c, offset=offset@entry=0x7fc34, size=336)
+    at kern/disk.c:351
+
+grub-core/kern/disk.c:344
+
+/* This function performs three tasks:
+   - Make sectors disk relative from partition relative.
+   - Normalize offset to be less than the sector size.
+   - Verify that the range is inside the partition.  */
+static grub_err_t
+grub_disk_adjust_range (grub_disk_t disk, grub_disk_addr_t *sector,
+                        grub_off_t *offset, grub_size_t size)
+{
+  grub_partition_t part;
+  *sector += *offset >> GRUB_DISK_SECTOR_BITS;
+  *offset &= GRUB_DISK_SECTOR_SIZE - 1;
+(gdb) p *sector 
+$4 = 2
+(gdb) p *offset 
+$5 = 0
+
+  for (part = disk->partition; part; part = part->parent)
+(gdb) p *disk->partition 
+$7 = {number = 0, start = 63, len = 28737, offset = 0, index = 0, 
+  parent = 0x0, partmap = 0x7ffa624 <grub_msdos_partition_map>, 
+  msdostype = 131 '\203'}
+    {
+      grub_disk_addr_t start;
+      grub_uint64_t len;
+
+(gdb) p part->start
+$10 = 63
+(gdb) p part->len
+$11 = 28737
+      start = part->start;
+      len = part->len;
+
+      if (*sector >= len
+          || len - *sector < ((*offset + size + GRUB_DISK_SECTOR_SIZE - 1)
+                              >> GRUB_DISK_SECTOR_BITS))
+        return grub_error (GRUB_ERR_OUT_OF_RANGE,
+                           N_("attempt to read or write outside of partition"));
+
+      *sector += start;
+(gdb) p *sector 
+$15 = 65
+    }
+
+(gdb) p disk->total_sectors 
+$17 = 28800
+(gdb) p disk->log_sector_size 
+$18 = 9
+  if (disk->total_sectors != GRUB_DISK_SIZE_UNKNOWN
+      && ((disk->total_sectors << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS)) <= *sector
+          || ((*offset + size + GRUB_DISK_SECTOR_SIZE - 1)
+          >> GRUB_DISK_SECTOR_BITS) > (disk->total_sectors
+                                       << (disk->log_sector_size
+                                           - GRUB_DISK_SECTOR_BITS)) - *sector))
+    return grub_error (GRUB_ERR_OUT_OF_RANGE,
+                       N_("attempt to read or write outside of disk `%s'"), disk->name);
+
+  return GRUB_ERR_NONE;
+}
+
+```
+
+
+
+```grub_disk_read_small
+
+grub_disk_read_small (disk=0x7fe1520, sector=64, offset=512, size=336, 
+    buf=0x7fe1230) at kern/disk.c:397
+
+grub-core/kern/disk.c:391
+
+/* Small read (less than cache size and not pass across cache unit boundaries).
+   sector is already adjusted and is divisible by cache unit size.
+ */
+static grub_err_t
+grub_disk_read_small (grub_disk_t disk, grub_disk_addr_t sector,
+		      grub_off_t offset, grub_size_t size, void *buf)
+{
+  char *data;
+  char *tmp_buf;
+
+  /* Fetch the cache.  */
+  data = grub_disk_cache_fetch (disk->dev->id, disk->id, sector);
+  if (data)
+    {
+      /* Just copy it!  */
+      grub_memcpy (buf, data + offset, size);
+      grub_disk_cache_unlock (disk->dev->id, disk->id, sector);
+      return GRUB_ERR_NONE;
+    }
+
+  /* Allocate a temporary buffer.  */
+  tmp_buf = grub_malloc (GRUB_DISK_SECTOR_SIZE << GRUB_DISK_CACHE_BITS);
+  if (! tmp_buf)
+    return grub_errno;
+
+  /* Otherwise read data from the disk actually.  */
+  if (disk->total_sectors == GRUB_DISK_SIZE_UNKNOWN
+      || sector + GRUB_DISK_CACHE_SIZE
+      < (disk->total_sectors << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS)))
+    {
+      grub_err_t err;
+      err = (disk->dev->read) (disk, transform_sector (disk, sector),
+			       1 << (GRUB_DISK_CACHE_BITS
+				     + GRUB_DISK_SECTOR_BITS
+				     - disk->log_sector_size), tmp_buf);
+      if (!err)
+	{
+	  /* Copy it and store it in the disk cache.  */
+	  grub_memcpy (buf, tmp_buf + offset, size);
+	  grub_disk_cache_store (disk->dev->id, disk->id,
+				 sector, tmp_buf);
+	  grub_free (tmp_buf);
+	  return GRUB_ERR_NONE;
+	}
+    }
+
+  grub_free (tmp_buf);
+  grub_errno = GRUB_ERR_NONE;
+
+  {
+    /* Uggh... Failed. Instead, just read necessary data.  */
+    unsigned num;
+    grub_disk_addr_t aligned_sector;
+
+    sector += (offset >> GRUB_DISK_SECTOR_BITS);
+    offset &= ((1 << GRUB_DISK_SECTOR_BITS) - 1);
+    aligned_sector = (sector & ~((1 << (disk->log_sector_size
+					- GRUB_DISK_SECTOR_BITS))
+				 - 1));
+    offset += ((sector - aligned_sector) << GRUB_DISK_SECTOR_BITS);
+    num = ((size + offset + (1 << (disk->log_sector_size))
+	    - 1) >> (disk->log_sector_size));
+
+    tmp_buf = grub_malloc (num << disk->log_sector_size);
+    if (!tmp_buf)
+      return grub_errno;
+    
+    if ((disk->dev->read) (disk, transform_sector (disk, aligned_sector),
+			   num, tmp_buf))
+      {
+	grub_error_push ();
+	grub_dprintf ("disk", "%s read failed\n", disk->name);
+	grub_error_pop ();
+	grub_free (tmp_buf);
+	return grub_errno;
+      }
+    grub_memcpy (buf, tmp_buf + offset, size);
+    grub_free (tmp_buf);
+    return GRUB_ERR_NONE;
+  }
 }
 ```
 
