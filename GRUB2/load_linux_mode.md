@@ -21,6 +21,8 @@ grub_script_execute_sourcecode
                                             |--grub_device_open
                                             |--grub_fs_probe
                                             |--(file->fs->open) (file, file_name) -> grub_ext2_open
+                                                |--grub_ext2_mount
+                                                    |--grub_disk_read
 
 
 
@@ -746,6 +748,219 @@ grub_ext2_open (struct grub_file *file, const char *name)
   grub_dl_unref (my_mod);
 
   return err;
+}
+```
+
+
+
+```
+grub_ext2_mount (disk=0x7fe1740) at fs/ext2.c:570
+
+grub-core/fs/ext2.c:565
+
+static struct grub_ext2_data *
+grub_ext2_mount (grub_disk_t disk)
+{
+  struct grub_ext2_data *data;
+
+  data = grub_malloc (sizeof (struct grub_ext2_data));
+  if (!data)
+    return 0;
+
+  /* Read the superblock.  */
+  grub_disk_read (disk, 1 * 2, 0, sizeof (struct grub_ext2_sblock),
+                  &data->sblock);
+  if (grub_errno)
+    goto fail;
+
+  /* Make sure this is an ext2 filesystem.  */
+  if (grub_le_to_cpu16 (data->sblock.magic) != EXT2_MAGIC
+      || grub_le_to_cpu32 (data->sblock.log2_block_size) >= 16)
+    {
+      grub_error (GRUB_ERR_BAD_FS, "not an ext2 filesystem");
+      goto fail;
+    }
+
+  /* Check the FS doesn't have feature bits enabled that we don't support. */
+  if (grub_le_to_cpu32 (data->sblock.feature_incompat)
+        & ~(EXT2_DRIVER_SUPPORTED_INCOMPAT | EXT2_DRIVER_IGNORED_INCOMPAT))
+    {
+      grub_error (GRUB_ERR_BAD_FS, "filesystem has unsupported incompatible features");
+      goto fail;
+    }
+
+
+  data->disk = disk;
+
+  data->diropen.data = data;
+  data->diropen.ino = 2;
+  data->diropen.inode_read = 1;
+
+  data->inode = &data->diropen.inode;
+
+  grub_ext2_read_inode (data, 2, data->inode);
+  if (grub_errno)
+    goto fail;
+
+  return data;
+
+ fail:
+  if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
+    grub_error (GRUB_ERR_BAD_FS, "not an ext2 filesystem");
+
+  grub_free (data);
+  return 0;
+}
+```
+
+
+
+```
+grub_disk_read (disk=disk@entry=0x7fe1740, sector=2, offset=0, size=336, buf=0x7fe1450) at kern/disk.c:477
+
+grub-core/kern/disk.c:473
+
+/* Read data from the disk.  */
+grub_err_t
+grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
+		grub_off_t offset, grub_size_t size, void *buf)
+{
+  grub_off_t real_offset;
+  grub_disk_addr_t real_sector;
+  grub_size_t real_size;
+
+  /* First of all, check if the region is within the disk.  */
+  if (grub_disk_adjust_range (disk, &sector, &offset, size) != GRUB_ERR_NONE)
+    {
+      grub_error_push ();
+      grub_dprintf ("disk", "Read out of range: sector 0x%llx (%s).\n",
+		    (unsigned long long) sector, grub_errmsg);
+      grub_error_pop ();
+      return grub_errno;
+    }
+
+  real_sector = sector;
+  real_offset = offset;
+  real_size = size;
+
+  /* First read until first cache boundary.   */
+  if (offset || (sector & (GRUB_DISK_CACHE_SIZE - 1)))
+    {
+      grub_disk_addr_t start_sector;
+      grub_size_t pos;
+      grub_err_t err;
+      grub_size_t len;
+
+      start_sector = sector & ~(GRUB_DISK_CACHE_SIZE - 1);
+      pos = (sector - start_sector) << GRUB_DISK_SECTOR_BITS;
+      len = ((GRUB_DISK_SECTOR_SIZE << GRUB_DISK_CACHE_BITS)
+	     - pos - offset);
+      if (len > size)
+	len = size;
+      err = grub_disk_read_small (disk, start_sector,
+				  offset + pos, len, buf);
+      if (err)
+	return err;
+      buf = (char *) buf + len;
+      size -= len;
+      offset += len;
+      sector += (offset >> GRUB_DISK_SECTOR_BITS);
+      offset &= ((1 << GRUB_DISK_SECTOR_BITS) - 1);
+    }
+
+  /* Until SIZE is zero...  */
+  while (size >= (GRUB_DISK_CACHE_SIZE << GRUB_DISK_SECTOR_BITS))
+    {
+      char *data = NULL;
+      grub_disk_addr_t agglomerate;
+      grub_err_t err;
+
+      /* agglomerate read until we find a first cached entry.  */
+      for (agglomerate = 0; agglomerate
+	     < (size >> (GRUB_DISK_SECTOR_BITS + GRUB_DISK_CACHE_BITS));
+	   agglomerate++)
+	{
+	  data = grub_disk_cache_fetch (disk->dev->id, disk->id,
+					sector + (agglomerate
+						  << GRUB_DISK_CACHE_BITS));
+	  if (data)
+	    break;
+	}
+
+      if (data)
+	{
+	  grub_memcpy ((char *) buf
+		       + (agglomerate << (GRUB_DISK_CACHE_BITS
+					  + GRUB_DISK_SECTOR_BITS)),
+		       data, GRUB_DISK_CACHE_SIZE << GRUB_DISK_SECTOR_BITS);
+	  grub_disk_cache_unlock (disk->dev->id, disk->id,
+				  sector + (agglomerate
+					    << GRUB_DISK_CACHE_BITS));
+	}
+
+      if (agglomerate)
+	{
+	  grub_disk_addr_t i;
+
+	  err = (disk->dev->read) (disk, transform_sector (disk, sector),
+				   agglomerate << (GRUB_DISK_CACHE_BITS
+						   + GRUB_DISK_SECTOR_BITS
+						   - disk->log_sector_size),
+				   buf);
+	  if (err)
+	    return err;
+	  
+	  for (i = 0; i < agglomerate; i ++)
+	    grub_disk_cache_store (disk->dev->id, disk->id,
+				   sector + (i << GRUB_DISK_CACHE_BITS),
+				   (char *) buf
+				   + (i << (GRUB_DISK_CACHE_BITS
+					    + GRUB_DISK_SECTOR_BITS)));
+
+	  sector += agglomerate << GRUB_DISK_CACHE_BITS;
+	  size -= agglomerate << (GRUB_DISK_CACHE_BITS + GRUB_DISK_SECTOR_BITS);
+	  buf = (char *) buf 
+	    + (agglomerate << (GRUB_DISK_CACHE_BITS + GRUB_DISK_SECTOR_BITS));
+	}
+
+      if (data)
+	{
+	  sector += GRUB_DISK_CACHE_SIZE;
+	  buf = (char *) buf + (GRUB_DISK_CACHE_SIZE << GRUB_DISK_SECTOR_BITS);
+	  size -= (GRUB_DISK_CACHE_SIZE << GRUB_DISK_SECTOR_BITS);
+	}
+    }
+
+  /* And now read the last part.  */
+  if (size)
+    {
+      grub_err_t err;
+      err = grub_disk_read_small (disk, sector, 0, size, buf);
+      if (err)
+	return err;
+    }
+
+  /* Call the read hook, if any.  */
+  if (disk->read_hook)
+    {
+      grub_disk_addr_t s = real_sector;
+      grub_size_t l = real_size;
+      grub_off_t o = real_offset;
+
+      while (l)
+	{
+	  grub_size_t cl;
+	  cl = GRUB_DISK_SECTOR_SIZE - o;
+	  if (cl > l)
+	    cl = l;
+	  (disk->read_hook) (s, o, cl);
+	  s++;
+	  l -= cl;
+	  o = 0;
+	}
+    }
+
+  return grub_errno;
 }
 ```
 
