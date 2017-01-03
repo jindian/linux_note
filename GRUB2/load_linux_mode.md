@@ -17,6 +17,9 @@ grub_script_execute_sourcecode
                                     |--grub_dl_get
                                     |--grub_dl_load_file
                                         |--grub_file_open
+                                        |--grub_file_read
+                                        |--grub_file_close
+                                        |--grub_dl_load_core
                                             
 
 
@@ -486,6 +489,18 @@ grub_dl_load_file (const char *filename)
      opens of the same device.  */
   grub_file_close (file);
 
+normal: normal->init: 0x7f0ec78
+gzio: gzio->init: 0x7f081a9
+gettext: gettext->init: 0x7ff2692
+terminal: terminal->init: 0x7ff39c6
+crypto: crypto->init: 0x0
+extcmd: extcmd->init: 0x0
+boot: boot->init: 0x7ff77ca
+search_fs_uuid: search_fs_uuid->init: 0x7ff8977
+biosdisk: biosdisk->init: 0x7ff9929
+part_msdos: part_msdos->init: 0x7ffa558
+ext2: ext2->init: 0x7ffb629
+fshelp: fshelp->init: 0x0
   mod = grub_dl_load_core (core, size);
   grub_free (core);
   if (! mod)
@@ -498,5 +513,7 @@ grub_dl_load_file (const char *filename)
 
 
 
+## GRUB file system ext2 introduced in next chapter
 
-
+# LINKS
+  * [File System](https://en.wikipedia.org/wiki/File_system)
