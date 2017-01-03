@@ -20,6 +20,18 @@ grub_script_execute_sourcecode
                                         |--grub_file_read
                                         |--grub_file_close
                                         |--grub_dl_load_core
+                                            |--grub_dl_check_header
+                                            |--grub_dl_check_license
+                                            |--grub_dl_resolve_name
+                                            |--grub_dl_resolve_dependencies   //load all linux depended modules: video, relocator, mmap, vbe, video_fb(depended by vbe)
+                                            |--grub_dl_load_segments
+                                            |--grub_dl_resolve_symbols
+                                            |--grub_arch_dl_relocate_symbols
+                                            |--grub_dl_flush_cache
+                                            |--grub_dl_call_init              //call module specified init function
+                                                |--(mod->init) (mod) -> grub_mod_init  //grub_mod_init (mod=0x7fe1670) at loader/i386/linux.c:1160
+                                                    |--grub_register_command ("linux", grub_cmd_linux, 0, N_("Load Linux."));
+                                                    |--grub_register_command ("initrd", grub_cmd_initrd, 0, N_("Load initrd."));
                                             
 
 
@@ -561,6 +573,8 @@ grub_dl_load_core (void *addr, grub_size_t size)
   */
   if (grub_dl_check_license (e)
       || grub_dl_resolve_name (mod, e)
+(gdb) p mod->name
+$36 = 0x7fe1760 "linux"
       || grub_dl_resolve_dependencies (mod, e)
       || grub_dl_load_segments (mod, e)
       || grub_dl_resolve_symbols (mod, e)
@@ -585,6 +599,25 @@ grub_dl_load_core (void *addr, grub_size_t size)
 
   return mod;
 }
+```
+
+
+
+```grub_mod_init
+
+grub_mod_init (mod=0x7fe1670) at loader/i386/linux.c:1160
+
+grub-core/loader/i386/linux.c:1158
+
+GRUB_MOD_INIT(linux)
+{
+  cmd_linux = grub_register_command ("linux", grub_cmd_linux,
+                                     0, N_("Load Linux."));
+  cmd_initrd = grub_register_command ("initrd", grub_cmd_initrd,
+                                      0, N_("Load initrd."));
+  my_mod = mod;
+}
+
 ```
 
 
