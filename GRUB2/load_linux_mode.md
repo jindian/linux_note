@@ -29,11 +29,13 @@ grub_script_execute_sourcecode
                                             |--grub_arch_dl_relocate_symbols
                                             |--grub_dl_flush_cache
                                             |--grub_dl_call_init              //call module specified init function
-                                                |--(mod->init) (mod) -> grub_mod_init  //grub_mod_init (mod=0x7fe1670) at loader/i386/linux.c:1160
+                                                |--(mod->init) (mod) -> grub_mod_init  grub-core/loader/i386/linux.c:1160
                                                     |--grub_register_command
                                                         |--grub_register_command_prio
                                             |--grub_dl_add
-                                    |
+                                |--grub_unregister_extcmd
+                                |--grub_command_find
+                                |--grub_cmd_linux
                                                     
                                             
 
@@ -621,6 +623,23 @@ GRUB_MOD_INIT(linux)
   my_mod = mod;
 }
 
+```
+
+
+```grub_cmd_linux
+
+grub_cmd_linux (cmd=0x7f71f00, argc=2, argv=0x7fe1884)
+    at loader/i386/linux.c:682
+
+grub-core/loader/i386/linux.c:667
+
+static grub_err_t
+grub_linux_boot (void)
+{
+
+    ......
+
+}
 ```
 
 
