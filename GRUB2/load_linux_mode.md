@@ -23,6 +23,8 @@ grub_script_execute_sourcecode
                                             |--(file->fs->open) (file, file_name) -> grub_ext2_open
                                                 |--grub_ext2_mount
                                                     |--grub_disk_read
+                                                        |--grub_disk_adjust_range
+                                                        |--grub_disk_read_small
 
 
 
