@@ -1,2 +1,2 @@
-#GRUB2
-GRUB2 part
+# GRUB2
+startup in grub
