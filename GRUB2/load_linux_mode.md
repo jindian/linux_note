@@ -20,6 +20,7 @@ grub_script_execute_sourcecode
                                             |--grub_file_get_device_name
                                             |--grub_device_open
                                             |--grub_fs_probe
+                                            |--(file->fs->open) (file, file_name) -> grub_ext2_open
 
 
 
@@ -549,11 +550,13 @@ $31 = {name = 0x7fe1700 "hd0", dev = 0x7ff9b18 <grub_biosdisk_dev>,
   else
     {
       file->fs = grub_fs_probe (device);
+(gdb) p file->fs 
+$36 = (grub_fs_t) 0x7ffb728 <grub_ext2_fs>
       if (! file->fs)
 	goto fail;
     }
 
-  if ((file->fs->open) (file, file_name) != GRUB_ERR_NONE)
+  if ((file->fs->open) (file, file_name) != GRUB_ERR_NONE)  
     goto fail;
 
   for (filter = 0; file && filter < ARRAY_SIZE (grub_file_filters_enabled);
@@ -615,6 +618,8 @@ grub_fs_probe (grub_device_t device)
       for (p = grub_fs_list; p; p = p->next)
 	{
 	  grub_dprintf ("fs", "Detecting %s...\n", p->name);
+(gdb) p p->name
+$32 = 0x7ffb720 "ext2"
 
 	  /* This is evil: newly-created just mounted BtrFS after copying all
 	     GRUB files has a very peculiar unrecoverable corruption which
@@ -632,6 +637,9 @@ grub_fs_probe (grub_device_t device)
 	  else
 #endif
 	    (p->dir) (device, "/", dummy_func);
+(gdb) p p->dir
+$33 = (grub_err_t (*)(grub_device_t, const char *, int (*)(const char *, 
+    const struct grub_dirhook_info *))) 0x7ffb3e5 <grub_ext2_dir>
 	  if (grub_errno == GRUB_ERR_NONE)
 	    return p;
 
@@ -680,6 +688,64 @@ grub_fs_probe (grub_device_t device)
 
   grub_error (GRUB_ERR_UNKNOWN_FS, N_("unknown filesystem"));
   return 0;
+}
+```
+
+
+
+```grub_ext2_open
+grub_ext2_open (file=0x7fe1650, name=0x7fe17cc "/boot/grub/i386-pc/linux.mod") at fs/ext2.c:764
+
+grub-core/fs/ext2.c:756
+
+/* Open a file named NAME and initialize FILE.  */
+static grub_err_t
+grub_ext2_open (struct grub_file *file, const char *name)
+{
+  struct grub_ext2_data *data;
+  struct grub_fshelp_node *fdiro = 0;
+  grub_err_t err;
+
+  grub_dl_ref (my_mod);
+
+  data = grub_ext2_mount (file->device->disk);
+  if (! data)
+    {
+      err = grub_errno;
+      goto fail;
+    }
+
+  err = grub_fshelp_find_file (name, &data->diropen, &fdiro,
+			       grub_ext2_iterate_dir,
+			       grub_ext2_read_symlink, GRUB_FSHELP_REG);
+  if (err)
+    goto fail;
+
+  if (! fdiro->inode_read)
+    {
+      err = grub_ext2_read_inode (data, fdiro->ino, &fdiro->inode);
+      if (err)
+	goto fail;
+    }
+
+  grub_memcpy (data->inode, &fdiro->inode, sizeof (struct grub_ext2_inode));
+  grub_free (fdiro);
+
+  file->size = grub_le_to_cpu32 (data->inode->size);
+  file->size |= ((grub_off_t) grub_le_to_cpu32 (data->inode->size_high)) << 32;
+  file->data = data;
+  file->offset = 0;
+
+  return 0;
+
+ fail:
+  if (fdiro != &data->diropen)
+    grub_free (fdiro);
+  grub_free (data);
+
+  grub_dl_unref (my_mod);
+
+  return err;
 }
 ```
 
