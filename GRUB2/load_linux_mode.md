@@ -30,8 +30,10 @@ grub_script_execute_sourcecode
                                             |--grub_dl_flush_cache
                                             |--grub_dl_call_init              //call module specified init function
                                                 |--(mod->init) (mod) -> grub_mod_init  //grub_mod_init (mod=0x7fe1670) at loader/i386/linux.c:1160
-                                                    |--grub_register_command ("linux", grub_cmd_linux, 0, N_("Load Linux."));
-                                                    |--grub_register_command ("initrd", grub_cmd_initrd, 0, N_("Load initrd."));
+                                                    |--grub_register_command
+                                                        |--grub_register_command_prio
+                                            |--grub_dl_add
+                                                    
                                             
 
 
