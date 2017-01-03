@@ -19,12 +19,16 @@ grub_script_execute_sourcecode
                                         |--grub_file_open
                                             |--grub_file_get_device_name
                                             |--grub_device_open
+                                                |--grub_disk_open
                                             |--grub_fs_probe
                                             |--(file->fs->open) (file, file_name) -> grub_ext2_open
                                                 |--grub_ext2_mount
                                                     |--grub_disk_read
                                                         |--grub_disk_adjust_range
                                                         |--grub_disk_read_small
+                                                            |--grub_disk_cache_fetch
+                                                            |--grub_disk_cache_unlock
+                                                    |--grub_ext2_read_inode
 
 
 
@@ -778,6 +782,10 @@ grub_ext2_mount (grub_disk_t disk)
     goto fail;
 
   /* Make sure this is an ext2 filesystem.  */
+(gdb) p /x data->sblock.magic 
+$35 = 0xef53
+(gdb) p data->sblock.log2_block_size 
+$36 = 0
   if (grub_le_to_cpu16 (data->sblock.magic) != EXT2_MAGIC
       || grub_le_to_cpu32 (data->sblock.log2_block_size) >= 16)
     {
@@ -786,6 +794,8 @@ grub_ext2_mount (grub_disk_t disk)
     }
 
   /* Check the FS doesn't have feature bits enabled that we don't support. */
+(gdb) p data->sblock.feature_incompat
+$37 = 2
   if (grub_le_to_cpu32 (data->sblock.feature_incompat)
         & ~(EXT2_DRIVER_SUPPORTED_INCOMPAT | EXT2_DRIVER_IGNORED_INCOMPAT))
     {
@@ -801,6 +811,51 @@ grub_ext2_mount (grub_disk_t disk)
   data->diropen.inode_read = 1;
 
   data->inode = &data->diropen.inode;
+(gdb) p data->disk 
+$38 = (grub_disk_t) 0x7fe1520
+(gdb) p data->diropen.data
+$39 = (struct grub_ext2_data *) 0x7fe1230
+(gdb) p *data->diropen.data
+$40 = {sblock = {total_inodes = 3600, total_blocks = 14368, 
+    reserved_blocks = 718, free_blocks = 3190, free_inodes = 3323, 
+    first_data_block = 1, log2_block_size = 0, log2_fragment_size = 0, 
+    blocks_per_group = 8192, fragments_per_group = 8192, 
+    inodes_per_group = 1800, mtime = 1482137221, utime = 1482137224, 
+    mnt_count = 1, max_mnt_count = 65535, magic = 61267, fs_state = 1, 
+    error_handling = 1, minor_revision_level = 0, lastcheck = 1482137221, 
+    checkinterval = 0, creator_os = 0, revision_level = 1, uid_reserved = 0, 
+    gid_reserved = 0, first_inode = 11, inode_size = 128, 
+    block_group_number = 0, feature_compatibility = 56, feature_incompat = 2, 
+    feature_ro_compat = 1, uuid = {43444, 52472, 62440, 63562, 31403, 21528, 
+      30361, 53694}, volume_name = '\000' <repeats 15 times>, 
+    last_mounted_on = "/mnt/disk_img_mk", '\000' <repeats 47 times>, 
+    compression_info = 0, prealloc_blocks = 0 '\000', 
+    prealloc_dir_blocks = 0 '\000', reserved_gdt_blocks = 56, 
+    journal_uuid = '\000' <repeats 15 times>, journal_inum = 0, 
+    journal_dev = 0, last_orphan = 0, hash_seed = {3035430676, 3494066414, 
+      116144551, 3742743110}, def_hash_version = 1 '\001', 
+    jnl_backup_type = 0 '\000', reserved_word_pad = 0, 
+    default_mount_opts = 12, first_meta_bg = 0, mkfs_time = 1482137221, 
+    jnl_blocks = {0 <repeats 17 times>}}, disk = 0x7fe1520, 
+  inode = 0x7fe138c, diropen = {data = 0x7fe1230, inode = {mode = 16877, 
+      uid = 0, size = 1024, atime = 1482137221, ctime = 1482137221, 
+      mtime = 1482137221, dtime = 0, gid = 0, nlinks = 4, blockcnt = 2, 
+      flags = 0, osd1 = 1, {blocks = {dir_blocks = {286, 
+            0 <repeats 11 times>}, indir_block = 0, double_indir_block = 0, 
+          triple_indir_block = 0}, 
+        symlink = "\036\001", '\000' <repeats 57 times>}, version = 0, 
+      acl = 0, size_high = 0, fragment_addr = 0, osd2 = {0, 0, 0}}, ino = 2, 
+    inode_read = 1}}
+(gdb) p data->inode 
+$41 = (struct grub_ext2_inode *) 0x7fe138c
+(gdb) p *data->inode 
+$42 = {mode = 16877, uid = 0, size = 1024, atime = 1482137221, 
+  ctime = 1482137221, mtime = 1482137221, dtime = 0, gid = 0, nlinks = 4, 
+  blockcnt = 2, flags = 0, osd1 = 1, {blocks = {dir_blocks = {286, 
+        0 <repeats 11 times>}, indir_block = 0, double_indir_block = 0, 
+      triple_indir_block = 0}, 
+    symlink = "\036\001", '\000' <repeats 57 times>}, version = 0, acl = 0, 
+  size_high = 0, fragment_addr = 0, osd2 = {0, 0, 0}}
 
   grub_ext2_read_inode (data, 2, data->inode);
   if (grub_errno)
@@ -881,6 +936,8 @@ $27 = 0
       offset &= ((1 << GRUB_DISK_SECTOR_BITS) - 1);
     }
 
+(gdb) p size
+$30 = 0
   /* Until SIZE is zero...  */
   while (size >= (GRUB_DISK_CACHE_SIZE << GRUB_DISK_SECTOR_BITS))
     {
@@ -945,7 +1002,7 @@ $27 = 0
     }
 
   /* And now read the last part.  */
-  if (size)
+  if (size)  
     {
       grub_err_t err;
       err = grub_disk_read_small (disk, sector, 0, size, buf);
@@ -955,6 +1012,8 @@ $27 = 0
 
   /* Call the read hook, if any.  */
   if (disk->read_hook)
+(gdb) p disk->read_hook 
+$33 = (void (*)(grub_disk_addr_t, unsigned int, unsigned int)) 0x0
     {
       grub_disk_addr_t s = real_sector;
       grub_size_t l = real_size;
@@ -1138,5 +1197,16 @@ grub_disk_read_small (grub_disk_t disk, grub_disk_addr_t sector,
     return GRUB_ERR_NONE;
   }
 }
+```
+
+
+
+```grub_ext2_read_inode
+
+grub_ext2_read_inode (data=data@entry=0x7fe1230, ino=1, ino@entry=2, 
+    inode=inode@entry=0x7fe138c) at fs/ext2.c:540
+
+
+
 ```
 
