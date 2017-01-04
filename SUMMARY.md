@@ -14,6 +14,7 @@
     * [execute commands in grub configuration](GRUB2/execute_commands_in_grub_configuration.md)
     * [load linux mode part I](GRUB2/load_linux_mode_part_I.md)
     * [load linux mode part II](GRUB2/load_linux_mode_part_II.md)
+    * [load initrd mode](GRUB2/load_initrd_mode.md)
     * [enter boot mode](GRUB2/enter_boot_mode.md)
     * [relocate Instructions](GRUB2/relocate_instructions.md)
 
