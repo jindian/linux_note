@@ -18,4 +18,5 @@
     * [enter boot mode](GRUB2/enter_boot_mode.md)
     * [relocate Instructions](GRUB2/relocate_instructions.md)
 * [linux startup](linux_startup/README.md)
+    * [linux protocol](linux_startup/linux_protocol.md)
 
