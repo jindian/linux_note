@@ -5,7 +5,13 @@ This chapter focus on grub_cmd_linux.
 grub_cmd_linux
    |--grub_file_open                   //open linux kernel executable and read linux header
    |--grub_file_read
-   |--allocate_pages
+   |--allocate_pages                   //allocate pages for linux and the memory map
+       |--free_pages                   //reloacor and protect mode code intialization
+       |--grub_relocator_new           //allocate memory for relocator and do initialization for relocator
+           |--grub_cpu_relocator_init
+           |--grub_zalloc
+       |--grub_relocator_alloc_chunk_align
+           
    |--grub_file_close
 
 ```grub_cmd_linux
@@ -423,7 +429,7 @@ $26 = 1048576
 }
 ```
 
-
+Initialize relocator, it will be used in relocator later, allocate memory for real mode, protect mode code and memory map.
 
 ```allocate_pages
 
@@ -431,6 +437,78 @@ allocate_pages (prefered_address=<optimized out>,
     relocatable=<optimized out>, min_align=<optimized out>, 
     align=<optimized out>, prot_size=<optimized out>)
     at loader/i386/linux.c:788
+
+grub-core/loader/i386/linux.c:186
+
+/* Allocate pages for the real mode code and the protected mode code
+   for linux as well as a memory map buffer.  */
+static grub_err_t
+allocate_pages (grub_size_t prot_size, grub_size_t *align,
+		grub_size_t min_align, int relocatable,
+		grub_uint64_t prefered_address)
+{
+  grub_err_t err;
+
+  prot_size = page_align (prot_size);
+(gdb) p prot_size 
+$1 = 9302016
+
+  /* Initialize the memory pointers with NULL for convenience.  */
+  free_pages ();
+
+  relocator = grub_relocator_new ();
+  if (!relocator)
+    {
+      err = grub_errno;
+      goto fail;
+    }
+$17 = {chunks = 0x0, postchunks = 4294967295, highestaddr = 0, highestnonpostaddr = 0, relocators_size = 7}
+
+  /* FIXME: Should request low memory from the heap when this feature is
+     implemented.  */
+
+  {
+    grub_relocator_chunk_t ch;
+    if (relocatable)
+      {
+	err = grub_relocator_alloc_chunk_align (relocator, &ch,
+						prefered_address,
+						prefered_address,
+						prot_size, 1,
+						GRUB_RELOCATOR_PREFERENCE_LOW,
+						1);
+	for (; err && *align + 1 > min_align; (*align)--)
+	  {
+	    grub_errno = GRUB_ERR_NONE;
+	    err = grub_relocator_alloc_chunk_align (relocator, &ch,
+						    0x1000000,
+						    0xffffffff & ~prot_size,
+						    prot_size, 1 << *align,
+						    GRUB_RELOCATOR_PREFERENCE_LOW,
+						    1);
+	  }
+	if (err)
+	  goto fail;
+      }
+    else
+      err = grub_relocator_alloc_chunk_addr (relocator, &ch,
+					     prefered_address,
+					     prot_size);
+    if (err)
+      goto fail;
+    prot_mode_mem = get_virtual_current_address (ch);
+    prot_mode_target = get_physical_target_address (ch);
+  }
+
+  grub_dprintf ("linux", "prot_mode_mem = %lx, prot_mode_target = %lx, prot_size = %x\n",
+                (unsigned long) prot_mode_mem, (unsigned long) prot_mode_target,
+		(unsigned) prot_size);
+  return GRUB_ERR_NONE;
+
+ fail:
+  free_pages ();
+  return err;
+}
 ```
 
 
