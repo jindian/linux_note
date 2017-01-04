@@ -493,6 +493,8 @@ $24 = 0x8df000
 (gdb) p /x preference 
 $25 = 0x1
 
+(gdb) print_chunks relocator
+chunk: 0x7fdb0d0, src = 0x100000, target = 0x1000000, srcv = 0x100000, size = 0x8df000
 
 	for (; err && *align + 1 > min_align; (*align)--)
 	  {
@@ -520,6 +522,11 @@ $25 = 0x1
   grub_dprintf ("linux", "prot_mode_mem = %lx, prot_mode_target = %lx, prot_size = %x\n",
                 (unsigned long) prot_mode_mem, (unsigned long) prot_mode_target,
 		(unsigned) prot_size);
+(gdb) p prot_mode_mem 
+$5 = (void *) 0x100000
+(gdb) p /x prot_mode_target 
+$8 = 0x1000000
+
   return GRUB_ERR_NONE;
 
  fail:
