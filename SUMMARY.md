@@ -17,4 +17,5 @@
     * [load initrd mode](GRUB2/load_initrd_mode.md)
     * [enter boot mode](GRUB2/enter_boot_mode.md)
     * [relocate Instructions](GRUB2/relocate_instructions.md)
+* [linux startup](linux_startup/README.md)
 
