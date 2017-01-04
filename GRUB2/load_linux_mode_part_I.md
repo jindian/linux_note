@@ -1,4 +1,4 @@
-# load linux mode
+# load linux mode part I
 
 Load linux mode is part of grub_script_execute_sourcecode, besides linux module, there are several other modules loaded, so a new section created here. Let's continue read grub_script_execute_sourcecode routine.
 
@@ -23,7 +23,7 @@ grub_script_execute_sourcecode
                                             |--grub_dl_check_header
                                             |--grub_dl_check_license
                                             |--grub_dl_resolve_name
-                                            |--grub_dl_resolve_dependencies   //load all linux depended modules: video, relocator, mmap, vbe, video_fb(depended by vbe)
+                                            |--grub_dl_resolve_dependencies   //load all linux depended modules
                                             |--grub_dl_load_segments
                                             |--grub_dl_resolve_symbols
                                             |--grub_arch_dl_relocate_symbols
