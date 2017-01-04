@@ -10,8 +10,12 @@ grub_cmd_linux
        |--grub_relocator_new           //allocate memory for relocator and do initialization for relocator
            |--grub_cpu_relocator_init
            |--grub_zalloc
-       |--grub_relocator_alloc_chunk_align
-           
+       |--grub_relocator_alloc_chunk_align   //allocate memory for protect mode code
+           |--grub_malloc                    //allocate memory for chunk information
+           |--malloc_in_range
+           |--grub_mmap_iterate
+   |--grub_memset                      //initialize linux prameters
+   |--grub_memcpy                      //copy linux header information to linux parameters
    |--grub_file_close
 
 ```grub_cmd_linux
@@ -191,6 +195,52 @@ $26 = 1048576
   params->code32_start = prot_mode_target + lh.code32_start - GRUB_LINUX_BZIMAGE_ADDR;
   params->kernel_alignment = (1 << align);
   params->ps_mouse = params->padding10 =  0;
+(gdb) p params
+$9 = (struct linux_kernel_params *) 0x7f73ad8 <linux_params>
+(gdb) p *params
+$10 = {video_cursor_x = 0 '\000', video_cursor_y = 0 '\000', ext_mem = 0, 
+  video_page = 0, video_mode = 0 '\000', video_width = 0 '\000', 
+  padding1 = "\000", video_ega_bx = 0, padding2 = "\000", 
+  video_height = 0 '\000', have_vga = 0 '\000', font_size = 0, lfb_width = 0, 
+  lfb_height = 0, lfb_depth = 0, lfb_base = 0, lfb_size = 0, cl_magic = 0, 
+  cl_offset = 0, lfb_line_len = 0, red_mask_size = 0 '\000', 
+  red_field_pos = 0 '\000', green_mask_size = 0 '\000', 
+  green_field_pos = 0 '\000', blue_mask_size = 0 '\000', 
+  blue_field_pos = 0 '\000', reserved_mask_size = 0 '\000', 
+  reserved_field_pos = 0 '\000', vesapm_segment = 0, vesapm_offset = 0, 
+  lfb_pages = 0, vesa_attrib = 0, capabilities = 0, 
+  padding3 = "\000\000\000\000\000", apm_version = 0, apm_code_segment = 0, 
+  apm_entry = 0, apm_16bit_code_segment = 0, apm_data_segment = 0, 
+  apm_flags = 0, apm_code_len = 0, apm_data_len = 0, 
+  padding4 = '\000' <repeats 11 times>, ist_signature = 0, ist_command = 0, 
+  ist_event = 0, ist_perf_level = 0, padding5 = '\000' <repeats 15 times>, 
+  hd0_drive_info = '\000' <repeats 15 times>, 
+  hd1_drive_info = '\000' <repeats 15 times>, rom_config_len = 0, 
+  padding6 = '\000' <repeats 13 times>, ofw_signature = 0, ofw_num_items = 0, 
+  ofw_cif_handler = 0, ofw_idt = 0, padding7 = '\000' <repeats 247 times>, {
+    v0204 = {efi_system_table = 0, padding7_1 = 0, efi_signature = 0, 
+      efi_mem_desc_size = 0, efi_mem_desc_version = 0, efi_mmap_size = 0, 
+      efi_mmap = 0}, v0206 = {padding7_1 = 0, padding7_2 = 0, 
+      efi_signature = 0, efi_system_table = 0, efi_mem_desc_size = 0, 
+      efi_mem_desc_version = 0, efi_mmap = 0, efi_mmap_size = 0}, v0208 = {
+      padding7_1 = 0, padding7_2 = 0, efi_signature = 0, 
+      efi_system_table = 0, efi_mem_desc_size = 0, efi_mem_desc_version = 0, 
+      efi_mmap = 0, efi_mmap_size = 0, efi_system_table_hi = 0, 
+      efi_mmap_hi = 0}}, alt_mem = 0, padding8 = "\000\000\000", 
+  mmap_size = 0 '\000', padding9 = "\000\000\000\000\000\000\000", 
+  setup_sects = 29 '\035', root_flags = 1, syssize = 47475, swap_dev = 3, 
+  ram_size = 0, vid_mode = 65535, root_dev = 2055, padding10 = 85 'U', 
+  ps_mouse = 170 '\252', jump = 25323, header = 1400005704, version = 522, 
+  realmode_swtch = 0, start_sys = 4096, kernel_version = 12256, 
+  type_of_loader = 0 '\000', loadflags = 1 '\001', setup_move_size = 32768, 
+  code32_start = 1048576, ramdisk_image = 0, ramdisk_size = 0, 
+  bootsect_kludge = 0, heap_end_ptr = 19776, ext_loader_ver = 0 '\000', 
+  ext_loader_type = 0 '\000', cmd_line_ptr = 0, initrd_addr_max = 2147483647, 
+  kernel_alignment = 16777216, relocatable_kernel = 1 '\001', 
+  pad1 = "\r\000", cmdline_size = 2047, hardware_subarch = 0, 
+  hardware_subarch_data = 0, payload_offset = 108, payload_length = 3888088, 
+  setup_data = 0, 
+  pad2 = "\000\000\000\001\000\000\000\000\000\360\215", '\000' <repeats 108 times>, e820_map = {{addr = 0, size = 0, type = 0} <repeats 15 times>}}
 
   len = sizeof (*params) - sizeof (lh);
   if (grub_file_read (file, (char *) params + sizeof (lh), len) != len)
