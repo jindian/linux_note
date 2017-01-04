@@ -235,6 +235,8 @@ $51 = {video_cursor_x = 0 '\000', video_cursor_y = 0 '\000', ext_mem = 32768,
 }
 ```
 
+All modules before entering boot mode loaded completed.
+
 # LINKS
   * [initrd](https://en.wikipedia.org/wiki/Initrd)
   * [file system initrd](http://www.tldp.org/LDP/Linux-Filesystem-Hierarchy/html/initrd.html)
