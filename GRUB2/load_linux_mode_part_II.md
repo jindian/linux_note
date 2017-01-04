@@ -5,6 +5,7 @@ This chapter focus on grub_cmd_linux.
 grub_cmd_linux
    |--grub_file_open                   //open linux kernel executable and read linux header
    |--grub_file_read
+   |--allocate_pages
    |--grub_file_close
 
 ```grub_cmd_linux
@@ -51,6 +52,22 @@ $8 = 0x7fe17c0 "root=/dev/sda"
 		    argv[0]);
       goto fail;
     }
+(gdb) p lh
+$10 = {
+  code1 = "\352\005\000\300\a\214Ȏ؎\300\216\320\061\344\373\374\276-\000\254 \300t\t\264\016\273\a\000\315\020", cl_magic = 62187, cl_offset = 49201, 
+  code2 = "\315\026\315\031\352\360\377\000\360Direct booting from floppy is no longer supported.\r\nPlease use a boot loader program instead.\r\n\nRemove disk and press any key to reboot . . .\r\n", '\000' <repeats 308 times>, 
+  setup_sects = 29 '\035', root_flags = 1, syssize = 47475, swap_dev = 3, 
+  ram_size = 0, vid_mode = 65535, root_dev = 2055, boot_flag = 43605, 
+  jump = 25323, header = 1400005704, version = 522, realmode_swtch = 0, 
+  start_sys = 4096, kernel_version = 12256, type_of_loader = 0 '\000', 
+  loadflags = 1 '\001', setup_move_size = 32768, code32_start = 1048576, 
+  ramdisk_image = 0, ramdisk_size = 0, bootsect_kludge = 0, 
+  heap_end_ptr = 19776, pad1 = 0, cmd_line_ptr = 0, 
+  initrd_addr_max = 2147483647, kernel_alignment = 16777216, 
+  relocatable = 1 '\001', min_alignment = 13 '\r', pad = "\000", 
+  cmdline_size = 2047, hardware_subarch = 0, hardware_subarch_data = 0, 
+  payload_offset = 108, payload_length = 3888088, setup_data = 0, 
+  pref_address = 16777216, init_size = 9302016}
 
   if (lh.boot_flag != grub_cpu_to_le16 (0xaa55))
     {
@@ -91,6 +108,8 @@ $8 = 0x7fe17c0 "root=/dev/sda"
     maximal_cmdline_size = grub_le_to_cpu32 (lh.cmdline_size) + 1;
   else
     maximal_cmdline_size = 256;
+(gdb) p maximal_cmdline_size
+$11 = 2048
 
   if (maximal_cmdline_size < 128)
     maximal_cmdline_size = 128;
@@ -103,6 +122,10 @@ $8 = 0x7fe17c0 "root=/dev/sda"
 
   real_size = setup_sects << GRUB_DISK_SECTOR_BITS;
   prot_file_size = grub_file_size (file) - real_size - GRUB_DISK_SECTOR_SIZE;
+(gdb) p real_size 
+$18 = 14848
+(gdb) p prot_file_size 
+$19 = 3905328
 
   if (grub_le_to_cpu16 (lh.version) >= 0x205
       && lh.kernel_alignment != 0
@@ -111,7 +134,11 @@ $8 = 0x7fe17c0 "root=/dev/sda"
       for (align = 0; align < 32; align++)
 	if (grub_le_to_cpu32 (lh.kernel_alignment) & (1 << align))
 	  break;
+(gdb) p align
+$21 = 24
       relocatable = grub_le_to_cpu32 (lh.relocatable);
+(gdb) p relocatable
+$22 = 1
     }
   else
     {
@@ -128,6 +155,14 @@ $8 = 0x7fe17c0 "root=/dev/sda"
 	preffered_address = grub_le_to_cpu64 (lh.pref_address);
       else
 	preffered_address = GRUB_LINUX_BZIMAGE_ADDR;
+(gdb) p min_align
+$23 = 13
+(gdb) p prot_size 
+$24 = 9302016
+(gdb) p prot_init_space 
+$25 = 9302016
+(gdb) p preffered_address 
+$26 = 1048576
     }
   else
     {
@@ -387,6 +422,18 @@ $8 = 0x7fe17c0 "root=/dev/sda"
   return grub_errno;
 }
 ```
+
+
+
+```allocate_pages
+
+allocate_pages (prefered_address=<optimized out>, 
+    relocatable=<optimized out>, min_align=<optimized out>, 
+    align=<optimized out>, prot_size=<optimized out>)
+    at loader/i386/linux.c:788
+```
+
+
 
 # LINKS
   * [Vmlinux](https://en.wikipedia.org/wiki/Vmlinux)
