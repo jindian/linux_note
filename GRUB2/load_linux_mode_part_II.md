@@ -3,8 +3,8 @@
 This chapter focus on grub_cmd_linux.
 
 grub_cmd_linux
-   |--grub_file_open                   //open linux kernel executable and read linux header
-   |--grub_file_read
+   |--grub_file_open                   //open linux kernel executable
+   |--grub_file_read                   //read linux header
    |--allocate_pages                   //allocate pages for linux and the memory map
        |--free_pages                   //reloacor and protect mode code intialization
        |--grub_relocator_new           //allocate memory for relocator and do initialization for relocator
@@ -16,7 +16,12 @@ grub_cmd_linux
            |--grub_mmap_iterate
    |--grub_memset                      //initialize linux prameters
    |--grub_memcpy                      //copy linux header information to linux parameters
-   |--grub_file_close
+   |--grub_file_read                   //read area after linux header
+   |--grub_file_seek                   //seek kernel file after linux parameters
+   |--grub_create_loader_cmdline       //create linux command line for boot loader
+   |--grub_file_read                   //read protect mode code
+   |--grub_loader_set                  //set boot and unboot functions with linux ones
+   |--grub_file_close                  //close linux kernel executable read
 
 ```grub_cmd_linux
 
@@ -195,52 +200,6 @@ $26 = 1048576
   params->code32_start = prot_mode_target + lh.code32_start - GRUB_LINUX_BZIMAGE_ADDR;
   params->kernel_alignment = (1 << align);
   params->ps_mouse = params->padding10 =  0;
-(gdb) p params
-$9 = (struct linux_kernel_params *) 0x7f73ad8 <linux_params>
-(gdb) p *params
-$10 = {video_cursor_x = 0 '\000', video_cursor_y = 0 '\000', ext_mem = 0, 
-  video_page = 0, video_mode = 0 '\000', video_width = 0 '\000', 
-  padding1 = "\000", video_ega_bx = 0, padding2 = "\000", 
-  video_height = 0 '\000', have_vga = 0 '\000', font_size = 0, lfb_width = 0, 
-  lfb_height = 0, lfb_depth = 0, lfb_base = 0, lfb_size = 0, cl_magic = 0, 
-  cl_offset = 0, lfb_line_len = 0, red_mask_size = 0 '\000', 
-  red_field_pos = 0 '\000', green_mask_size = 0 '\000', 
-  green_field_pos = 0 '\000', blue_mask_size = 0 '\000', 
-  blue_field_pos = 0 '\000', reserved_mask_size = 0 '\000', 
-  reserved_field_pos = 0 '\000', vesapm_segment = 0, vesapm_offset = 0, 
-  lfb_pages = 0, vesa_attrib = 0, capabilities = 0, 
-  padding3 = "\000\000\000\000\000", apm_version = 0, apm_code_segment = 0, 
-  apm_entry = 0, apm_16bit_code_segment = 0, apm_data_segment = 0, 
-  apm_flags = 0, apm_code_len = 0, apm_data_len = 0, 
-  padding4 = '\000' <repeats 11 times>, ist_signature = 0, ist_command = 0, 
-  ist_event = 0, ist_perf_level = 0, padding5 = '\000' <repeats 15 times>, 
-  hd0_drive_info = '\000' <repeats 15 times>, 
-  hd1_drive_info = '\000' <repeats 15 times>, rom_config_len = 0, 
-  padding6 = '\000' <repeats 13 times>, ofw_signature = 0, ofw_num_items = 0, 
-  ofw_cif_handler = 0, ofw_idt = 0, padding7 = '\000' <repeats 247 times>, {
-    v0204 = {efi_system_table = 0, padding7_1 = 0, efi_signature = 0, 
-      efi_mem_desc_size = 0, efi_mem_desc_version = 0, efi_mmap_size = 0, 
-      efi_mmap = 0}, v0206 = {padding7_1 = 0, padding7_2 = 0, 
-      efi_signature = 0, efi_system_table = 0, efi_mem_desc_size = 0, 
-      efi_mem_desc_version = 0, efi_mmap = 0, efi_mmap_size = 0}, v0208 = {
-      padding7_1 = 0, padding7_2 = 0, efi_signature = 0, 
-      efi_system_table = 0, efi_mem_desc_size = 0, efi_mem_desc_version = 0, 
-      efi_mmap = 0, efi_mmap_size = 0, efi_system_table_hi = 0, 
-      efi_mmap_hi = 0}}, alt_mem = 0, padding8 = "\000\000\000", 
-  mmap_size = 0 '\000', padding9 = "\000\000\000\000\000\000\000", 
-  setup_sects = 29 '\035', root_flags = 1, syssize = 47475, swap_dev = 3, 
-  ram_size = 0, vid_mode = 65535, root_dev = 2055, padding10 = 85 'U', 
-  ps_mouse = 170 '\252', jump = 25323, header = 1400005704, version = 522, 
-  realmode_swtch = 0, start_sys = 4096, kernel_version = 12256, 
-  type_of_loader = 0 '\000', loadflags = 1 '\001', setup_move_size = 32768, 
-  code32_start = 1048576, ramdisk_image = 0, ramdisk_size = 0, 
-  bootsect_kludge = 0, heap_end_ptr = 19776, ext_loader_ver = 0 '\000', 
-  ext_loader_type = 0 '\000', cmd_line_ptr = 0, initrd_addr_max = 2147483647, 
-  kernel_alignment = 16777216, relocatable_kernel = 1 '\001', 
-  pad1 = "\r\000", cmdline_size = 2047, hardware_subarch = 0, 
-  hardware_subarch_data = 0, payload_offset = 108, payload_length = 3888088, 
-  setup_data = 0, 
-  pad2 = "\000\000\000\001\000\000\000\000\000\360\215", '\000' <repeats 108 times>, e820_map = {{addr = 0, size = 0, type = 0} <repeats 15 times>}}
 
   len = sizeof (*params) - sizeof (lh);
   if (grub_file_read (file, (char *) params + sizeof (lh), len) != len)
@@ -277,6 +236,73 @@ $10 = {video_cursor_x = 0 '\000', video_cursor_y = 0 '\000', ext_mem = 0,
   params->video_ega_bx = 0;
 
   params->font_size = 16; /* XXX */
+(gdb) print params 
+$11 = (struct linux_kernel_params *) 0x7f73ad8 <linux_params>
+(gdb) print *params 
+$12 = {video_cursor_x = 0 '\000', video_cursor_y = 0 '\000', ext_mem = 32768, 
+  video_page = 0, video_mode = 0 '\000', video_width = 0 '\000', 
+  padding1 = "\000", video_ega_bx = 0, padding2 = "\000", 
+  video_height = 0 '\000', have_vga = 0 '\000', font_size = 16, 
+  lfb_width = 0, lfb_height = 0, lfb_depth = 0, lfb_base = 0, lfb_size = 0, 
+  cl_magic = 41791, cl_offset = 4096, lfb_line_len = 0, 
+  red_mask_size = 0 '\000', red_field_pos = 0 '\000', 
+  green_mask_size = 0 '\000', green_field_pos = 0 '\000', 
+  blue_mask_size = 0 '\000', blue_field_pos = 0 '\000', 
+  reserved_mask_size = 0 '\000', reserved_field_pos = 0 '\000', 
+  vesapm_segment = 0, vesapm_offset = 0, lfb_pages = 0, vesa_attrib = 0, 
+  capabilities = 0, padding3 = "\000\000\000\000\000", apm_version = 0, 
+  apm_code_segment = 0, apm_entry = 0, apm_16bit_code_segment = 0, 
+  apm_data_segment = 0, apm_flags = 0, apm_code_len = 0, apm_data_len = 0, 
+  padding4 = '\000' <repeats 11 times>, ist_signature = 0, ist_command = 0, 
+  ist_event = 0, ist_perf_level = 0, padding5 = '\000' <repeats 15 times>, 
+  hd0_drive_info = '\000' <repeats 15 times>, 
+  hd1_drive_info = '\000' <repeats 15 times>, rom_config_len = 0, 
+  padding6 = '\000' <repeats 13 times>, ofw_signature = 0, ofw_num_items = 0, 
+  ofw_cif_handler = 0, ofw_idt = 0, padding7 = '\000' <repeats 247 times>, {
+    v0204 = {efi_system_table = 0, padding7_1 = 0, efi_signature = 0, 
+      efi_mem_desc_size = 0, efi_mem_desc_version = 0, efi_mmap_size = 0, 
+      efi_mmap = 0}, v0206 = {padding7_1 = 0, padding7_2 = 0, 
+      efi_signature = 0, efi_system_table = 0, efi_mem_desc_size = 0, 
+      efi_mem_desc_version = 0, efi_mmap = 0, efi_mmap_size = 0}, v0208 = {
+      padding7_1 = 0, padding7_2 = 0, efi_signature = 0, 
+      efi_system_table = 0, efi_mem_desc_size = 0, efi_mem_desc_version = 0, 
+      efi_mmap = 0, efi_mmap_size = 0, efi_system_table_hi = 0, 
+      efi_mmap_hi = 0}}, alt_mem = 32768, padding8 = "\000\000\000", 
+  mmap_size = 0 '\000', padding9 = "\000\000\000\000\000\000\000", 
+  setup_sects = 29 '\035', root_flags = 1, syssize = 47475, swap_dev = 3, 
+  ram_size = 0, vid_mode = 65535, root_dev = 2055, padding10 = 0 '\000', 
+  ps_mouse = 0 '\000', jump = 25323, header = 1400005704, version = 522, 
+  realmode_swtch = 0, start_sys = 4096, kernel_version = 12256, 
+  type_of_loader = 114 'r', loadflags = 129 '\201', setup_move_size = 32768, 
+  code32_start = 16777216, ramdisk_image = 0, ramdisk_size = 0, 
+  bootsect_kludge = 0, heap_end_ptr = 36352, ext_loader_ver = 0 '\000', 
+  ext_loader_type = 0 '\000', cmd_line_ptr = 0, initrd_addr_max = 2147483647, 
+  kernel_alignment = 16777216, relocatable_kernel = 1 '\001', 
+  pad1 = "\r\000", cmdline_size = 2047, hardware_subarch = 0, 
+  hardware_subarch_data = 0, payload_offset = 108, payload_length = 3888088, 
+  setup_data = 0, 
+  pad2 = "\000\000\000\001\000\000\000\000\000\360\215\000\214؎\300\374\214\322\071\302\211\342t\026\272@M\366\006\021\002\200t\004\213\026$\002\201\302\000\
+002s\002\061҃\342\374u\003\272\374\377\216\320f\017\267\342\373\036h\233\002\313f\201>|:U\252ZZu\027\277\200:\271CMf1\300)\371\301\351\002\363f\253f\350\201*\000\000f\270@\003\000\000f\350[\000\000\000\364\351\374\377fSf", e820_map = {
+    {addr = 9468470261485202563, size = 3861923132410616, type = 3898998784}, 
+    {addr = 7413076062126473189, size = 4956043164643610856, type = 462884}, {
+      addr = 7421933389105907559, size = 6667692558638138566, 
+      type = 828775460}, {addr = 4706351654201033, size = 1782015459328, 
+      type = 751076198}, {addr = 9900692531650648934, 
+      size = 13872216867045009347, type = 1130760820}, {
+      addr = 17144077881485551718, size = 2337172526878579558, 
+      type = 1970562419}, {addr = 8386105371570413680, 
+      size = 7959390400868086389, type = 774778468}, {addr = 429504151814154, 
+      size = 5360972406433298790, type = 2162564980}, {
+      addr = 5288919717233059044, size = 9288118376811991924, 
+      type = 3874185444}, {addr = 7403972105352839848, 
+      size = 7404875461093975747, type = 3526452819}, {
+      addr = 16901727696821084814, size = 9900603030087886436, 
+      type = 2372298698}, {addr = 7356195521970962716, 
+      size = 16573809675471316034, type = 2707842432}, {
+      addr = 16998683756064014864, size = 1047480971247576579, 
+      type = 1533411840}, {addr = 9468346965594391398, size = 1102655663340, 
+      type = 2215594854}, {addr = 140532646082, size = 9612651929639184486, 
+      type = 1711699136}}}
 
 #ifdef GRUB_MACHINE_EFI
 #ifdef __x86_64__
@@ -316,6 +342,10 @@ $10 = {video_cursor_x = 0 '\000', video_cursor_y = 0 '\000', ext_mem = 0,
   /* Look for memory size and video mode specified on the command line.  */
   linux_mem_size = 0;
   for (i = 1; i < argc; i++)
+(gdb) p argv[1]
+$13 = 0x7fe17c0 "root=/dev/sda"
+(gdb) p argc
+$14 = 2
 #ifdef GRUB_MACHINE_PCBIOS
     if (grub_memcmp (argv[i], "vga=", 4) == 0)
       {
@@ -451,6 +481,8 @@ $10 = {video_cursor_x = 0 '\000', video_cursor_y = 0 '\000', ext_mem = 0,
 			      + sizeof (LINUX_IMAGE) - 1,
 			      maximal_cmdline_size
 			      - (sizeof (LINUX_IMAGE) - 1));
+(gdb) p linux_cmdline 
+$18 = 0x7fda8b0 "BOOT_IMAGE=/boot/vmlinuz-2.6.32.69 root=/dev/sda"
 
   len = prot_file_size;
   if (grub_file_read (file, prot_mode_mem, len) != len && !grub_errno)
@@ -741,6 +773,86 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel,
 #endif
   return GRUB_ERR_NONE;
 }
+```
+
+
+
+```grub_create_loader_cmdline
+grub_create_loader_cmdline (argc=argc@entry=2, argv=argv@entry=0x7fe1884, buf=0x7fda8bb "", size=2037) at lib/cmdline.c:69
+
+grub-core/lib/cmdline.c:62
+
+int grub_create_loader_cmdline (int argc, char *argv[], char *buf,
+                                grub_size_t size)
+{
+  int i, space;
+  unsigned int arg_size;
+  char *c;
+
+  for (i = 0; i < argc; i++)
+    {
+      c = argv[i];
+      arg_size = check_arg(argv[i], &space);
+      arg_size++; /* Separator space or NULL.  */
+
+      if (size < arg_size)
+        break;
+
+      size -= arg_size;
+
+      if (space)
+        *buf++ = '"';
+
+      while (*c)
+        {
+          if (*c == '\\' || *c == '\'' || *c == '"')
+            *buf++ = '\\';
+
+          *buf++ = *c;
+          c++;
+        }
+
+      if (space)
+        *buf++ = '"';
+
+      *buf++ = ' ';
+    }
+
+  /* Replace last space with null.  */
+  if (i)
+    buf--;
+
+  *buf = 0;
+
+  return i;
+}
+```
+
+
+
+```grub_loader_set
+
+grub_loader_set (boot=boot@entry=0x7f725a3 <grub_linux_boot>, 
+    unload=unload@entry=0x7f7252d <grub_linux_unload>, flags=flags@entry=0)
+    at commands/boot.c:117
+
+grub-core/commands/boot.c:112
+
+void
+grub_loader_set (grub_err_t (*boot) (void),
+                 grub_err_t (*unload) (void),
+                 int flags)
+{
+  if (grub_loader_loaded && grub_loader_unload_func)
+    grub_loader_unload_func ();
+
+  grub_loader_boot_func = boot;
+  grub_loader_unload_func = unload;
+  grub_loader_flags = flags;
+
+  grub_loader_loaded = 1;
+}
+
 ```
 
 
