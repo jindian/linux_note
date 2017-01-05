@@ -744,6 +744,7 @@ grub_file_close (grub_file_t file)
 }
 ```
 
+That's all of grub filesystem ext2.
 
 # LINKS
 
