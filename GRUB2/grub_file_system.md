@@ -107,7 +107,7 @@ static struct grub_fs grub_ext2_fs =
 
 Other important data structures of ext2 filesystem are super block, glock group, inode and directory entry, same as linux filesystem.
 
-```basic_ext2_filesystem_structure
+```basic_ext2_filesystem_structures
 
 grub-core/fs/ext2.c:134
 
