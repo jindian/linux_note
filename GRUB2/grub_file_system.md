@@ -2,7 +2,7 @@
 
 In order to read from disk, grub implemets several filesystems to support it. ext2 is the most classic one in all filesystems, ext2 is the filesystem in grub startup of this book. Let's study it in grub startup when loading linux module.
 
-grub_fs is filesystem descriptor, includes basic filesystem properties and functions of file operation, it's similar with linux filesystem but less complex. Every specific filesystem described with this data structure, all filesystems saved in link list grub_fs_list, from below debug information, only one filesystem exists when loading linux module. ext2 filesystem is one of modules included in grub core image, it's added to grub_fs_list when loading ext2 module.
+grub_fs is filesystem descriptor, includes basic filesystem properties and functions of file operation, it's similar with linux filesystem but less complex. Every specific filesystem described with this data structure, all filesystems saved in link list grub_fs_list, from below debug information, only one filesystem exists when loading linux module.
 
 ```
 (gdb) p grub_fs_list 
@@ -65,6 +65,41 @@ struct grub_fs
 #endif
 };
 typedef struct grub_fs *grub_fs_t;
+```
+
+ext2 filesystem is one of the modules included in grub core image, it's added to grub_fs_list when loading ext2 module. Call context of loading ext2 filesystem module as below.
+
+```load_ext2_module
+grub_main
+    |--grub_load_modules
+        |--grub_dl_load_core
+            |--grub_dl_call_init
+                |--(mod->init) (mod) -> grub_mod_init (mod=0x7ffbe50) at fs/ext2.c:983
+                    |--grub_fs_register
+                        |--grub_list_push                //push ext2 to grub_fs_list
+```                
+
+Instance of ext2 filesystem:
+```instance_ext2
+
+grub-core/fs/ext2.c:964
+
+static struct grub_fs grub_ext2_fs =
+  {
+    .name = "ext2",
+    .dir = grub_ext2_dir,
+    .open = grub_ext2_open,
+    .read = grub_ext2_read,
+    .close = grub_ext2_close,
+    .label = grub_ext2_label,
+    .uuid = grub_ext2_uuid,
+    .mtime = grub_ext2_mtime,
+#ifdef GRUB_UTIL
+    .reserved_first_sector = 1,
+    .blocklist_install = 1,
+#endif
+    .next = 0
+  };
 ```
 
 grub_dl_load_file routine includes a typical file opertions procedure: grub_file_open, grub_file_read, grub_file_close. Let's study it one by one.
