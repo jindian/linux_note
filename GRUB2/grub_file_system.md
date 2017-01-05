@@ -11,6 +11,8 @@ $12 = (grub_fs_t) 0x7ffb728 <grub_ext2_fs>
 $13 = (struct grub_fs *) 0x0
 ```
 
+Here is the filesystem descriptor of grub.
+
 ```grub_fs
 
 /* Filesystem descriptor.  */
@@ -101,6 +103,123 @@ static struct grub_fs grub_ext2_fs =
 #endif
     .next = 0
   };
+```
+
+Other important data structures of ext2 filesystem are super block, glock group, inode and directory entry, same as linux filesystem.
+
+```basic_ext2_filesystem_structure
+
+grub-core/fs/ext2.c:134
+
+/* The ext2 superblock.  */
+struct grub_ext2_sblock
+{
+  grub_uint32_t total_inodes;
+  grub_uint32_t total_blocks;
+  grub_uint32_t reserved_blocks;
+  grub_uint32_t free_blocks;
+  grub_uint32_t free_inodes;
+  grub_uint32_t first_data_block;
+  grub_uint32_t log2_block_size;
+  grub_uint32_t log2_fragment_size;
+  grub_uint32_t blocks_per_group;
+  grub_uint32_t fragments_per_group;
+  grub_uint32_t inodes_per_group;
+  grub_uint32_t mtime;
+  grub_uint32_t utime;
+  grub_uint16_t mnt_count;
+  grub_uint16_t max_mnt_count;
+  grub_uint16_t magic;
+  grub_uint16_t fs_state;
+  grub_uint16_t error_handling;
+  grub_uint16_t minor_revision_level;
+  grub_uint32_t lastcheck;
+  grub_uint32_t checkinterval;
+  grub_uint32_t creator_os;
+  grub_uint32_t revision_level;
+  grub_uint16_t uid_reserved;
+  grub_uint16_t gid_reserved;
+  grub_uint32_t first_inode;
+  grub_uint16_t inode_size;
+  grub_uint16_t block_group_number;
+  grub_uint32_t feature_compatibility;
+  grub_uint32_t feature_incompat;
+  grub_uint32_t feature_ro_compat;
+  grub_uint16_t uuid[8];
+  char volume_name[16];
+  char last_mounted_on[64];
+  grub_uint32_t compression_info;
+  grub_uint8_t prealloc_blocks;
+  grub_uint8_t prealloc_dir_blocks;
+  grub_uint16_t reserved_gdt_blocks;
+  grub_uint8_t journal_uuid[16];
+  grub_uint32_t journal_inum;
+  grub_uint32_t journal_dev;
+  grub_uint32_t last_orphan;
+  grub_uint32_t hash_seed[4];
+  grub_uint8_t def_hash_version;
+  grub_uint8_t jnl_backup_type;
+  grub_uint16_t reserved_word_pad;
+  grub_uint32_t default_mount_opts;
+  grub_uint32_t first_meta_bg;
+  grub_uint32_t mkfs_time;
+  grub_uint32_t jnl_blocks[17];
+};
+
+/* The ext2 blockgroup.  */
+struct grub_ext2_block_group
+{
+  grub_uint32_t block_id;
+  grub_uint32_t inode_id;
+  grub_uint32_t inode_table_id;
+  grub_uint16_t free_blocks;
+  grub_uint16_t free_inodes;
+  grub_uint16_t used_dirs;
+  grub_uint16_t pad;
+  grub_uint32_t reserved[3];
+};
+
+/* The ext2 inode.  */
+struct grub_ext2_inode
+{
+  grub_uint16_t mode;
+  grub_uint16_t uid;
+  grub_uint32_t size;
+  grub_uint32_t atime;
+  grub_uint32_t ctime;
+  grub_uint32_t mtime;
+  grub_uint32_t dtime;
+  grub_uint16_t gid;
+  grub_uint16_t nlinks;
+  grub_uint32_t blockcnt;  /* Blocks of 512 bytes!! */
+  grub_uint32_t flags;
+  grub_uint32_t osd1;
+  union
+  {
+    struct datablocks
+    {
+      grub_uint32_t dir_blocks[INDIRECT_BLOCKS];
+      grub_uint32_t indir_block;
+      grub_uint32_t double_indir_block;
+      grub_uint32_t triple_indir_block;
+    } blocks;
+    char symlink[60];
+  };
+  grub_uint32_t version;
+  grub_uint32_t acl;
+  grub_uint32_t size_high;
+  grub_uint32_t fragment_addr;
+  grub_uint32_t osd2[3];
+};
+
+/* The header of an ext2 directory entry.  */
+struct ext2_dirent
+{
+  grub_uint32_t inode;
+  grub_uint16_t direntlen;
+  grub_uint8_t namelen;
+  grub_uint8_t filetype;
+};
 ```
 
 grub_dl_load_file routine includes a typical file opertions procedure: grub_file_open, grub_file_read, grub_file_close. Let's study it one by one.
