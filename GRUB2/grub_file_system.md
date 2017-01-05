@@ -228,6 +228,7 @@ grub_dl_load_file routine includes a typical file opertions procedure: grub_file
 grub_dl_load_file
     |--grub_file_open
         |--grub_file_get_device_name                    //get device from configuration of grub.cfg
+        |--grub_device_open
         |--grub_fs_probe                                //find proper filesystem for disk  device
             |--grub_ext2_dir
                 |--grub_ext2_mount
@@ -239,8 +240,14 @@ grub_dl_load_file
             |--grub_ext2_read_inode
     |--grub_file_size
     |--grub_file_read
-        |--
-                
+        |--grub_ext2_read
+            |--grub_ext2_read_file
+                |--grub_fshelp_read_file
+                    |--grub_disk_read
+    |--grub_file_close
+        |--grub_ext2_close
+        |--grub_device_close
+    |--grub_dl_load_core
 ```
 
 ```grub_dl_load_file
@@ -640,6 +647,101 @@ grub_ext2_open (struct grub_file *file, const char *name)
 grub_file_read (file=file@entry=0x7fe1650, buf=buf@entry=0x7fa1c20, len=len@entry=11488) at kern/file.c:139
 
 grub-core/kern/file.c:134
+
+grub_ssize_t
+grub_file_read (grub_file_t file, void *buf, grub_size_t len)
+{
+  grub_ssize_t res;
+
+  if (file->offset > file->size)
+    {
+      grub_error (GRUB_ERR_OUT_OF_RANGE,
+		  N_("attempt to read past the end of file"));
+      return -1;
+    }
+
+  if (len == 0)
+    return 0;
+
+  if (len > file->size - file->offset)
+    len = file->size - file->offset;
+
+  /* Prevent an overflow.  */
+  if ((grub_ssize_t) len < 0)
+    len >>= 1;
+
+  if (len == 0)
+    return 0;
+  res = (file->fs->read) (file, buf, len);
+  if (res > 0)
+    file->offset += res;
+
+  return res;
+}
+```
+
+
+
+```
+
+grub_ext2_read (file=0x7fe1650, buf=0x7fa1c20 "", len=11488) at fs/ext2.c:819
+
+grub-core/fs/ext2.c:816
+
+/* Read LEN bytes data from FILE into BUF.  */
+static grub_ssize_t
+grub_ext2_read (grub_file_t file, char *buf, grub_size_t len)
+{
+  struct grub_ext2_data *data = (struct grub_ext2_data *) file->data;
+
+  return grub_ext2_read_file (&data->diropen, file->read_hook,
+                              file->offset, len, buf);
+}
+```
+
+
+
+```grub_ext2_read_file
+
+grub_ext2_read_file (node=0x7fe15a8, read_hook=0x0, pos=0, len=11488, buf=0x7fa1c20 "") at fs/ext2.c:523
+
+grub-core/fs/ext2.c:511
+
+/* Read LEN bytes from the file described by DATA starting with byte
+   POS.  Return the amount of read bytes in READ.  */
+static grub_ssize_t
+grub_ext2_read_file (grub_fshelp_node_t node,
+                     void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
+                                        unsigned offset, unsigned length),
+                     grub_off_t pos, grub_size_t len, char *buf)
+{
+  return grub_fshelp_read_file (node->data->disk, node, read_hook,
+                                pos, len, buf, grub_ext2_read_block,
+                                grub_cpu_to_le32 (node->inode.size)
+                                | (((grub_off_t) grub_cpu_to_le32 (node->inode.size_high)) << 32),
+                                LOG2_EXT2_BLOCK_SIZE (node->data), 0);
+
+}
+
+```
+
+
+
+```grub_file_close
+
+grub-core/fs/ext2.c:165
+
+grub_err_t
+grub_file_close (grub_file_t file)
+{
+  if (file->fs->close)
+    (file->fs->close) (file);
+
+  if (file->device)
+    grub_device_close (file->device);
+  grub_free (file);
+  return grub_errno;
+}
 ```
 
 
