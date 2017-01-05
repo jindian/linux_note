@@ -79,7 +79,7 @@ grub_main
                         |--grub_list_push                //push ext2 to grub_fs_list
 ```                
 
-Instance of ext2 filesystem as below, later file created with style of ext2 filesystem could be operated with all routines inclued in grub_ext2_fs.
+Instance of ext2 filesystem as below, later file created with style of ext2 filesystem could be operated with all routines inclued in grub_ext2_fs. Other filesytems are similar with ext2.
 
 ```instance_ext2
 
