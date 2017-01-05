@@ -105,7 +105,7 @@ static struct grub_fs grub_ext2_fs =
   };
 ```
 
-Other important data structures of ext2 filesystem are super block, glock group, inode and directory entry, same as linux filesystem.
+Other important data structures of ext2 filesystem listed: super block, glock group, inode and directory entry. It's similar with linux.
 
 ```basic_ext2_filesystem_structures
 
