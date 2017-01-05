@@ -102,5 +102,7 @@ Code from address 0x9df000, at address 0x9df09e grub jumps to linux code `ljmp  
    0x9df09e:	ljmp   $0x10,$0x1000000
 ```
 
+What preparations grub does before jumping to linux code?
+
 # LINKS
   * [Global Descriptor Table](https://en.wikipedia.org/wiki/Global_Descriptor_Table)
