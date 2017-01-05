@@ -67,7 +67,7 @@ struct grub_fs
 typedef struct grub_fs *grub_fs_t;
 ```
 
-ext2 filesystem is one of the modules included in grub core image, it's added to grub_fs_list when loading ext2 module. Call context of loading ext2 filesystem module as below.
+ext2 filesystem is one of the modules included in grub core image, it's added to grub_fs_list when loading ext2 module. Call context of loading ext2 filesystem module as below, the initialization of grub ext2 filesystem is very simple.
 
 ```load_ext2_module
 grub_main
