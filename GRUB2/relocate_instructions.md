@@ -312,6 +312,7 @@ Result of grub\_memmove in destination, address start from 0x9df000 size 0xd0
 Instructions starting from 0x9df000 as follow:
 
 ```assembly
+
    0x9df000:	mov    %eax,%esi
    0x9df002:	add    $0x9,%eax
    0x9df007:	jmp    *%eax
