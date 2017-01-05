@@ -2,9 +2,7 @@
 
 In order to read from disk, grub implemets several filesystems to support it. ext2 is the most classic one in all filesystems, ext2 is the filesystem in grub startup of this book. Let's study it in grub startup when loading linux module.
 
-Important structure of grub filesystem
-
-grub_fs is filesystem descriptor, includes basic filesystem properties and functions of file operation, it's similar with linux filesystem but less complex. Every specific filesystem described with this data structure, all filesystems saved in link list grub_fs_list, from below debug information, only one filesystem exists when loading linux module.
+grub_fs is filesystem descriptor, includes basic filesystem properties and functions of file operation, it's similar with linux filesystem but less complex. Every specific filesystem described with this data structure, all filesystems saved in link list grub_fs_list, from below debug information, only one filesystem exists when loading linux module. ext2 filesystem is one of modules included in grub core image, it's added to grub_fs_list when loading ext2 module.
 
 ```
 (gdb) p grub_fs_list 
