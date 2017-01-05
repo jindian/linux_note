@@ -78,7 +78,7 @@ grub_main
             |--grub_dl_call_init
                 |--(mod->init) (mod) -> grub_mod_init (mod=0x7ffbe50) at fs/ext2.c:983
                     |--grub_fs_register
-                        |--grub_list_push                //push ext2 to grub_fs_list
+                        |--grub_list_push                //push ext2 to grub_fs_list                           
 ```                
 
 Instance of ext2 filesystem as below, later file created with style of ext2 filesystem could be operated with all routines inclued in grub_ext2_fs. Other filesytems are similar with ext2.
@@ -224,6 +224,18 @@ struct ext2_dirent
 
 grub_dl_load_file routine includes a typical file opertions procedure: grub_file_open, grub_file_read, grub_file_close. Let's study it one by one.
 
+```ext2_file_operations
+grub_dl_load_file
+    |--grub_file_open
+        |--grub_file_get_device_name                    //get device from configuration of grub.cfg
+        |--grub_fs_probe                                //find proper filesystem for disk  device
+            |--grub_ext2_dir
+                |--grub_ext2_mount
+                |--grub_fshelp_find_file
+                |--grub_ext2_iterate_dir
+                
+```
+
 ```grub_dl_load_file
 
 grub_dl_load_file (filename=0x7fe17c0 "(hd0,msdos1)/boot/grub/i386-pc/linux.mod") at kern/dl.c:671
@@ -352,6 +364,209 @@ grub_file_open (const char *name)
   return 0;
 }
 ```
+
+Find proper filesystem for device disk, only one filesystem in grub_fs_list.
+
+```grub_fs_probe
+
+grub_fs_probe (device=device@entry=0x7fe1780) at kern/fs.c:48
+
+grub-core/kern/fs.c:35
+
+grub_fs_t
+grub_fs_probe (grub_device_t device)
+{
+  grub_fs_t p;
+  auto int dummy_func (const char *filename,
+		       const struct grub_dirhook_info *info);
+
+  int dummy_func (const char *filename __attribute__ ((unused)),
+		  const struct grub_dirhook_info *info  __attribute__ ((unused)))
+    {
+      return 1;
+    }
+
+  if (device->disk)
+    {
+      /* Make it sure not to have an infinite recursive calls.  */
+      static int count = 0;
+
+(gdb) p grub_fs_list 
+$3 = (grub_fs_t) 0x7ffb728 <grub_ext2_fs>
+(gdb) p grub_fs_list->next
+$4 = (struct grub_fs *) 0x0
+      for (p = grub_fs_list; p; p = p->next)
+	{
+	  grub_dprintf ("fs", "Detecting %s...\n", p->name);
+
+	  /* This is evil: newly-created just mounted BtrFS after copying all
+	     GRUB files has a very peculiar unrecoverable corruption which
+	     will be fixed at sync but we'd rather not do a global sync and
+	     syncing just files doesn't seem to help. Relax the check for
+	     this time.  */
+#ifdef GRUB_UTIL
+	  if (grub_strcmp (p->name, "btrfs") == 0)
+	    {
+	      char *label = 0;
+	      p->uuid (device, &label);
+	      if (label)
+		grub_free (label);
+	    }
+	  else
+#endif
+	    (p->dir) (device, "/", dummy_func);
+	  if (grub_errno == GRUB_ERR_NONE)
+	    return p;
+
+	  grub_error_push ();
+	  grub_dprintf ("fs", "%s detection failed.\n", p->name);
+	  grub_error_pop ();
+
+	  if (grub_errno != GRUB_ERR_BAD_FS
+	      && grub_errno != GRUB_ERR_OUT_OF_RANGE)
+	    return 0;
+
+	  grub_errno = GRUB_ERR_NONE;
+	}
+
+      /* Let's load modules automatically.  */
+      if (grub_fs_autoload_hook && count == 0)
+	{
+	  count++;
+
+	  while (grub_fs_autoload_hook ())
+	    {
+	      p = grub_fs_list;
+
+	      (p->dir) (device, "/", dummy_func);
+	      if (grub_errno == GRUB_ERR_NONE)
+		{
+		  count--;
+		  return p;
+		}
+
+	      if (grub_errno != GRUB_ERR_BAD_FS
+		  && grub_errno != GRUB_ERR_OUT_OF_RANGE)
+		{
+		  count--;
+		  return 0;
+		}
+
+	      grub_errno = GRUB_ERR_NONE;
+	    }
+
+	  count--;
+	}
+    }
+  else if (device->net && device->net->fs)
+    return device->net->fs;
+
+  grub_error (GRUB_ERR_UNKNOWN_FS, N_("unknown filesystem"));
+  return 0;
+}
+```
+
+
+
+```grub_ext2_dir
+
+grub_ext2_dir (device=0x7fe1780, path=0xe8b1 "/", hook=0xc557 <dummy_func>) at fs/ext2.c:828
+
+grub-core/fs/ext2.c:827
+
+static grub_err_t
+grub_ext2_dir (grub_device_t device, const char *path,
+	       int (*hook) (const char *filename,
+			    const struct grub_dirhook_info *info))
+{
+  struct grub_ext2_data *data = 0;
+  struct grub_fshelp_node *fdiro = 0;
+
+  auto int NESTED_FUNC_ATTR iterate (const char *filename,
+				     enum grub_fshelp_filetype filetype,
+				     grub_fshelp_node_t node);
+
+  int NESTED_FUNC_ATTR iterate (const char *filename,
+				enum grub_fshelp_filetype filetype,
+				grub_fshelp_node_t node)
+    {
+      struct grub_dirhook_info info;
+      grub_memset (&info, 0, sizeof (info));
+      if (! node->inode_read)
+	{
+	  grub_ext2_read_inode (data, node->ino, &node->inode);
+	  if (!grub_errno)
+	    node->inode_read = 1;
+	  grub_errno = GRUB_ERR_NONE;
+	}
+      if (node->inode_read)
+	{
+	  info.mtimeset = 1;
+	  info.mtime = grub_le_to_cpu32 (node->inode.mtime);
+	}
+
+      info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
+      grub_free (node);
+      return hook (filename, &info);
+    }
+
+  grub_dl_ref (my_mod);
+
+  data = grub_ext2_mount (device->disk);
+  if (! data)
+    goto fail;
+(gdb) p data
+$5 = (struct grub_ext2_data *) 0x7fe1450
+(gdb) p *data
+$6 = {sblock = {total_inodes = 3600, total_blocks = 14368,
+reserved_blocks = 718, free_blocks = 3190, free_inodes = 3323,
+first_data_block = 1, log2_block_size = 0, log2_fragment_size = 0,
+blocks_per_group = 8192, fragments_per_group = 8192,
+inodes_per_group = 1800, mtime = 1482137221, utime = 1482137224,
+mnt_count = 1, max_mnt_count = 65535, magic = 61267, fs_state = 1,
+error_handling = 1, minor_revision_level = 0, lastcheck = 1482137221,
+checkinterval = 0, creator_os = 0, revision_level = 1, uid_reserved = 0,
+gid_reserved = 0, first_inode = 11, inode_size = 128,
+block_group_number = 0, feature_compatibility = 56, feature_incompat = 2, 
+feature_ro_compat = 1, uuid = {43444, 52472, 62440, 63562, 31403, 21528, 
+30361, 53694}, volume_name = '\000' <repeats 15 times>,
+last_mounted_on = "/mnt/disk_img_mk", '\000' <repeats 47 times>,
+compression_info = 0, prealloc_blocks = 0 '\000',
+prealloc_dir_blocks = 0 '\000', reserved_gdt_blocks = 56,
+journal_uuid = '\000' <repeats 15 times>, journal_inum = 0,
+journal_dev = 0, last_orphan = 0, hash_seed = {3035430676, 3494066414,
+116144551, 3742743110}, def_hash_version = 1 '\001',
+jnl_backup_type = 0 '\000', reserved_word_pad = 0,
+default_mount_opts = 12, first_meta_bg = 0, mkfs_time = 1482137221,
+jnl_blocks = {0 <repeats 17 times>}}, disk = 0x7fe1740,
+inode = 0x7fe15ac, diropen = {data = 0x7fe1450, inode = {mode = 16877,
+uid = 0, size = 1024, atime = 1482137221, ctime = 1482137221,
+mtime = 1482137221, dtime = 0, gid = 0, nlinks = 4, blockcnt = 2,
+flags = 0, osd1 = 1, {blocks = {dir_blocks = {286,
+0 <repeats 11 times>}, indir_block = 0, double_indir_block = 0,
+triple_indir_block = 0},
+symlink = "\036\001", '\000' <repeats 57 times>}, version = 0,
+acl = 0, size_high = 0, fragment_addr = 0, osd2 = {0, 0, 0}}, ino = 2,
+inode_read = 1}}
+
+  grub_fshelp_find_file (path, &data->diropen, &fdiro, grub_ext2_iterate_dir,
+			 grub_ext2_read_symlink, GRUB_FSHELP_DIR);
+  if (grub_errno)
+    goto fail;
+
+  grub_ext2_iterate_dir (fdiro, iterate);
+
+ fail:
+  if (fdiro != &data->diropen)
+    grub_free (fdiro);
+  grub_free (data);
+
+  grub_dl_unref (my_mod);
+
+  return grub_errno;
+}
+```
+
 
 # LINKS
 
