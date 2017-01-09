@@ -52,6 +52,8 @@ Code from address 0x9df0d0, it copies 2 blocks of code to specified destination 
 
 Code from address 0x9df000, at address 0x9df09e grub jumps to linux code `ljmp   $0x10,$0x1000000`.
 
+Register esi stores source address of code
+
 ```
 
    0x9df000:	mov    %eax,%esi
