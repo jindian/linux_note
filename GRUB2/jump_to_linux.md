@@ -52,7 +52,7 @@ Code from address 0x9df0d0, it copies 2 blocks of code to specified destination 
 
 Code from address 0x9df000, at address 0x9df09e grub jumps to linux code `ljmp   $0x10,$0x1000000`.
 
-Register esi stores source address of code
+Register esi stores start address of source code grub-core/lib/i386/relocator32.S, the global descriptor table defined in it.
 
 ```
 
@@ -71,6 +71,8 @@ eax            0x9df048	   10350664
    0x9df01b:	mov    %eax,0x32(%esi)
    0x9df021:	lgdtl  0x30(%esi)
    0x9df028:	ljmp   *0x40(%esi)
+(gdb) x/w 0x9df000+0x40
+0x9df040:	0x009df048
    0x9df02e:	xchg   %ax,%ax
    0x9df030:	and    %al,(%eax)
    0x9df032:	add    %al,(%eax)
@@ -89,6 +91,8 @@ eax            0x9df048	   10350664
    0x9df055:	mov    %eax,%ss
    0x9df057:	mov    %cr0,%eax
    0x9df05a:	and    $0x7fffffff,%eax
+(gdb) info registers eax
+eax            0x11	17
    0x9df05f:	mov    %eax,%cr0
    0x9df062:	mov    %cr4,%eax
    0x9df065:	and    $0xffffffdf,%eax
