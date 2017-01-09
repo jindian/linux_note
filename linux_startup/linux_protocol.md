@@ -278,19 +278,26 @@ esp            0x181f740	0x181f740
  * where decompression in place becomes safe.
  */
 	pushl	%esi
-	leal	(_bss-4)(%ebp), %esi
-	leal	(_bss-4)(%ebx), %edi
-	movl	$(_bss - startup_32), %ecx
+	leal	(_bss-4)(%ebp), %esi          -> 0x100004b:	lea    0x3b973c(%ebp),%esi
+(gdb) info registers esi
+esi            0x13b973c	20682556
+	leal	(_bss-4)(%ebx), %edi          -> 0x1000051:	lea    0x3b973c(%ebx),%edi
+(gdb) info registers edi
+edi            0x181a73c	25274172
+	movl	$(_bss - startup_32), %ecx    -> 0x1000057:	mov    $0x3b9740,%ecx
 	shrl	$2, %ecx
+(gdb) info registers ecx
+ecx            0xee5d0	976336
 	std
 	rep	movsl
 	cld
 	popl	%esi
-
+(gdb) info registers esi
+esi            0x8b000	569344
 /*
  * Jump to the relocated address.
  */
-	leal	relocated(%ebx), %eax
+	leal	relocated(%ebx), %eax         -> 0x1000064:	lea    0x3b5450(%ebx),%eax
 	jmp	*%eax
 ENDPROC(startup_32)
 
