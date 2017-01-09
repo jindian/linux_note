@@ -1,4 +1,4 @@
-# linux compressed code
+# decompress linux kernel
 
 We are in linux now, let's learn something about linux boot protocol before next stage of code study.
 
@@ -340,20 +340,30 @@ eax            0x181a740	25274176
 	pushl	%esi		/* real mode pointer */
 	call	decompress_kernel                     -> 0x1816480:	call   0x1819250
 	addl	$20, %esp
+(gdb) info registers esp
+esp            0x181f740	0x181f740
 
 #if CONFIG_RELOCATABLE
 /*
  * Find the address of the relocations.
  */
-	leal	z_output_len(%ebp), %edi
+	leal	z_output_len(%ebp), %edi                      -> 0x1816488:	lea    0x80d6a4(%ebp),%edi
+(gdb) info registers edi
+edi            0x180d6a4	25220772
 
 /*
  * Calculate the delta between where vmlinux was compiled to run
  * and where it was actually loaded.
  */
 	movl	%ebp, %ebx
-	subl	$LOAD_PHYSICAL_ADDR, %ebx
-	jz	2f	/* Nothing to be done if loaded at compiled addr. */
+(gdb) info registers ebx
+ebx            0x1000000	16777216
+	subl	$LOAD_PHYSICAL_ADDR, %ebx                    -> 0x1816490:	sub    $0x1000000,%ebx
+(gdb) info registers ebx
+ebx            0x0	0
+(gdb) info registers eflags
+eflags         0x46	[ PF ZF ]
+	jz	2f	/* Nothing to be done if loaded at compiled addr. */     -> 0x181649f:	je     0x18164aa
 /*
  * Process relocations.
  */
@@ -371,6 +381,8 @@ eax            0x181a740	25274176
  * Jump to the decompressed kernel.
  */
 	xorl	%ebx, %ebx
+(gdb) info registers ebp
+ebp            0x1000000	0x1000000
 	jmp	*%ebp
 
 /*
@@ -385,6 +397,8 @@ boot_stack:
 boot_stack_end:
 
 ```
+
+About decompress_kernel routine, its source code as follow.
 
 ```decompress_kernel
 
