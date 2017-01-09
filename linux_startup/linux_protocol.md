@@ -16,6 +16,11 @@ ENTRY(startup_32)
 	 * us to not reload segments
 	 */
 	testb	$(1<<6), BP_loadflags(%esi)
+0x1000001:	testb  $0x40,0x211(%esi)
+(gdb) info registers esi
+esi            0x8b000	569344
+(gdb) x/b 0x8b000+0x211
+0x8b211:	0x81
 	jnz	1f
 
 	cli
