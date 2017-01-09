@@ -20,5 +20,5 @@
     * [jump to linux](GRUB2/jump_to_linux.md)
     * [grub file system](GRUB2/grub_file_system.md)
 * [linux startup](linux_startup/README.md)
-    * [linux protocol](linux_startup/linux_protocol.md)
+    * [linux protocol](linux_startup/decompress_linux_kernel.md)
 
