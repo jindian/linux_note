@@ -386,5 +386,58 @@ boot_stack_end:
 
 ```
 
+```decompress_kernel
+
+arch/x86/boot/compressed/misc.c:304
+
+asmlinkage void decompress_kernel(void *rmode, memptr heap,
+                                  unsigned char *input_data,
+                                  unsigned long input_len,
+                                  unsigned char *output)
+{
+        real_mode = rmode;
+
+        if (real_mode->hdr.loadflags & QUIET_FLAG)
+                quiet = 1;
+
+        if (real_mode->screen_info.orig_video_mode == 7) {
+                vidmem = (char *) 0xb0000;
+                vidport = 0x3b4;
+        } else {
+                vidmem = (char *) 0xb8000;
+                vidport = 0x3d4;
+        }
+
+        lines = real_mode->screen_info.orig_video_lines;
+        cols = real_mode->screen_info.orig_video_cols;
+
+        free_mem_ptr     = heap;        /* Heap */
+        free_mem_end_ptr = heap + BOOT_HEAP_SIZE;
+
+        if ((unsigned long)output & (MIN_KERNEL_ALIGN - 1))
+                error("Destination address inappropriately aligned");
+#ifdef CONFIG_X86_64
+        if (heap > 0x3fffffffffffUL)
+                error("Destination address too large");
+#else
+        if (heap > ((-__PAGE_OFFSET-(512<<20)-1) & 0x7fffffff))
+                error("Destination address too large");
+#endif
+#ifndef CONFIG_RELOCATABLE
+        if ((unsigned long)output != LOAD_PHYSICAL_ADDR)
+                error("Wrong destination address");
+#endif
+
+        if (!quiet)
+                putstr("\nDecompressing Linux... ");
+        decompress(input_data, input_len, NULL, NULL, output, NULL, error);
+        parse_elf(output);
+        if (!quiet)
+                putstr("done.\nBooting the kernel.\n");
+        return;
+}
+
+```
+
 # LINKS:
   * [THE LINUX/x86 BOOT PROTOCOL](https://www.kernel.org/doc/Documentation/x86/boot.txt)
