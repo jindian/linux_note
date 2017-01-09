@@ -50,26 +50,9 @@ Code from address 0x9df0d0, it copies 2 blocks of code to specified destination 
    0x9df10b:	jmp    *%eax
 ```
 
-Code from address 0x9df000, at address 0x9df09e grub jumps to linux code `ljmp   $0x10,$0x1000000`.
 
-Register esi stores start address of source code grub-core/lib/i386/relocator32.S, the global descriptor table defined in it.
 
-Instructions from 0x9df057 to 0x9df05f are used to disable paging, the macro of disabling paging defined in grub-core/lib/i386/relocator_common.S:38 
-
-```assembly_disable_paging
-     .macro DISABLE_PAGING
-#ifdef GRUB_MACHINE_IEEE1275
-#endif
-
-        movl    %cr0, %eax
-        andl    $(~GRUB_MEMORY_CPU_CR0_PAGING_ON), %eax
-        movl    %eax, %cr0
-        .endm
-```
-
-Instructions from 0x9df062 to 0x9df068 are used to turn off PAE
-
-```
+```assembly_prepare_jump_to_linux
 
    0x9df000:	mov    %eax,%esi
    0x9df002:	add    $0x9,%eax
@@ -130,6 +113,27 @@ eax            0x11	17
 ```
 
 What preparations grub does before jumping to linux code?
+
+Code from address 0x9df000, at address 0x9df09e grub jumps to linux code `ljmp   $0x10,$0x1000000`.
+
+Register esi stores start address of source code grub-core/lib/i386/relocator32.S, the global descriptor table defined in it.
+
+Instructions from 0x9df057 to 0x9df05f are used to disable paging, the macro of disabling paging defined in grub-core/lib/i386/relocator_common.S:38 
+
+```assembly_disable_paging
+     .macro DISABLE_PAGING
+#ifdef GRUB_MACHINE_IEEE1275
+#endif
+
+        movl    %cr0, %eax
+        andl    $(~GRUB_MEMORY_CPU_CR0_PAGING_ON), %eax
+        movl    %eax, %cr0
+        .endm
+```
+
+Instructions from 0x9df062 to 0x9df068 are used to turn off PAE
+
+Set parameters before jumping to linux code and the jump to linux.
 
 # LINKS
   * [Global Descriptor Table](https://en.wikipedia.org/wiki/Global_Descriptor_Table)
