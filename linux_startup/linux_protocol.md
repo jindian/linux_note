@@ -1,6 +1,8 @@
 # linux compressed code
 
-We are in linux now!
+We are in linux now, let's learn something about linux boot protocol before next stage of code study.
+
+On the x86 platform, the Linux kernel uses a rather complicated boot convention.  This has evolved partially due to historical aspects, as well as the desire in the early days to have the kernel itself be a bootable image, the complicated PC memory model and due to changed expectations in the PC industry caused by the effective demise of real-mode DOS as a mainstream operating system.
 
 Source code of instructions located at address 0x1000000
 
