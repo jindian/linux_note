@@ -57,8 +57,14 @@ Code from address 0x9df000, at address 0x9df09e grub jumps to linux code `ljmp  
    0x9df000:	mov    %eax,%esi
    0x9df002:	add    $0x9,%eax
    0x9df007:	jmp    *%eax
+(gdb) info registers eax
+eax            0x9df009	   10350601
    0x9df009:	lea    0x48(%esi),%eax
+(gdb) info registers esi
+esi            0x9df000	   10350592
    0x9df00f:	mov    %eax,0x40(%esi)
+(gdb) info registers eax
+eax            0x9df048	   10350664
    0x9df015:	lea    0xb0(%esi),%eax
    0x9df01b:	mov    %eax,0x32(%esi)
    0x9df021:	lgdtl  0x30(%esi)
