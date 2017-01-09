@@ -2,7 +2,7 @@
 
 We are in linux now!
 
-Source code of instructions located from address 0x1000000
+Source code of instructions located at address 0x1000000
 
 ```assembly_head_32
 
