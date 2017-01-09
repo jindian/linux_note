@@ -66,6 +66,9 @@ Instructions from 0x9df057 to 0x9df05f are used to disable paging, the macro of 
         movl    %eax, %cr0
         .endm
 ```
+
+Instructions from 0x9df062 to 0x9df068 are used to turn off PAE
+
 ```
 
    0x9df000:	mov    %eax,%esi
@@ -130,3 +133,4 @@ What preparations grub does before jumping to linux code?
 
 # LINKS
   * [Global Descriptor Table](https://en.wikipedia.org/wiki/Global_Descriptor_Table)
+  * [PAE: Physical Address Extension](https://en.wikipedia.org/wiki/Physical_Address_Extension)
