@@ -308,25 +308,37 @@ relocated:
  * Clear BSS (stack is currently empty)
  */
 	xorl	%eax, %eax
-	leal	_bss(%ebx), %edi
-	leal	_ebss(%ebx), %ecx
+	leal	_bss(%ebx), %edi                      -> 0x1816452:	lea    0x3b9740(%ebx),%edi
+(gdb) info registers edi
+edi            0x181a740	25274176
+	leal	_ebss(%ebx), %ecx                     -> 0x1816458:	lea    0x3be768(%ebx),%ecx
 	subl	%edi, %ecx
+(gdb) info registers ecx
+ecx            0x5028	20520
 	shrl	$2, %ecx
-	rep	stosl
+(gdb) info registers ecx
+ecx            0x140a	5130
+	rep	stosl                                -> 0x1816463:	rep stos %eax,%es:(%edi)
 
 /*
  * Do the decompression, and jump to the new kernel..
  */
-	leal	z_extract_offset_negative(%ebx), %ebp
+	leal	z_extract_offset_negative(%ebx), %ebp -> 0x1816465:	lea    -0x461000(%ebx),%ebp
 				/* push arguments for decompress_kernel: */
+(gdb) info registers ebp
+ebp            0x1000000	0x1000000
 	pushl	%ebp		/* output address */
-	pushl	$z_input_len	/* input_len */
-	leal	input_data(%ebx), %eax
+	pushl	$z_input_len	/* input_len */        -> 0x181646c:	push   $0x3b53d8
+	leal	input_data(%ebx), %eax                -> 0x1816471:	lea    0x6c(%ebx),%eax
+(gdb) info registers eax
+eax            0x146106c	21368940
 	pushl	%eax		/* input_data */
-	leal	boot_heap(%ebx), %eax
+	leal	boot_heap(%ebx), %eax                 -> 0x1816478:	lea    0x3b9740(%ebx),%eax
+(gdb) info registers eax
+eax            0x181a740	25274176
 	pushl	%eax		/* heap area */
 	pushl	%esi		/* real mode pointer */
-	call	decompress_kernel
+	call	decompress_kernel                     -> 0x1816480:	call   0x1819250
 	addl	$20, %esp
 
 #if CONFIG_RELOCATABLE
