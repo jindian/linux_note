@@ -187,9 +187,13 @@ ebx            0x1000000	16777216
 
 	/* Target address to relocate to for decompression */
 	addl	$z_extract_offset, %ebx       -> add    $0x461000,%ebx
+(gdb) info registers ebx
+ebx            0x1461000	21368832
 
 	/* Set up the stack */
-	leal	boot_stack_end(%ebx), %esp
+	leal	boot_stack_end(%ebx), %esp    -> 0x1000041:	lea    0x3be740(%ebx),%esp
+(gdb) info registers esp
+esp            0x181f740	0x181f740
 
 	/* Zero EFLAGS */
 	pushl	$0
