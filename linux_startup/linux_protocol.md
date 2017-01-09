@@ -165,3 +165,6 @@ boot_stack:
 boot_stack_end:
 
 ```
+
+# LINKS:
+  * [THE LINUX/x86 BOOT PROTOCOL](https://www.kernel.org/doc/Documentation/x86/boot.txt)
