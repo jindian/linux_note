@@ -54,6 +54,18 @@ Code from address 0x9df000, at address 0x9df09e grub jumps to linux code `ljmp  
 
 Register esi stores start address of source code grub-core/lib/i386/relocator32.S, the global descriptor table defined in it.
 
+Instructions from 0x9df057 to 0x9df05f are used to disable paging, the macro of disabling paging defined in grub-core/lib/i386/relocator_common.S:38 
+
+```assembly_disable_paging
+     .macro DISABLE_PAGING
+#ifdef GRUB_MACHINE_IEEE1275
+#endif
+
+        movl    %cr0, %eax
+        andl    $(~GRUB_MEMORY_CPU_CR0_PAGING_ON), %eax
+        movl    %eax, %cr0
+        .endm
+```
 ```
 
    0x9df000:	mov    %eax,%esi
