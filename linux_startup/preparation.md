@@ -7,7 +7,8 @@ Code deployment in memory is defined in arch/x86/kernel/vmlinux.lds.S for decomp
 What kind of preparations here?
 
 1. load global descriptor table, the table defined at the end of code arch/x86/kernel/head_32.S
-2. 
+2. Clear BSS section
+3. 
 
 ```
 
