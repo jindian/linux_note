@@ -17,7 +17,13 @@ __HEAD
 ENTRY(startup_32)
 	/* test KEEP_SEGMENTS flag to see if the bootloader is asking
 		us to not reload segments */
-	testb $(1<<6), BP_loadflags(%esi)
+	testb $(1<<6), BP_loadflags(%esi)                                     -> 0x1000000:	testb  $0x40,0x211(%esi)
+(gdb) info registers esi
+esi            0x8b000	569344
+(gdb) x/b 0x8b000+0x211
+0x8b211:	0x81(gdb)
+info registers eflags
+eflags         0x46	[ PF ZF ]
 	jnz 2f
 
 /*
