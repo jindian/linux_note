@@ -11,6 +11,8 @@ What kind of preparations here?
 3. Copy boot parameters out from kernel real mode data area
 4. Copy command line parameters
 5. Construct page table and initialize the page table
+6. After construction completed, turn on PAE
+7. 
 
 ```
 
@@ -272,14 +274,24 @@ ENTRY(startup_32_smp)
  */
 #define cr4_bits pa(mmu_cr4_features)
 	movl cr4_bits,%edx                                               -> 0x1434602:	mov    0x163cde8,%edx
+(gdb) x/w 0x163cde8
+0x163cde8:	0x00000020
 	andl %edx,%edx
+(gdb) info registers eflags
+eflags         0x2	[ ]
 	jz 6f
 	movl %cr4,%eax		# Turn on paging options (PSE,PAE,..)
+(gdb) info registers eax
+eax            0x0	0
 	orl %edx,%eax
+(gdb) info registers eax
+eax            0x20	32
 	movl %eax,%cr4
 
 	btl $5, %eax		# check if PAE is enabled
 	jnc 6f
+(gdb) info registers eflags
+eflags         0x47	[ CF PF ZF ]
 
 	/* Check if extended functions are implemented */
 	movl $0x80000000, %eax
