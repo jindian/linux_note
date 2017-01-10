@@ -282,3 +282,8 @@ init_size:		.long INIT_SIZE		# kernel initialization size
 
 # End of setup header #####################################################
 ```
+
+
+
+# LINKS
+  * [linux boot protocol](https://www.kernel.org/doc/Documentation/x86/boot.txt)
