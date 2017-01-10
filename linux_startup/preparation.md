@@ -2,6 +2,11 @@
 
 After decompression completed and jumped to decompressed linux kernel code, now we are at address 0x1000000.
 
+What kind of preparations here?
+
+1. load global descriptor table, the table defined at the end of code arch/x86/kernel/head_32.S
+2. 
+
 ```
 
 arch/x86/kernel/head_32.S:75
@@ -29,8 +34,8 @@ eflags         0x46	[ PF ZF ]
 /*
  * Set segments to known values.
  */
-	lgdt pa(boot_gdt_descr)
-	movl $(__BOOT_DS),%eax
+	lgdt pa(boot_gdt_descr)                                               -> 0x1000009:	lgdtl  0x163bc16
+	movl $(__BOOT_DS),%eax                                                -> 0x1000010:	mov    $0x18,%eax
 	movl %eax,%ds
 	movl %eax,%es
 	movl %eax,%fs
