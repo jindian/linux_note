@@ -8,7 +8,9 @@ What kind of preparations here?
 
 1. load global descriptor table, the table defined at the end of code arch/x86/kernel/head_32.S
 2. Clear BSS section
-3. 
+3. Copy boot parameters out from kernel real mode data area
+4. Copy command line parameters
+5. 
 
 ```
 
@@ -74,11 +76,19 @@ esi            0x8b000	569344
 	cld
 	rep
 	movsl
-	movl pa(boot_params) + NEW_CL_POINTER,%esi
+	movl pa(boot_params) + NEW_CL_POINTER,%esi                       -> 0x100003e:	mov    0x16ce408,%esi
+(gdb) x/w 0x16ce408
+0x16ce408:	0x0008f000
+(gdb) info registers esi
+esi            0x8f000	585728
 	andl %esi,%esi
+(gdb) x/w 0x8f000
+0x8f000:	0x544f4f42
+(gdb) info registers eflags
+eflags         0x6	[ PF ]
 	jz 1f			# No comand line
-	movl $pa(boot_command_line),%edi
-	movl $(COMMAND_LINE_SIZE/4),%ecx
+	movl $pa(boot_command_line),%edi                                 -> 0x1000048:	mov    $0x16cb240,%edi
+	movl $(COMMAND_LINE_SIZE/4),%ecx                                 -> 0x100004d:	mov    $0x200,%ecx
 	rep
 	movsl
 1:
