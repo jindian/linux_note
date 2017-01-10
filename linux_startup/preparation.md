@@ -10,7 +10,7 @@ What kind of preparations here?
 2. Clear BSS section
 3. Copy boot parameters out from kernel real mode data area
 4. Copy command line parameters
-5. 
+5. Create page table and initialize the page table
 
 ```
 
@@ -152,14 +152,23 @@ default_entry:
 
 	xorl %ebx,%ebx				/* %ebx is kept at zero */
 
-	movl $pa(__brk_base), %edi
-	movl $pa(swapper_pg_pmd), %edx
-	movl $PTE_IDENT_ATTR, %eax
+	movl $pa(__brk_base), %edi                                       -> 0x1000056:	mov    $0x17ba000,%edi
+	movl $pa(swapper_pg_pmd), %edx                                   -> 0x100005b:	mov    $0x1732000,%edx
+	movl $PTE_IDENT_ATTR, %eax                                       -> 0x1000060:	mov    $0x3,%eax
 10:
-	leal PDE_IDENT_ATTR(%edi),%ecx		/* Create PMD entry */
+	leal PDE_IDENT_ATTR(%edi),%ecx		/* Create PMD entry */    -> 0x1000065:	lea    0x67(%edi),%ecx
+(gdb) info registers ecx
+ecx            0x17ba067	24879207
 	movl %ecx,(%edx)			/* Store PMD entry */
 						/* Upper half already zero */
+(gdb) info registers edx
+edx            0x1732000	24322048
+0x0100006a in ?? ()
+(gdb) x/w 0x1732000
+0x1732000:	0x017ba067
 	addl $8,%edx
+(gdb) info registers edx
+edx            0x1732008	24322056
 	movl $512,%ecx
 11:
 	stosl
