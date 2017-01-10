@@ -181,7 +181,7 @@ edx            0x1732008	24322056
 	/*
 	 * End condition: we must map up to the end + MAPPING_BEYOND_END.
 	 */
-	movl $pa(_end) + MAPPING_BEYOND_END + PTE_IDENT_ATTR, %ebp
+	movl $pa(_end) + MAPPING_BEYOND_END + PTE_IDENT_ATTR, %ebp       -> 0x100007d:	mov    $0x1ae3003,%ebp
 	cmpl %ebp,%eax
 	jb 10b
 1:
