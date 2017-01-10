@@ -34,8 +34,8 @@ eflags         0x46	[ PF ZF ]
 /*
  * Set segments to known values.
  */
-	lgdt pa(boot_gdt_descr)                  -> 0x1000009:	lgdtl  0x163bc16
-	movl $(__BOOT_DS),%eax                   -> 0x1000010:	mov    $0x18,%eax
+	lgdt pa(boot_gdt_descr)                                          -> 0x1000009:	lgdtl  0x163bc16
+	movl $(__BOOT_DS),%eax                                           -> 0x1000010:	mov    $0x18,%eax
 	movl %eax,%ds
 	movl %eax,%es
 	movl %eax,%fs
@@ -47,10 +47,14 @@ eflags         0x46	[ PF ZF ]
  */
 	cld
 	xorl %eax,%eax
-	movl $pa(__bss_start),%edi
-	movl $pa(__bss_stop),%ecx
+	movl $pa(__bss_start),%edi                                       -> 0x1000020:	mov    $0x1732000,%edi
+	movl $pa(__bss_stop),%ecx                                        -> 0x1000025:	mov    $0x17b9998,%ecx
 	subl %edi,%ecx
+(gdb) info registers ecx
+ecx            0x87998	555416
 	shrl $2,%ecx
+(gdb) info registers ecx
+ecx            0x21e66	138854
 	rep ; stosl
 /*
  * Copy bootup parameters out of the way.
@@ -60,8 +64,10 @@ eflags         0x46	[ PF ZF ]
  * (kexec on panic case). Hence copy out the parameters before initializing
  * page tables.
  */
-	movl $pa(boot_params),%edi
-	movl $(PARAM_SIZE/4),%ecx
+	movl $pa(boot_params),%edi                                       -> 0x1000031:	mov    $0x16ce1e0,%edi
+	movl $(PARAM_SIZE/4),%ecx                                        -> 0x1000036:	mov    $0x400,%ecx
+(gdb) info registers esi
+esi            0x8b000	569344
 	cld
 	rep
 	movsl
