@@ -10,7 +10,7 @@ What kind of preparations here?
 2. Clear BSS section
 3. Copy boot parameters out from kernel real mode data area
 4. Copy command line parameters
-5. Create page table and initialize the page table
+5. Construct page table and initialize the page table
 
 ```
 
@@ -271,7 +271,7 @@ ENTRY(startup_32_smp)
  *	not yet offset PAGE_OFFSET..
  */
 #define cr4_bits pa(mmu_cr4_features)
-	movl cr4_bits,%edx
+	movl cr4_bits,%edx                                               -> 0x1434602:	mov    0x163cde8,%edx
 	andl %edx,%edx
 	jz 6f
 	movl %cr4,%eax		# Turn on paging options (PSE,PAE,..)
