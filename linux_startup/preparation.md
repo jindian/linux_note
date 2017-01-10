@@ -686,3 +686,8 @@ ENTRY(boot_gdt)
 
 ```
 
+# LINKS
+  * [Physical Address Extension OSDev](http://wiki.osdev.org/Physical_Address_Extension)
+  * [Physical Address Extension wikipedia](https://en.wikipedia.org/wiki/Physical_Address_Extension)
+  * [Setting Up Paging With PAE](http://wiki.osdev.org/Setting_Up_Paging_With_PAE)
+  * [Paging](http://wiki.osdev.org/Paging)
