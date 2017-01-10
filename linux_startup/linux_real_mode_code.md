@@ -283,7 +283,7 @@ init_size:		.long INIT_SIZE		# kernel initialization size
 # End of setup header #####################################################
 ```
 
-Following code not used any more, let's ignore it here.
+Following code not used any more in our boot procedure, let's ignore it here.
 
 ```final_part_of_linux_real_mode_code
 
