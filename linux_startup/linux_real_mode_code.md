@@ -283,7 +283,94 @@ init_size:		.long INIT_SIZE		# kernel initialization size
 # End of setup header #####################################################
 ```
 
+Following code not used any more, let's ignore it here.
 
+```final_part_of_linux_real_mode_code
+
+arch/x86/boot/header.S:240
+
+	.section ".entrytext", "ax"
+start_of_setup:
+#ifdef SAFE_RESET_DISK_CONTROLLER
+# Reset the disk controller.
+	movw	$0x0000, %ax		# Reset disk controller
+	movb	$0x80, %dl		# All disks
+	int	$0x13
+#endif
+
+# Force %es = %ds
+	movw	%ds, %ax
+	movw	%ax, %es
+	cld
+
+# Apparently some ancient versions of LILO invoked the kernel with %ss != %ds,
+# which happened to work by accident for the old code.  Recalculate the stack
+# pointer if %ss is invalid.  Otherwise leave it alone, LOADLIN sets up the
+# stack behind its own code, so we can't blindly put it directly past the heap.
+
+	movw	%ss, %dx
+	cmpw	%ax, %dx	# %ds == %ss?
+	movw	%sp, %dx
+	je	2f		# -> assume %sp is reasonably set
+
+	# Invalid %ss, make up a new stack
+	movw	$_end, %dx
+	testb	$CAN_USE_HEAP, loadflags
+	jz	1f
+	movw	heap_end_ptr, %dx
+1:	addw	$STACK_SIZE, %dx
+	jnc	2f
+	xorw	%dx, %dx	# Prevent wraparound
+
+2:	# Now %dx should point to the end of our stack space
+	andw	$~3, %dx	# dword align (might as well...)
+	jnz	3f
+	movw	$0xfffc, %dx	# Make sure we're not zero
+3:	movw	%ax, %ss
+	movzwl	%dx, %esp	# Clear upper half of %esp
+	sti			# Now we should have a working stack
+
+# We will have entered with %cs = %ds+0x20, normalize %cs so
+# it is on par with the other segments.
+	pushw	%ds
+	pushw	$6f
+	lretw
+6:
+
+# Check signature at end of setup
+	cmpl	$0x5a5aaa55, setup_sig
+	jne	setup_bad
+
+# Zero the bss
+	movw	$__bss_start, %di
+	movw	$_end+3, %cx
+	xorl	%eax, %eax
+	subw	%di, %cx
+	shrw	$2, %cx
+	rep; stosl
+
+# Jump to C code (should not return)
+	calll	main
+
+# Setup corrupt somehow...
+setup_bad:
+	movl	$setup_corrupt, %eax
+	calll	puts
+	# Fall through...
+
+	.globl	die
+	.type	die, @function
+die:
+	hlt
+	jmp	die
+
+	.size	die, .-die
+
+	.section ".initdata", "a"
+setup_corrupt:
+	.byte	7
+	.string	"No setup signature found...\n"
+```
 
 # LINKS
   * [linux boot protocol](https://www.kernel.org/doc/Documentation/x86/boot.txt)
