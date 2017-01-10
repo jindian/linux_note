@@ -185,14 +185,22 @@ edx            0x1732008	24322056
 	cmpl %ebp,%eax
 	jb 10b
 1:
-	addl $__PAGE_OFFSET, %edi
-	movl %edi, pa(_brk_end)
+(gdb) info registers edi
+edi            0x17c8000	24936448
+	addl $__PAGE_OFFSET, %edi                                        -> 0x1000086:	add    $0xc0000000,%edi
+(gdb) info registers edi
+edi            0xc17c8000	-1048805376
+	movl %edi, pa(_brk_end)                                          -> 0x1000095:	mov    %eax,0x17383e0
+(gdb) info registers eax
+eax            0x1c00003	29360131
 	shrl $12, %eax
-	movl %eax, pa(max_pfn_mapped)
+(gdb) info registers eax
+eax            0x1c00	7168
+	movl %eax, pa(max_pfn_mapped)                                    -> 0x1000095:	mov    %eax,0x17383e0
 
 	/* Do early initialization of the fixmap area */
-	movl $pa(swapper_pg_fixmap)+PDE_IDENT_ATTR,%eax
-	movl %eax,pa(swapper_pg_pmd+0x1000*KPMDS-8)
+	movl $pa(swapper_pg_fixmap)+PDE_IDENT_ATTR,%eax                  -> 0x100009a:	mov    $0x1733067,%eax
+	movl %eax,pa(swapper_pg_pmd+0x1000*KPMDS-8)                      -> 0x100009f:	mov    %eax,0x1732ff8
 #else	/* Not PAE */
 
 page_pde_offset = (__PAGE_OFFSET >> 20);
@@ -225,7 +233,7 @@ page_pde_offset = (__PAGE_OFFSET >> 20);
 	movl $pa(swapper_pg_fixmap)+PDE_IDENT_ATTR,%eax
 	movl %eax,pa(swapper_pg_dir+0xffc)
 #endif
-	jmp 3f
+	jmp 3f                                                           -> 0x10000a4:	jmp    0x1434602
 /*
  * Non-boot CPU entry point; entered from trampoline.S
  * We can't lgdt here, because lgdt itself uses a data segment, but
