@@ -822,7 +822,16 @@ ENTRY(boot_gdt)
 
 ```
 
-Linux initialization jump to c function i386_start_kernel at the end of execution of above assembly code, i386_start_kernel is succinct and easy to read.
+Linux initialization jump to c function i386_start_kernel at the end of execution of above assembly code, i386_start_kernel is succinct and easy to read. In i386_start_kernel it firstly reserves memory pages for different purposes, 
+
+```i386_start_kernel_context
+i386_start_kernel
+    |--reserve_trampoline_memory
+        |--reserve_early
+    |--reserve_early
+    |--i386_default_early_setup
+    |--start_kernel
+```
 
 ```i386_start_kernel
 
@@ -837,6 +846,10 @@ void __init i386_start_kernel(void)
 #ifdef CONFIG_BLK_DEV_INITRD
         /* Reserve INITRD */
         if (boot_params.hdr.type_of_loader && boot_params.hdr.ramdisk_image) {
+(gdb) p boot_params.hdr.type_of_loader
+$1 = 114 'r'
+(gdb) p boot_params.hdr.ramdisk_image 
+$2 = 125603840
                 u64 ramdisk_image = boot_params.hdr.ramdisk_image;
                 u64 ramdisk_size  = boot_params.hdr.ramdisk_size;
                 u64 ramdisk_end   = ramdisk_image + ramdisk_size;
@@ -846,6 +859,8 @@ void __init i386_start_kernel(void)
 
         /* Call the subarch specific early setup function */
         switch (boot_params.hdr.hardware_subarch) {
+(gdb) p boot_params.hdr.hardware_subarch
+$3 = 0
         case X86_SUBARCH_MRST:
                 x86_mrst_early_setup();
                 break;
