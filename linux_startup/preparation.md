@@ -17,7 +17,7 @@ What kind of preparations here?
 9.   load stack segment
 10.  initialize eflags
 11.  setup [interrupt descriptor table](https://en.wikipedia.org/wiki/Interrupt_descriptor_table), set response function for interrupt 0, 6, 13, 14
-12.  
+12.  check cpu type
 
 
 ```
@@ -374,7 +374,7 @@ eflags         0x46	[ PF ZF ]
 
 checkCPUtype:
 
-	movl $-1,X86_CPUID		#  -1 for no CPUID initially
+	movl $-1,X86_CPUID		#  -1 for no CPUID initially     -> 0xc1434676:	movl   $0xffffffff,0xc167ab14
 
 /* check if it is 486 or 386. */
 /*
@@ -383,19 +383,36 @@ checkCPUtype:
  * we don't need to preserve eflags.
  */
 
-	movb $3,X86		# at least 386
+	movb $3,X86		# at least 386                           -> 0xc1434680:	movb   $0x3,0xc167ab00
+(gdb) info registers eflags
+eflags         0x46	[ PF ZF ]
 	pushfl			# push EFLAGS
 	popl %eax		# get EFLAGS
 	movl %eax,%ecx		# save original EFLAGS
 	xorl $0x240000,%eax	# flip AC and ID bits in EFLAGS
+(gdb) info registers eax
+eax            0x240046		2359366
 	pushl %eax		# copy to EFLAGS
 	popfl			# set EFLAGS
+(gdb) info registers eflags
+eflags         0x240046	[ PF ZF AC ID ]
 	pushfl			# get new EFLAGS
 	popl %eax		# put it in eax
+(gdb) info registers eax
+eax            0x240046		2359366
+(gdb) info registers ecx
+ecx            0x46	70
 	xorl %ecx,%eax		# change in flags
+(gdb) info registers eax ecx
+eax            0x240000		2359296
+ecx            0x46	70
 	pushl %ecx		# restore original EFLAGS
 	popfl
+(gdb) info registers eflags
+eflags         0x46	[ PF ZF ]
 	testl $0x40000,%eax	# check if AC bit changed
+(gdb) info registers eflags
+eflags         0x6	[ PF ]
 	je is386
 
 	movb $4,X86		# at least 486
