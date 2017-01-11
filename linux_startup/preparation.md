@@ -524,6 +524,8 @@ eax            0x6048ac		6310060
 edx            0xc1438e00	-1052537344
 	lea idt_table,%edi                                              -> 0xc14347d0:	lea    0xc1638000,%edi
 	mov $256,%ecx
+(gdb) info registers edi
+edi            0xc1638000	-1050443776
 rp_sidt:
 	movl %eax,(%edi)
 	movl %edx,4(%edi)
