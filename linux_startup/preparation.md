@@ -20,7 +20,7 @@ What kind of preparations here?
 12.  check cpu type, it's a magic procedure ...
 13.  check floating point coprocessor
 14.  load early global descriptor table and interrupt descriptor table
-
+15.  setup stack segment and jump to linux initialization code
 
 ```
 
@@ -517,6 +517,8 @@ ecx            0xc172a280	-1049451904
 	pushl $0		# fake return address for unwinder
 #ifdef CONFIG_SMP
 	movb ready, %cl
+(gdb) info registers cl
+cl             0x0	0
 	movb $1, ready
 	cmpb $0,%cl		# the first CPU calls start_kernel
 	je   1f
