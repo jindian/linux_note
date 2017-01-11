@@ -417,7 +417,11 @@ eflags         0x6	[ PF ]
 	je is386
 
 	movb $4,X86		# at least 486
+(gdb) info registers eax
+eax            0x240000		2359296
 	testl $0x200000,%eax	# check if ID bit changed
+(gdb) info registers eflags
+eflags         0x6	[ PF ]
 	je is486
 
 	/* get vendor info */
