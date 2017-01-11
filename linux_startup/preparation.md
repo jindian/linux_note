@@ -542,12 +542,41 @@ rp_sidt:
 	lea idt_table,%edi
 	movl %eax,8*\trapno(%edi)
 	movl %edx,8*\trapno+4(%edi)
-	.endm
+.endm
 
-	set_early_handler handler=early_divide_err,trapno=0
-	set_early_handler handler=early_illegal_opcode,trapno=6
-	set_early_handler handler=early_protection_fault,trapno=13
-	set_early_handler handler=early_page_fault,trapno=14
+	set_early_handler handler=early_divide_err,trapno=0 ->
+   0xc14347e6:	lea    0xc143485e,%edx
+   0xc14347ec:	mov    $0x600000,%eax
+   0xc14347f1:	mov    %dx,%ax
+   0xc14347f4:	mov    $0x8e00,%dx
+   0xc14347f8:	lea    0xc1638000,%edi
+   0xc14347fe:	mov    %eax,(%edi)
+   0xc1434800:	mov    %edx,0x4(%edi)
+	set_early_handler handler=early_illegal_opcode,trapno=6 -> 
+   0xc1434803:	lea    0xc1434864,%edx
+   0xc1434809:	mov    $0x600000,%eax
+   0xc143480e:	mov    %dx,%ax
+   0xc1434811:	mov    $0x8e00,%dx
+   0xc1434815:	lea    0xc1638000,%edi
+   0xc143481b:	mov    %eax,0x30(%edi)
+   0xc143481e:	mov    %edx,0x34(%edi)
+
+	set_early_handler handler=early_protection_fault,trapno=13 -> 
+   0xc1434821:	lea    0xc143486d,%edx
+   0xc1434827:	mov    $0x600000,%eax
+   0xc143482c:	mov    %dx,%ax
+   0xc143482f:	mov    $0x8e00,%dx
+   0xc1434833:	lea    0xc1638000,%edi
+   0xc1434839:	mov    %eax,0x68(%edi)
+   0xc143483c:	mov    %edx,0x6c(%edi)
+	set_early_handler handler=early_page_fault,trapno=14 ->
+   0xc143483f:	lea    0xc1434874,%edx
+   0xc1434845:	mov    $0x600000,%eax
+   0xc143484a:	mov    %dx,%ax
+   0xc143484d:	mov    $0x8e00,%dx
+   0xc1434851:	lea    0xc1638000,%edi
+   0xc1434857:	mov    %eax,0x70(%edi)
+   0xc143485a:	mov    %edx,0x74(%edi)
 
 	ret
 
