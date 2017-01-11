@@ -22,4 +22,5 @@
 * [linux startup](linux_startup/README.md)
     * [linux real mode code](linux_startup/linux_real_mode_code.md)
     * [linux protocol](linux_startup/decompress_linux_kernel.md)
+    * [preparation for initialization](linux_startup/preparation_for_initialization)
 
