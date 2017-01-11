@@ -498,13 +498,16 @@ eax            0x80050033	-2147155917
 	jne 1f
 	movl $per_cpu__gdt_page,%eax
 	movl $per_cpu__stack_canary,%ecx
-	movw %cx, 8 * GDT_ENTRY_STACK_CANARY + 2(%eax)
+(gdb) info registers eax ecx
+eax            0xc1722000	-1049485312
+ecx            0xc172a280	-1049451904
+	movw %cx, 8 * GDT_ENTRY_STACK_CANARY + 2(%eax)      -> 0xc1434754:	mov    %cx,0xe2(%eax)
 	shrl $16, %ecx
-	movb %cl, 8 * GDT_ENTRY_STACK_CANARY + 4(%eax)
-	movb %ch, 8 * GDT_ENTRY_STACK_CANARY + 7(%eax)
+	movb %cl, 8 * GDT_ENTRY_STACK_CANARY + 4(%eax)      -> 0xc143475e:	mov    %cl,0xe4(%eax)
+	movb %ch, 8 * GDT_ENTRY_STACK_CANARY + 7(%eax)      -> 0xc1434764:	mov    %ch,0xe7(%eax)
 1:
 #endif
-	movl $(__KERNEL_STACK_CANARY),%eax
+	movl $(__KERNEL_STACK_CANARY),%eax                  -> 0xc143476a:	mov    $0xe0,%eax
 	movl %eax,%gs
 
 	xorl %eax,%eax			# Clear LDT
