@@ -1,4 +1,4 @@
-# preparation
+# preparation for initialization
 
 After decompression completed and jumped to decompressed linux kernel code, now we are at address 0x1000000.
 
@@ -22,7 +22,7 @@ What kind of preparations here?
 14.  load early global descriptor table and interrupt descriptor table
 15.  setup stack segment and jump to linux initialization code
 
-```
+```assembly_preparation_for_initialization
 
 arch/x86/kernel/head_32.S:75
 
