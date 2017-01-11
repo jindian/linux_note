@@ -6,7 +6,7 @@ Code deployment in memory is defined in arch/x86/kernel/vmlinux.lds.S for decomp
 
 What kind of preparations here?
 
-1.   load global descriptor table, the table defined at the end of code arch/x86/kernel/head_32.S
+1.   load boot global descriptor table, the table defined at the end of code arch/x86/kernel/head_32.S
 2.   clear BSS section
 3.   copy boot parameters out from kernel real mode data area
 4.   copy command line parameters
@@ -19,6 +19,7 @@ What kind of preparations here?
 11.  setup [interrupt descriptor table](https://en.wikipedia.org/wiki/Interrupt_descriptor_table), set response function for interrupt 0, 6, 13, 14
 12.  check cpu type, it's a magic procedure ...
 13.  check floating point coprocessor
+14.  load early global descriptor table and interrupt descriptor table
 
 
 ```
