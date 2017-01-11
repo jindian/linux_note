@@ -16,7 +16,8 @@ What kind of preparations here?
 8.   enable paging
 9.   load stack segment
 10.  initialize eflags
-11.  setup [interrupt descriptor table](https://en.wikipedia.org/wiki/Interrupt_descriptor_table)
+11.  setup [interrupt descriptor table](https://en.wikipedia.org/wiki/Interrupt_descriptor_table), set response function for interrupt 0, 6, 13, 14
+12.  
 
 
 ```
@@ -533,7 +534,7 @@ rp_sidt:
 	dec %ecx
 	jne rp_sidt
 
-.macro	set_early_handler handler,trapno
+.macro set_early_handler handler,trapno
 	lea \handler,%edx
 	movl $(__KERNEL_CS << 16),%eax
 	movw %dx,%ax
@@ -541,7 +542,7 @@ rp_sidt:
 	lea idt_table,%edi
 	movl %eax,8*\trapno(%edi)
 	movl %edx,8*\trapno+4(%edi)
-.endm
+	.endm
 
 	set_early_handler handler=early_divide_err,trapno=0
 	set_early_handler handler=early_illegal_opcode,trapno=6
