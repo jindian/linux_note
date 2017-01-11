@@ -17,7 +17,8 @@ What kind of preparations here?
 9.   load stack segment
 10.  initialize eflags
 11.  setup [interrupt descriptor table](https://en.wikipedia.org/wiki/Interrupt_descriptor_table), set response function for interrupt 0, 6, 13, 14
-12.  check cpu type
+12.  check cpu type, it's a magic procedure ...
+13.  
 
 
 ```
@@ -798,5 +799,6 @@ ENTRY(boot_gdt)
   * [Paging](http://wiki.osdev.org/Paging)
   * [CPUID](https://en.wikipedia.org/wiki/CPUID)
   * [Intel® 64 and IA-32 Architectures Developer's Manual: Vol. 2A](http://www.intel.com/content/www/us/en/architecture-and-technology/64-ia-32-architectures-software-developer-vol-2a-manual.html)
-  * [Interrupt Descriptor Table](https://en.wikipedia.org/wiki/Interrupt_descriptor_table)
+  * [Interrupt Descriptor Table](https://en.wikipedia.org/wiki/Interrupt_descriptor_table) 
+  * [AC bit](https://en.wikipedia.org/wiki/FLAGS_register)
   
