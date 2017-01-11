@@ -438,10 +438,14 @@ ecx            0x6c65746e	1818588270
 	movl %ecx,X86_VENDOR_ID+8	# last 4 chars
 
 	orl %eax,%eax			# do we have processor info as well?
+(gdb) info registers eflags
+eflags         0x2	[ ]
 	je is486
 
 	movl $1,%eax		# Use the CPUID instruction to get CPU type
 	cpuid
+(gdb) info registers eax
+eax            0x663	1635
 	movb %al,%cl		# save reg for future use
 	andb $0x0f,%ah		# mask processor family
 	movb %ah,X86
@@ -450,6 +454,8 @@ ecx            0x6c65746e	1818588270
 	movb %al,X86_MODEL
 	andb $0x0f,%cl		# mask mask revision
 	movb %cl,X86_MASK
+(gdb) info registers edx
+edx            0x781abf9	125938681
 	movl %edx,X86_CAPABILITY
 
 is486:	movl $0x50022,%ecx	# set AM, WP, NE and MP
