@@ -822,6 +822,48 @@ ENTRY(boot_gdt)
 
 ```
 
+Linux initialization jump to c function i386_start_kernel at the end of execution of above assembly code, i386_start_kernel is succinct and easy to read.
+
+```i386_start_kernel
+
+arch/x86/kernel/head32.c:30
+
+void __init i386_start_kernel(void)
+{
+        reserve_trampoline_memory();
+
+        reserve_early(__pa_symbol(&_text), __pa_symbol(&__bss_stop), "TEXT DATA BSS");
+
+#ifdef CONFIG_BLK_DEV_INITRD
+        /* Reserve INITRD */
+        if (boot_params.hdr.type_of_loader && boot_params.hdr.ramdisk_image) {
+                u64 ramdisk_image = boot_params.hdr.ramdisk_image;
+                u64 ramdisk_size  = boot_params.hdr.ramdisk_size;
+                u64 ramdisk_end   = ramdisk_image + ramdisk_size;
+                reserve_early(ramdisk_image, ramdisk_end, "RAMDISK");
+        }
+#endif
+
+        /* Call the subarch specific early setup function */
+        switch (boot_params.hdr.hardware_subarch) {
+        case X86_SUBARCH_MRST:
+                x86_mrst_early_setup();
+                break;
+        default:
+                i386_default_early_setup();
+                break;
+        }
+
+        /*
+         * At this point everything still needed from the boot loader
+         * or BIOS or kernel text should be early reserved or marked not
+         * RAM in e820. All other memory is free game.
+         */
+
+        start_kernel();
+}
+```
+
 # LINKS
   * [Physical Address Extension OSDev](http://wiki.osdev.org/Physical_Address_Extension)
   * [Physical Address Extension wikipedia](https://en.wikipedia.org/wiki/Physical_Address_Extension)
