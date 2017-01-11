@@ -6,14 +6,16 @@ Code deployment in memory is defined in arch/x86/kernel/vmlinux.lds.S for decomp
 
 What kind of preparations here?
 
-1. load global descriptor table, the table defined at the end of code arch/x86/kernel/head_32.S
-2. Clear BSS section
-3. Copy boot parameters out from kernel real mode data area
-4. Copy command line parameters
-5. Construct page table and initialize the page table
-6. After construction completed, turn on PAE
-7. Check supported functions with cpuid instruction
-8. Enable paging
+1.   load global descriptor table, the table defined at the end of code arch/x86/kernel/head_32.S
+2.   clear BSS section
+3.   copy boot parameters out from kernel real mode data area
+4.   copy command line parameters
+5.   construct page table and initialize the page table
+6.   after construction completed, turn on PAE
+7.   check supported functions with cpuid instruction
+8.   enable paging
+9.   load stack segment
+10.  initialize eflags
 
 ```
 
@@ -340,7 +342,7 @@ eax            0x1637000	23293952
 	ljmp $__BOOT_CS,$1f	/* Clear prefetch and normalize %eip */   -> 0x1434655:	ljmp   $0x10,$0xc143465c
 1:
 	/* Set up the stack pointer */
-	lss stack_start,%esp
+	lss stack_start,%esp                                             -> 0xc143465c:	lss    0xc163bb00,%esp
 
 /*
  * Initialize eflags.  Some BIOS's leave bits like NT set.  This would
@@ -351,8 +353,12 @@ eax            0x1637000	23293952
 	popfl
 
 #ifdef CONFIG_SMP
-	cmpb $0, ready
-	jz  1f				/* Initial CPU cleans BSS */
+	cmpb $0, ready                                                  -> 0xc1434666:	cmpb   $0x0,0xc163bb08
+(gdb) x/w 0xc163bb08
+0xc163bb08:	0x00000000
+(gdb) info registers eflags
+eflags         0x46	[ PF ZF ]
+	jz  1f				/* Initial CPU cleans BSS */     -> 0xc143466d:	je     0xc1434671
 	jmp checkCPUtype
 1:
 #endif /* CONFIG_SMP */
