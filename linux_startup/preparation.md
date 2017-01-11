@@ -369,7 +369,7 @@ eflags         0x46	[ PF ZF ]
  * start system 32-bit setup. We need to re-do some of the things done
  * in 16-bit mode for the "real" operations.
  */
-	call setup_idt
+	call setup_idt                                                  -> 0xc1434671:	call   0xc14347be
 
 checkCPUtype:
 
@@ -512,12 +512,17 @@ check_x87:
  *  Warning: %esi is live across this function.
  */
 setup_idt:
-	lea ignore_int,%edx
-	movl $(__KERNEL_CS << 16),%eax
+	lea ignore_int,%edx                                             -> 0xc14347be:	lea    0xc14348ac,%edx
+(gdb) info registers edx
+edx            0xc14348ac	-1052555092
+	movl $(__KERNEL_CS << 16),%eax                                  -> 0xc14347c4:	mov    $0x600000,%eax
 	movw %dx,%ax		/* selector = 0x0010 = cs */
+(gdb) info registers eax
+eax            0x6048ac	6310060
 	movw $0x8E00,%dx	/* interrupt gate - dpl=0, present */
-
-	lea idt_table,%edi
+(gdb) info registers edx
+edx            0xc1438e00	-1052537344
+	lea idt_table,%edi                                              -> 0xc14347d0:	lea    0xc1638000,%edi
 	mov $256,%ecx
 rp_sidt:
 	movl %eax,(%edi)
