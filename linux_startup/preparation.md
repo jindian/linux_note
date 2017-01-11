@@ -526,6 +526,8 @@ check_x87:
 	clts
 	fninit
 	fstsw %ax
+(gdb) info registers ax
+ax             0x0	0
 	cmpb $0,%al
 	je 1f
 	movl %cr0,%eax		/* no coprocessor: have to set bits */
@@ -534,7 +536,7 @@ check_x87:
 	ret
 	ALIGN
 1:	movb $1,X86_HARD_MATH
-	.byte 0xDB,0xE4		/* fsetpm for 287, ignored by 387 */
+	.byte 0xDB,0xE4		/* fsetpm for 287, ignored by 387 */                    -> 0xc14347bb:	fnsetpm(287 only)
 	ret
 
 /*
