@@ -476,7 +476,7 @@ eax            0x80050033	-2147155917
 	lgdt early_gdt_descr
 	lidt idt_descr
 	ljmp $(__KERNEL_CS),$1f
-1:	movl $(__KERNEL_DS),%eax	# reload all the segment registers
+1:	movl $(__KERNEL_DS),%eax	# reload all the segment registers              -> 0xc143472a:	mov    $0x68,%eax
 	movl %eax,%ss			# after changing gdt.
 
 	movl $(__USER_DS),%eax		# DS/ES contains default USER segment
