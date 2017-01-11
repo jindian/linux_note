@@ -13,7 +13,7 @@ What kind of preparations here?
 5. Construct page table and initialize the page table
 6. After construction completed, turn on PAE
 7. Check supported functions with cpuid instruction
-8. 
+8. Enable paging
 
 ```
 
@@ -328,12 +328,16 @@ eflags         0x46	[ PF ZF ]
 /*
  * Enable paging
  */
-	movl pa(initial_page_table), %eax
+	movl pa(initial_page_table), %eax                                -> 0x1434642:	mov    0x16783ac,%eax
+(gdb) x/w 0x16783ac
+0x16783ac:	0x01637000
+(gdb) info registers eax
+eax            0x1637000	23293952
 	movl %eax,%cr3		/* set the page table pointer.. */
 	movl %cr0,%eax
-	orl  $X86_CR0_PG,%eax
+	orl  $X86_CR0_PG,%eax                                            -> 0x143464d:	or     $0x80000000,%eax
 	movl %eax,%cr0		/* ..and set paging (PG) bit */
-	ljmp $__BOOT_CS,$1f	/* Clear prefetch and normalize %eip */
+	ljmp $__BOOT_CS,$1f	/* Clear prefetch and normalize %eip */   -> 0x1434655:	ljmp   $0x10,$0xc143465c
 1:
 	/* Set up the stack pointer */
 	lss stack_start,%esp
