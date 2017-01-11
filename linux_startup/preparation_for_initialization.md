@@ -830,6 +830,7 @@ i386_start_kernel
         |--reserve_early
     |--reserve_early
     |--i386_default_early_setup
+        |--reserve_ebda_region
     |--start_kernel
 ```
 
@@ -889,4 +890,5 @@ $3 = 0
   * [Interrupt Descriptor Table](https://en.wikipedia.org/wiki/Interrupt_descriptor_table) 
   * [AC bit](https://en.wikipedia.org/wiki/FLAGS_register)
   * [x87](https://en.wikipedia.org/wiki/X87)
+  * [Extended BIOS Data Area](http://wiki.osdev.org/Memory_Map_(x86))
   
