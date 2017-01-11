@@ -560,7 +560,6 @@ rp_sidt:
    0xc1434815:	lea    0xc1638000,%edi
    0xc143481b:	mov    %eax,0x30(%edi)
    0xc143481e:	mov    %edx,0x34(%edi)
-
 	set_early_handler handler=early_protection_fault,trapno=13 -> 
    0xc1434821:	lea    0xc143486d,%edx
    0xc1434827:	mov    $0x600000,%eax
