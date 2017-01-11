@@ -463,8 +463,12 @@ is486:	movl $0x50022,%ecx	# set AM, WP, NE and MP
 
 is386:	movl $2,%ecx		# set MP
 2:	movl %cr0,%eax
+(gdb) info registers eax
+eax            0x80000011	-2147483631
 	andl $0x80000011,%eax	# Save PG,PE,ET
 	orl %ecx,%eax
+(gdb) info registers eax
+eax            0x80050033	-2147155917
 	movl %eax,%cr0
 
 	call check_x87
