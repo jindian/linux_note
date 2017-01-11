@@ -822,7 +822,7 @@ ENTRY(boot_gdt)
 
 ```
 
-Linux initialization jump to c function i386_start_kernel at the end of execution of above assembly code, i386_start_kernel is succinct and easy to read. In i386_start_kernel it firstly reserves memory pages for different purposes, 
+Linux initialization jump to c function i386_start_kernel at the end of execution of above assembly code, i386_start_kernel is succinct and easy to read. In i386_start_kernel it firstly reserves memory pages for different purposes, then reserve memory region for bios [Extended BIOS Data Area (EBDA)](http://wiki.osdev.org/Memory_Map_(x86)), finally involve start_kernel for linux startup.
 
 ```i386_start_kernel_context
 i386_start_kernel
@@ -831,6 +831,8 @@ i386_start_kernel
     |--reserve_early
     |--i386_default_early_setup
         |--reserve_ebda_region
+            |--get_bios_ebda
+            |--reserve_early_overlap_ok
     |--start_kernel
 ```
 
@@ -890,5 +892,5 @@ $3 = 0
   * [Interrupt Descriptor Table](https://en.wikipedia.org/wiki/Interrupt_descriptor_table) 
   * [AC bit](https://en.wikipedia.org/wiki/FLAGS_register)
   * [x87](https://en.wikipedia.org/wiki/X87)
-  * [Extended BIOS Data Area](http://wiki.osdev.org/Memory_Map_(x86))
+  * [Extended BIOS Data Area (EBDA)](http://wiki.osdev.org/Memory_Map_(x86))
   
