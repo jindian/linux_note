@@ -427,6 +427,11 @@ eflags         0x6	[ PF ]
 	/* get vendor info */
 	xorl %eax,%eax			# call CPUID with 0 -> return vendor ID
 	cpuid
+(gdb) info registers eax ebx edx ecx
+eax            0x4	4
+ebx            0x756e6547	1970169159
+edx            0x49656e69	1231384169
+ecx            0x6c65746e	1818588270
 	movl %eax,X86_CPUID		# save CPUID level
 	movl %ebx,X86_VENDOR_ID		# lo 4 chars
 	movl %edx,X86_VENDOR_ID+4	# next 4 chars
