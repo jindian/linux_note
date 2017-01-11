@@ -296,6 +296,8 @@ eflags         0x47	[ CF PF ZF ]
 	/* Check if extended functions are implemented */
 	movl $0x80000000, %eax
 	cpuid
+(gdb) info registers eax
+eax            0x80000004	-2147483644
 	cmpl $0x80000000, %eax
 	jbe 6f
 	mov $0x80000001, %eax
@@ -720,3 +722,5 @@ ENTRY(boot_gdt)
   * [Physical Address Extension wikipedia](https://en.wikipedia.org/wiki/Physical_Address_Extension)
   * [Setting Up Paging With PAE](http://wiki.osdev.org/Setting_Up_Paging_With_PAE)
   * [Paging](http://wiki.osdev.org/Paging)
+  * [CPUID](https://en.wikipedia.org/wiki/CPUID)
+  
