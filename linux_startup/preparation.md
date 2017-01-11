@@ -12,7 +12,8 @@ What kind of preparations here?
 4. Copy command line parameters
 5. Construct page table and initialize the page table
 6. After construction completed, turn on PAE
-7. 
+7. Check supported functions with cpuid instruction
+8. 
 
 ```
 
