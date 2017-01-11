@@ -476,14 +476,14 @@ eax            0x80050033	-2147155917
 	lgdt early_gdt_descr
 	lidt idt_descr
 	ljmp $(__KERNEL_CS),$1f
-1:	movl $(__KERNEL_DS),%eax	# reload all the segment registers              -> 0xc143472a:	mov    $0x68,%eax
+1:	movl $(__KERNEL_DS),%eax	# reload all the segment registers             -> 0xc143472a:	mov    $0x68,%eax
 	movl %eax,%ss			# after changing gdt.
 
-	movl $(__USER_DS),%eax		# DS/ES contains default USER segment
+	movl $(__USER_DS),%eax		# DS/ES contains default USER segment         ->  0xc1434731:	mov    $0x7b,%eax
 	movl %eax,%ds
 	movl %eax,%es
 
-	movl $(__KERNEL_PERCPU), %eax
+	movl $(__KERNEL_PERCPU), %eax                                                 -> 0xc143473a:	mov    $0xd8,%eax
 	movl %eax,%fs			# set this cpu's percpu
 
 #ifdef CONFIG_CC_STACKPROTECTOR
@@ -491,7 +491,10 @@ eax            0x80050033	-2147155917
 	 * The linker can't handle this by relocation.  Manually set
 	 * base address in stack canary segment descriptor.
 	 */
-	cmpb $0,ready
+	cmpb $0,ready                                                                 -> 0xc1434741:	cmpb   $0x0,0xc163bb08
+(gdb) x/b 0xc163bb08
+0xc163bb08:	0x00
+
 	jne 1f
 	movl $per_cpu__gdt_page,%eax
 	movl $per_cpu__stack_canary,%ecx
