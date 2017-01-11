@@ -518,7 +518,7 @@ edx            0xc14348ac	-1052555092
 	movl $(__KERNEL_CS << 16),%eax                                  -> 0xc14347c4:	mov    $0x600000,%eax
 	movw %dx,%ax		/* selector = 0x0010 = cs */
 (gdb) info registers eax
-eax            0x6048ac	6310060
+eax            0x6048ac		6310060
 	movw $0x8E00,%dx	/* interrupt gate - dpl=0, present */
 (gdb) info registers edx
 edx            0xc1438e00	-1052537344
