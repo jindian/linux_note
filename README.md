@@ -4,6 +4,12 @@ Debug grub and linux source code with GDB
 
 Knowledge of assembly, shell, C are needed
 
+# work space
+
+git@github.com:jindian/linux_startup.git
+
+Both GRUB2 and linux source code included in above repository, file create_grub2_boot_disk_img.sh is used to create bootable disk image
+
 # Links
 
   * [x86 instruction](https://en.wikipedia.org/wiki/X86_instruction_listings)
