@@ -14,7 +14,7 @@ Both GRUB2 and linux source code included in above repository, file create_grub2
 
 About how to compile grub2 and linux source code, create bootable disk image etc, read the instructions in README of linux_startup repository
 
-## debug GRUB2
+#### debug GRUB2
 1. start qemu simulator: qemu-system-i386 -s -S disk.img
     disk.img is created with shell script create_grub2_boot_disk_img.sh
 2. in directory grub-2.00/grub-core, start gdb: gdb -x gdb_grub
@@ -23,7 +23,7 @@ About how to compile grub2 and linux source code, create bootable disk image etc
 4. press 'c' to continue
 5. ...
 
-## debug linux
+#### debug linux
 1. the first step is same with debug GRUB2
 2. in directory linux start gdb: gdb -x gdb_linux
 3. in gdb_linux the first break point at start_kernel already set, set other break points as you want
