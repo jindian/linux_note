@@ -882,7 +882,7 @@ $3 = 0
 }
 ```
 
-# LINKS
+# Links
   * [Physical Address Extension OSDev](http://wiki.osdev.org/Physical_Address_Extension)
   * [Physical Address Extension wikipedia](https://en.wikipedia.org/wiki/Physical_Address_Extension)
   * [Setting Up Paging With PAE](http://wiki.osdev.org/Setting_Up_Paging_With_PAE)
