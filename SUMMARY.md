@@ -23,4 +23,5 @@
     * [linux real mode code](linux_startup/linux_real_mode_code.md)
     * [linux protocol](linux_startup/decompress_linux_kernel.md)
     * [preparation for initialization](linux_startup/preparation_for_initialization.md)
+    * [start kernel part I](linux_startup/start_kernel_part_I.md)
 

@@ -453,5 +453,5 @@ asmlinkage void decompress_kernel(void *rmode, memptr heap,
 
 ```
 
-# LINKS:
+# Links
   * [THE LINUX/x86 BOOT PROTOCOL](https://www.kernel.org/doc/Documentation/x86/boot.txt)

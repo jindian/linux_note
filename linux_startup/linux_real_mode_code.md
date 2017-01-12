@@ -372,5 +372,5 @@ setup_corrupt:
 	.string	"No setup signature found...\n"
 ```
 
-# LINKS
+# Links
   * [linux boot protocol](https://www.kernel.org/doc/Documentation/x86/boot.txt)
