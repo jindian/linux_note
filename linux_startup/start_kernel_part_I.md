@@ -19,10 +19,13 @@ SMP systems are tightly coupled multiprocessor systems with a pool of homogeneou
 
 lockdep\_init
 
+"Lockdep" is the kernel lock validator, which, when enabled, creates a detailed model of how locks are used in the kernel. This model can be used to find potential deadlocks and other problems.
+
 # Links
 
 * [SMP](https://en.wikipedia.org/wiki/Symmetric_multiprocessing)
 * [weak : GCC function attributes](https://gcc.gnu.org/onlinedocs/gcc-3.2/gcc/Function-Attributes.html)
-
+* [Interrupts, threads, and lockdep](https://lwn.net/Articles/321663/)
+* [The kernel lock validator](https://lwn.net/Articles/185666/)
 
 
