@@ -17,7 +17,23 @@ Defination of `smp_setup_processor_id` is null for x86 architecture.
 
 SMP systems are tightly coupled multiprocessor systems with a pool of homogeneous processors running independent of each other. Each processor, executing different programs and working on different sets of data, has the capability of sharing common resources \(memory, I/O device, interrupt system and so on\) that are connected using a system bus or a crossbar.
 
-lockdep\_init
+`lockdep_init` initializes two hash tables. To enable lockdep module, enable the configuration of lockdep as follow:
+
+```enable_lockdep
+1. edit .config through menuconfig
+   make menuconfig
+2. Enable lockdep related hacking options
+      [*] Detect Hard and Soft Lockups
+      [*] Detect Hung Tasks
+      [*] RT Mutex debugging, deadlock detection
+      -*- Spinlock and rw-lock debugging: basic checks
+      -*- Mutex debugging: basic checks
+      -*- Lock debugging: detect incorrect freeing of live locks
+      [*] Lock debugging: prove locking correctness
+      [*] Lock usage statistics
+3. make and make install
+4. create new bootable disk image
+```
 
 "Lockdep" is the kernel lock validator, which, when enabled, creates a detailed model of how locks are used in the kernel. This model can be used to find potential deadlocks and other problems.
 
