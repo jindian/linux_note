@@ -20,9 +20,9 @@ SMP systems are tightly coupled multiprocessor systems with a pool of homogeneou
 `lockdep_init` initializes two hash tables. To enable lockdep module, enable the configuration of lockdep as follow:
 
 ```enable_lockdep
-1. edit .config through menuconfig
-   make menuconfig
-2. Enable lockdep related hacking options
+1.  edit .config through menuconfig
+      make menuconfig
+2.  enable lockdep related hacking options
       [*] Detect Hard and Soft Lockups
       [*] Detect Hung Tasks
       [*] RT Mutex debugging, deadlock detection
@@ -31,8 +31,8 @@ SMP systems are tightly coupled multiprocessor systems with a pool of homogeneou
       -*- Lock debugging: detect incorrect freeing of live locks
       [*] Lock debugging: prove locking correctness
       [*] Lock usage statistics
-3. make and make install
-4. create new bootable disk image
+3.  make and make install
+4.  create new bootable disk image
 ```
 
 "Lockdep" is the kernel lock validator, which, when enabled, creates a detailed model of how locks are used in the kernel. This model can be used to find potential deadlocks and other problems.
