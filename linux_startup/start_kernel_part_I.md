@@ -22,3 +22,4 @@ lockdep_init
 
 # Links
   * [SMP](https://en.wikipedia.org/wiki/Symmetric_multiprocessing)
+  * [weak : GCC function attributes](https://gcc.gnu.org/onlinedocs/gcc-3.2/gcc/Function-Attributes.html)
