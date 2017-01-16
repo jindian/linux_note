@@ -17,3 +17,5 @@ Linux kernel 2.6.39 removed the final part of the BKL, the whole BKL locking mec
 # Links
   * [Giant lock](https://en.wikipedia.org/wiki/Giant_lock)
   * [Big Kernel Lock](https://kernelnewbies.org/BigKernelLock)
+  * [Clock Event Devices](http://www.halolinux.us/kernel-architecture/clock-event-devices.html)
+  * [Clock sources, Clock events, sched_clock() and delay timers](https://www.kernel.org/doc/Documentation/timers/timekeeping.txt)
