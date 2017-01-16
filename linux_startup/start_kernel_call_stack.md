@@ -15,5 +15,6 @@
                 |--trace_hardirqs_off_caller                             # kernel/lockdep.c::2355
         |--early_boot_irqs_off                                           # kernel/lockdep.c:2289
         |--early_init_irq_lock_class                                     # kernel/irq/handle.c:544
+            |--irq_to_desc                                               # kernel/irq/handle.c:192
 
 ```

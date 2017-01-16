@@ -67,7 +67,22 @@ Global variable subsys defined in kernel/cgroup.c line 62
 
 `early_boot_irqs_off` set debug flag as off. The debug flag description in source code: `via this flag we know that we are in 'early bootup code', and will warn about any invalid irqs-on event`.
 
+`early_init_irq_lock_class` set lock key for every interrupt descriptor, but interrupt descriptor table pointer is NULL, actually nothing done here.
 
+```irq_to_desc
+
+kernel/irq/handle.c:192
+
+struct irq_desc *irq_to_desc(unsigned int irq)
+{
+	if (irq_desc_ptrs && irq < nr_irqs)
+(gdb) p irq_desc_ptrs
+$4 = (struct irq_desc **) 0x0
+		return irq_desc_ptrs[irq];
+
+	return NULL;
+}
+```
 
 # Links
 
