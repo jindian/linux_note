@@ -63,6 +63,8 @@ $8 = {0xc16a1500 <cpuset_subsys>, 0xc1697d80 <cpuacct_subsys>,
 
 Global variable subsys defined in kernel/cgroup.c line 62
 
+`local_irq_disable` disable interrupt with [extended assembly](http://www.ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html)
+
 # Links
 
 * [SMP](https://en.wikipedia.org/wiki/Symmetric_multiprocessing)
@@ -74,5 +76,6 @@ Global variable subsys defined in kernel/cgroup.c line 62
 * [Buffer overflow protection](https://en.wikipedia.org/wiki/Buffer_overflow_protection#Canaries)
 * [Stack buffer overflow](https://en.wikipedia.org/wiki/Stack_buffer_overflow)
 * [CGROUPS](https://www.kernel.org/doc/Documentation/cgroup-v1/cgroups.txt)
+* [extended assembly](http://www.ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html)
 
 
