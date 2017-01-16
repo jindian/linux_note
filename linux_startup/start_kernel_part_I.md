@@ -17,7 +17,9 @@ Defination of `smp_setup_processor_id` is null for x86 architecture.
 
 SMP systems are tightly coupled multiprocessor systems with a pool of homogeneous processors running independent of each other. Each processor, executing different programs and working on different sets of data, has the capability of sharing common resources \(memory, I/O device, interrupt system and so on\) that are connected using a system bus or a crossbar.
 
-`lockdep_init` initializes two hash tables. To enable lockdep module, enable the configuration of lockdep as follow:
+`lockdep_init` initializes two hash tables. "Lockdep" is the kernel lock validator, which, when enabled, creates a detailed model of how locks are used in the kernel. This model can be used to find potential deadlocks and other problems.
+
+To enable lockdep module, enable the configuration of lockdep as follow:
 
 ```enable_lockdep
 1.  edit .config through menuconfig
@@ -47,7 +49,7 @@ boot the new kernel image, under /proc you should see the following new folders:
 
 If the app deadlocks(hangs), do a: `ps -aux | grep <app_name>`, you should see a +D (uninterruptible sleep) state for your app, do a: `dmesg`, the log it prints will include the function/file causing the deadlock.
 
-"Lockdep" is the kernel lock validator, which, when enabled, creates a detailed model of how locks are used in the kernel. This model can be used to find potential deadlocks and other problems.
+
 
 # Links
 
