@@ -23,4 +23,7 @@
                         |--__ticket_spin_trylock                         # arch/x86/include/asm/spinlock.h:80
         |--tick_init                                                     # kernel/time/tick-common.c:417
             |--clockevents_register_notifier                             # kernel/time/clockevents.c:140
+                |--spin_lock_irqsave
+                |--raw_notifier_chain_register                           # kernel/notifier.c:344
+                |--spin_unlock_irqrestore
 ```
