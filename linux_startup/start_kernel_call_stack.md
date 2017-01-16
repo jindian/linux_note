@@ -7,5 +7,6 @@
         |--lockdep_init                  # kernel/lockdep.c:3570
         |--debug_objects_early_init      # lib/debugobjects.c:905
         |--boot_init_stack_canary        # arch/x86/include/asm/stackprotector.h:59
+        |--cgroup_init_early             # kernel/cgroup.c:3214
 
 ```
