@@ -31,9 +31,21 @@ SMP systems are tightly coupled multiprocessor systems with a pool of homogeneou
       -*- Lock debugging: detect incorrect freeing of live locks
       [*] Lock debugging: prove locking correctness
       [*] Lock usage statistics
-3.  make and make install
+3.  recompile linux kernel and make install
 4.  create new bootable disk image
 ```
+
+boot the new kernel image, under /proc you should see the following new folders:
+
+```lockdep_folders_under_proc
+/proc/lockdep
+/proc/lockdep_chains
+/proc/lockdep_stat
+/proc/locks
+/proc/lock_stats
+```
+
+If the app deadlocks(hangs), do a: `ps -aux | grep <app_name>`, you should see a +D (uninterruptible sleep) state for your app, do a: `dmesg`, the log it prints will include the function/file causing the deadlock.
 
 "Lockdep" is the kernel lock validator, which, when enabled, creates a detailed model of how locks are used in the kernel. This model can be used to find potential deadlocks and other problems.
 
@@ -43,5 +55,6 @@ SMP systems are tightly coupled multiprocessor systems with a pool of homogeneou
 * [weak : GCC function attributes](https://gcc.gnu.org/onlinedocs/gcc-3.2/gcc/Function-Attributes.html)
 * [Interrupts, threads, and lockdep](https://lwn.net/Articles/321663/)
 * [The kernel lock validator](https://lwn.net/Articles/185666/)
+* [How to use lockdep feature in linux kernel for deadlock detection](http://stackoverflow.com/questions/20892822/how-to-use-lockdep-feature-in-linux-kernel-for-deadlock-detection)
 
 
