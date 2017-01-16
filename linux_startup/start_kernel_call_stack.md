@@ -21,4 +21,6 @@
                 |--_raw_spin_lock                                        # lib/spinlock_debug.c:128
                     |--__raw_spin_trylock                                # lib/spinlock_debug.c:193
                         |--__ticket_spin_trylock                         # arch/x86/include/asm/spinlock.h:80
+        |--tick_init                                                     # kernel/time/tick-common.c:417
+            |--clockevents_register_notifier                             # kernel/time/clockevents.c:140
 ```

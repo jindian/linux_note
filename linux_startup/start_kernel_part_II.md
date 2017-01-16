@@ -10,7 +10,7 @@ By isolating the kernel from concurrency, many parts of the kernel no longer nee
 
 Linux kernel 2.6.39 removed the final part of the BKL, the whole BKL locking mechanism. BKL is now finally totally gone!
 
-
+`tick_init` 
 
 # Links
   * [Giant lock](https://en.wikipedia.org/wiki/Giant_lock)
