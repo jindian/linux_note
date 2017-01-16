@@ -84,6 +84,8 @@ $4 = (struct irq_desc **) 0x0
 }
 ```
 
+Now interrupts are still disabled, we will continue the intialization of kernel.
+
 # Links
 
 * [SMP](https://en.wikipedia.org/wiki/Symmetric_multiprocessing)
