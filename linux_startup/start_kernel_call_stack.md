@@ -17,4 +17,8 @@
         |--early_init_irq_lock_class                                     # kernel/irq/handle.c:544
             |--irq_to_desc                                               # kernel/irq/handle.c:192
         |--lock_kernel                                                   # lib/kernel_lock.c:116
+            |--__lock_kernel                                             # lib/kernel_lock.c:94
+                |--_raw_spin_lock                                        # lib/spinlock_debug.c:128
+                    |--__raw_spin_trylock                                # lib/spinlock_debug.c:193
+                        |--__ticket_spin_trylock                         # arch/x86/include/asm/spinlock.h:80
 ```
