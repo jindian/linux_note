@@ -25,5 +25,7 @@
             |--clockevents_register_notifier                             # kernel/time/clockevents.c:140
                 |--spin_lock_irqsave
                 |--raw_notifier_chain_register                           # kernel/notifier.c:344
+                    |--notifier_chain_register                           # kernel/notifier.c:21
+                        |--rcu_assign_pointer                            # include/linux/rcupdate.h:256
                 |--spin_unlock_irqrestore
 ```
