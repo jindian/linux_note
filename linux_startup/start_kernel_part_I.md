@@ -65,7 +65,7 @@ Global variable subsys defined in kernel/cgroup.c line 62
 
 `local_irq_disable` disable native interrupt with [extended assembly](http://www.ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html) and disable hard interrupt.
 
-`early_boot_irqs_off` set debug flag as off. The debug flag description in source code: 'via this flag we know that we are in 'early bootup code', and will warn about any invalid irqs-on event'
+`early_boot_irqs_off` set debug flag as off. The debug flag description in source code: `via this flag we know that we are in 'early bootup code', and will warn about any invalid irqs-on event`
 
 
 
