@@ -63,7 +63,9 @@ $8 = {0xc16a1500 <cpuset_subsys>, 0xc1697d80 <cpuacct_subsys>,
 
 Global variable subsys defined in kernel/cgroup.c line 62
 
-`local_irq_disable` disable interrupt with [extended assembly](http://www.ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html)
+`local_irq_disable` disable native interrupt with [extended assembly](http://www.ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html) and disable hard interrupt.
+
+
 
 # Links
 

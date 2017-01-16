@@ -11,5 +11,7 @@
         |--local_irq_disable                                             # include/linux/irqflags.h:61
             |--raw_local_irq_disable                                     # arch/x86/include/asm/irqflags.h:74
                 |--native_irq_disable                                    # arch/x86/include/asm/irqflags.h:37
+            |--trace_hardirqs_off                                        # kernel/lockdep.c:2380
+                |--trace_hardirqs_off_caller                             # kernel/lockdep.c::2355
 
 ```
