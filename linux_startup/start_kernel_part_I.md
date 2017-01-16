@@ -49,7 +49,7 @@ boot the new kernel image, under /proc you should see the following new folders:
 
 If the app deadlocks(hangs), do a: `ps -aux | grep <app_name>`, you should see a +D (uninterruptible sleep) state for your app, do a: `dmesg`, the log it prints will include the function/file causing the deadlock.
 
-
+`debug_objects_early_init` initialize the hash buckets and link the static object pool objects into the poll list. After this call the object tracker is fully operational.
 
 # Links
 
@@ -58,5 +58,6 @@ If the app deadlocks(hangs), do a: `ps -aux | grep <app_name>`, you should see a
 * [Interrupts, threads, and lockdep](https://lwn.net/Articles/321663/)
 * [The kernel lock validator](https://lwn.net/Articles/185666/)
 * [How to use lockdep feature in linux kernel for deadlock detection](http://stackoverflow.com/questions/20892822/how-to-use-lockdep-feature-in-linux-kernel-for-deadlock-detection)
+* [object debugging infrastructure](https://lwn.net/Articles/271582/)
 
 
