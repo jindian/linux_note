@@ -16,5 +16,5 @@
         |--early_boot_irqs_off                                           # kernel/lockdep.c:2289
         |--early_init_irq_lock_class                                     # kernel/irq/handle.c:544
             |--irq_to_desc                                               # kernel/irq/handle.c:192
-
+        |--lock_kernel                                                   # lib/kernel_lock.c:116
 ```
