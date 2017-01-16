@@ -1,6 +1,8 @@
 # start_kernel part II
 
-`lock_kernel` get [big kernel lock](https://kernelnewbies.org/BigKernelLock), In operating systems, a giant lock, also known as a big-lock or kernel-lock, is a lock that may be used in the kernel to provide concurrency control required by symmetric multiprocessing (SMP) systems.
+`lock_kernel` get [big kernel lock](https://kernelnewbies.org/BigKernelLock).
+
+In operating systems, a giant lock, also known as a big-lock or kernel-lock, is a lock that may be used in the kernel to provide concurrency control required by symmetric multiprocessing (SMP) systems.
 
 A giant lock is a solitary global lock that is held whenever a thread enters kernel space and released when the thread returns to user space; a system call is the archetypal example. In this model, threads in user space can run concurrently on any available processors or processor cores, but no more than one thread can run in kernel space; any other threads that try to enter kernel space are forced to wait. In other words, the giant lock eliminates all concurrency in kernel space.
 
