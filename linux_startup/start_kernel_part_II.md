@@ -21,6 +21,13 @@ cpu_present_mask
 cpu_active_mask
 ```
 
+`page_address_init` intialize `page_address_pool`, it's freelist of `page_address_map`, add list of all elements in `page_address_maps` to freelist, array length of `page_address_maps` in this kernel image is 
+```
+(gdb) p sizeof(page_address_maps)/sizeof(page_address_maps[0])
+$3 = 512
+```
+initialize page address hash table `page_address_htable` and lock of `page_address_pool`.
+
 # Links
   * [Giant lock](https://en.wikipedia.org/wiki/Giant_lock)
   * [Big Kernel Lock](https://kernelnewbies.org/BigKernelLock)

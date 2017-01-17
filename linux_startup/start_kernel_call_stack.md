@@ -35,4 +35,7 @@
             |--set_cpu_present
             |--set_cpu_possible
         |--page_address_init                                             # mm/highmem.c:409
+            |--list_add                                                  # include/linux/list.h:64
+                |--__list_add                                            # lib/list_debug.c:19
+            
 ```
