@@ -43,7 +43,7 @@
         |--setup_arch                                                    # arch/x86/kernel/setup.c:720
             |--visws_early_detect        # We don't use visual workstation, this routine could be ingnored
             |--vmi_init                  # Same as visws_early_detect because of no configuration in linux config file
-            
+            |--early_cpu_init                                            # arch/x86/kernel/cpu/common.c:659
 ```
 
 

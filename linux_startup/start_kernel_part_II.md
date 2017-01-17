@@ -30,10 +30,10 @@ initialize page address hash table `page_address_htable` and lock of `page_addre
 
 `setup_arch` the most important routine involved in `start_kernel`, every architecture has its own implementation for it.
 
-1. Initialize common cpu data of all cpus, source information of cpu initialized before start_kernel in arch/x86/kernel/head_32.S.
-2. We don't config CONFIG_X86_VISWS, the defination of function `visws_early_detect` is NULL.
-3. CONFIG_VMI is not configured, the defination of function `vmi_init` is same as `visws_early_detect`.
-4. 
+  1. Initialize common cpu data of all cpus, source information of cpu initialized before start_kernel in arch/x86/kernel/head_32.S.
+  2. We don't config CONFIG_X86_VISWS, the defination of function `visws_early_detect` is NULL.
+  3. CONFIG_VMI is not configured, the defination of function `vmi_init` is same as `visws_early_detect`.
+  4. `early_cpu_init`
 
 # Links
   * [Giant lock](https://en.wikipedia.org/wiki/Giant_lock)
