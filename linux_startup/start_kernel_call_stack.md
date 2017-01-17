@@ -41,3 +41,7 @@
                 |---__spin_lock_init                                     # lib/spinlock_debug.c:16
             
 ```
+
+
+# Links
+  * [SMP Boot](http://www.tldp.org/HOWTO/Linux-i386-Boot-Code-HOWTO/smpboot.html)
