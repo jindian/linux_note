@@ -30,7 +30,8 @@ initialize page address hash table `page_address_htable` and lock of `page_addre
 
 `setup_arch` the most important routine involved in `start_kernel`, every architecture has its own implementation for it.
 
-1. initialize common cpu data of all cpus, source information of cpu initialized before start_kernel in arch/x86/kernel/head_32.S.
+1. Initialize common cpu data of all cpus, source information of cpu initialized before start_kernel in arch/x86/kernel/head_32.S.
+2. We don't config CONFIG_X86_VISWS, the defination of function visws_early_detect is NULL.
 
 
 # Links
@@ -39,3 +40,5 @@ initialize page address hash table `page_address_htable` and lock of `page_addre
   * [Clock Event Devices](http://www.halolinux.us/kernel-architecture/clock-event-devices.html)
   * [Clock sources, Clock events, sched_clock() and delay timers](https://www.kernel.org/doc/Documentation/timers/timekeeping.txt)
   * [Paging](https://en.wikipedia.org/wiki/Paging)
+  * [CONFIG_X86_VISWS: SGI 320/540 (Visual Workstation)](http://cateee.net/lkddb/web-lkddb/X86_VISWS.html)
+  * [SGI Visual Workstation](http://www.nekochan.net/wiki/SGI_Visual_Workstation)
