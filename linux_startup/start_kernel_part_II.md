@@ -28,6 +28,8 @@ $3 = 512
 ```
 initialize page address hash table `page_address_htable` and lock of `page_address_pool`.
 
+`setup_arch`
+
 # Links
   * [Giant lock](https://en.wikipedia.org/wiki/Giant_lock)
   * [Big Kernel Lock](https://kernelnewbies.org/BigKernelLock)

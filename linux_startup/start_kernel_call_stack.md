@@ -39,6 +39,8 @@
                 |--__list_add                                            # lib/list_debug.c:19
             |--spin_lock_init                                            # include/linux/spinlock.h:96
                 |---__spin_lock_init                                     # lib/spinlock_debug.c:16
+        |--printk
+        |--setup_arch                                                    # arch/x86/kernel/setup.c:720
             
 ```
 
