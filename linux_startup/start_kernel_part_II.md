@@ -29,6 +29,7 @@ $3 = 512
 initialize page address hash table `page_address_htable` and lock of `page_address_pool`.
 
 `setup_arch` the most important routine involved in `start_kernel`, every architecture has its own implementation for it.
+
 1. initialize common cpu data of all cpus, source information of cpu initialized before start_kernel in arch/x86/kernel/head_32.S.
 
 
