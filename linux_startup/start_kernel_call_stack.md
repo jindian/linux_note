@@ -41,7 +41,8 @@
                 |---__spin_lock_init                                     # lib/spinlock_debug.c:16
         |--printk
         |--setup_arch                                                    # arch/x86/kernel/setup.c:720
-            |--visws_early_detect        # We don't use visual workstation, this routine could be ingnored.
+            |--visws_early_detect        # We don't use visual workstation, this routine could be ingnored
+            |--vmi_init                  # Same as visws_early_detect because of no configuration in linux config file
             
 ```
 
