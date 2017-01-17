@@ -28,7 +28,7 @@ $3 = 512
 ```
 initialize page address hash table `page_address_htable` and lock of `page_address_pool`.
 
-`setup_arch`
+`setup_arch` initialize common cpu data of all cpus, source information of cpu initialized before start_kernel in arch/x86/kernel/head_32.S, 
 
 # Links
   * [Giant lock](https://en.wikipedia.org/wiki/Giant_lock)
