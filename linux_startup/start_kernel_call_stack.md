@@ -37,5 +37,7 @@
         |--page_address_init                                             # mm/highmem.c:409
             |--list_add                                                  # include/linux/list.h:64
                 |--__list_add                                            # lib/list_debug.c:19
+            |--spin_lock_init                                            # include/linux/spinlock.h:96
+                |---__spin_lock_init                                     # lib/spinlock_debug.c:16
             
 ```
