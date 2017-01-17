@@ -41,6 +41,7 @@
                 |---__spin_lock_init                                     # lib/spinlock_debug.c:16
         |--printk
         |--setup_arch                                                    # arch/x86/kernel/setup.c:720
+            |--visws_early_detect
             
 ```
 
