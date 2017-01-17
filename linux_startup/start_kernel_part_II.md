@@ -34,4 +34,3 @@ initialize page address hash table `page_address_htable` and lock of `page_addre
   * [Clock Event Devices](http://www.halolinux.us/kernel-architecture/clock-event-devices.html)
   * [Clock sources, Clock events, sched_clock() and delay timers](https://www.kernel.org/doc/Documentation/timers/timekeeping.txt)
   * [Paging](https://en.wikipedia.org/wiki/Paging)
-  * [Page](https://en.wikipedia.org/wiki/Page_(computer_memory))
