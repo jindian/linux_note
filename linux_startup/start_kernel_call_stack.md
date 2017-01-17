@@ -34,4 +34,5 @@
             |--set_cpu_active
             |--set_cpu_present
             |--set_cpu_possible
+        |--page_address_init                                             # mm/highmem.c:409
 ```
