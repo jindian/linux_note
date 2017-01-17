@@ -31,5 +31,7 @@
         |--boot_cpu_init                                                 # init/main.c:486
             |--smp_processor_id
             |--set_cpu_online                                            # kernel/cpu.c:607
-                |--cpumask_set_cpu                                       # include/linux/cpumask.h:240
+            |--set_cpu_active
+            |--set_cpu_present
+            |--set_cpu_possible
 ```
