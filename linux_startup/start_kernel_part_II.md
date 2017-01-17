@@ -12,7 +12,14 @@ Linux kernel 2.6.39 removed the final part of the BKL, the whole BKL locking mec
 
 `tick_init` initialize the tick control, register tick notifier for clock event devices, the tick notifier defined in code kernel/time/tick-common.c line 363.
 
+`boot_cpu_init` activate the first cpu, all routines involved in `boot_cpu_init` finally call `cpumask_set_cpu` to set specified bit of following cpu mask as ture, every bit of a dedicated cpu mask represent a cpu.
 
+```cpu_mask
+cpu_possible_mask
+cpu_online_mask
+cpu_present_mask
+cpu_active_mask
+```
 
 # Links
   * [Giant lock](https://en.wikipedia.org/wiki/Giant_lock)

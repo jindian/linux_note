@@ -28,4 +28,8 @@
                     |--notifier_chain_register                           # kernel/notifier.c:21
                         |--rcu_assign_pointer                            # include/linux/rcupdate.h:256
                 |--spin_unlock_irqrestore
+        |--boot_cpu_init                                                 # init/main.c:486
+            |--smp_processor_id
+            |--set_cpu_online                                            # kernel/cpu.c:607
+                |--cpumask_set_cpu                                       # include/linux/cpumask.h:240
 ```
