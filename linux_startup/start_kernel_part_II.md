@@ -33,7 +33,7 @@ initialize page address hash table `page_address_htable` and lock of `page_addre
   1. Initialize common cpu data of all cpus, source information of cpu initialized before start_kernel in arch/x86/kernel/head_32.S.
   2. We don't config CONFIG_X86_VISWS, the defination of function `visws_early_detect` is NULL.
   3. CONFIG_VMI is not configured, the defination of function `vmi_init` is same as `visws_early_detect`.
-  4. `early_cpu_init` intialize cpu information, it firstly get information of kernel support cpu, listed as follow, after that identify the cpu it used in this linux initialization.
+  4. `early_cpu_init` intialize cpu information, it firstly get information of kernel support cpu, listed as follow, after that identify the cpu it used in this linux initialization with `early_identify_cpu`.
   
 kernel supports cpu listed as follow:
 
@@ -70,6 +70,78 @@ $14 = (const struct cpu_dev *) 0xc16879a0 <umc_cpu_dev>
 (gdb) p cpu_devs[6].c_ident
 $15 = {0xc15d0956 "UMC UMC UMC", 0x0}
 ```
+
+  In `early_identify_cpu`:
+  
+  a. Check cpu has cpuid instruction enabled or not with `have_cpuid_p` which further involves `flag_is_changeable_p`, the entire proceduce of `flag_is_changeable_p` please take following gdb information as reference:
+  
+  ```flag_is_changeable_p
+  
+  flag_is_changeable_p (flag=2097152) at arch/x86/kernel/cpu/common.c:186
+186		asm volatile ("pushfl		\n\t"
+(gdb) x/10i $eip
+=> 0xc146f11f <have_cpuid_p+3>:	pushf  
+   0xc146f120 <have_cpuid_p+4>:	pushf  
+   0xc146f121 <have_cpuid_p+5>:	pop    %eax
+   0xc146f122 <have_cpuid_p+6>:	mov    %eax,%edx
+   0xc146f124 <have_cpuid_p+8>:	xor    $0x200000,%eax
+   0xc146f129 <have_cpuid_p+13>:	push   %eax
+   0xc146f12a <have_cpuid_p+14>:	popf   
+   0xc146f12b <have_cpuid_p+15>:	pushf  
+   0xc146f12c <have_cpuid_p+16>:	pop    %eax
+   0xc146f12d <have_cpuid_p+17>:	popf   
+(gdb) info registers eflags
+eflags         0x46	[ PF ZF ]
+(gdb) si
+0xc146f120	186		asm volatile ("pushfl		\n\t"
+(gdb) 
+0xc146f121	186		asm volatile ("pushfl		\n\t"
+(gdb) 
+0xc146f122	186		asm volatile ("pushfl		\n\t"
+(gdb) info registers eax
+eax            0x46	70
+(gdb) si
+0xc146f124	186		asm volatile ("pushfl		\n\t"
+(gdb) info registers edx
+edx            0x46	70
+(gdb) si
+0xc146f129	186		asm volatile ("pushfl		\n\t"
+(gdb) info registers eax
+eax            0x200046 	2097222
+(gdb) si
+0xc146f12a	186		asm volatile ("pushfl		\n\t"
+(gdb) 
+0xc146f12b	186		asm volatile ("pushfl		\n\t"
+(gdb) info registers eflags
+eflags         0x200046	[ PF ZF ID ]
+(gdb) si
+0xc146f12c	186		asm volatile ("pushfl		\n\t"
+(gdb) 
+0xc146f12d	186		asm volatile ("pushfl		\n\t"
+(gdb) info registers eax
+eax            0x200046	       2097222
+(gdb) si
+200		return ((f1^f2) & flag) != 0;
+(gdb) info registers eflags
+eflags         0x46	[ PF ZF ]
+(gdb) info registers eax edx
+eax            0x200046	2097222
+edx            0x46	70
+(gdb) p f1
+$16 = 2097222
+(gdb) p /x f1
+$17 = 0x200046
+(gdb) p /x f2
+$18 = 0x46
+(gdb) p /x flag
+$19 = 0x200000
+(gdb) p  (f1^f2)
+$20 = 2097152
+(gdb) p  /x (f1^f2)
+$21 = 0x200000
+(gdb) p /x ((f1^f2) & flag)
+$22 = 0x200000
+  ```
 
 # Links
   * [Giant lock](https://en.wikipedia.org/wiki/Giant_lock)
