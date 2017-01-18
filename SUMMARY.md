@@ -25,4 +25,7 @@
     * [preparation for initialization](linux_startup/preparation_for_initialization.md)
     * [start_kernel call stack](linux_startup/start_kernel_call_stack.md)
     * [start_kernel part I](linux_startup/start_kernel_part_I.md)
+    * [start_kernel part II](linux_startup/start_kernel_part_II.md)
+    * [start_kernel part III](linux_startup/start_kernel_part_III.md)
+
 
