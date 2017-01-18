@@ -154,8 +154,48 @@ $24 = "GenuineIntel\000\000\000"
   
   d. Get cpu capability with `get_cpu_cap`, check the [cpuid](https://en.wikipedia.org/wiki/CPUID) instruction introduction  for the result of opecode 1. Finally initialize the scattered cpu feature with `init_scattered_cpuid_features`.
 
+  e. `early_init_intel` initialize intel cpu. cpu info of our x86 as follow:
 
+```cpuinfo_x86
 
+(gdb) p *c
+$43 = {x86 = 6 '\006', x86_vendor = 0 '\000', x86_model = 6 '\006', 
+  x86_mask = 3 '\003', wp_works_ok = -1 '\377', hlt_works_ok = 1 '\001', 
+  hard_math = 1 '\001', rfu = 0 '\000', fdiv_bug = -1 '\377', 
+  f00f_bug = 0 '\000', coma_bug = 0 '\000', pad0 = 0 '\000', 
+  x86_virt_bits = 32 ' ', x86_phys_bits = 36 '$', x86_coreid_bits = 0 '\000', 
+  extended_cpuid_level = 2147483652, cpuid_level = 4, x86_capability = {
+    125938681, 0, 0, 0, 2155872257, 0, 0, 0, 0}, 
+  x86_vendor_id = "GenuineIntel\000\000\000", 
+  x86_model_id = '\000' <repeats 63 times>, x86_cache_size = 0, 
+  x86_cache_alignment = 32, x86_power = 0, loops_per_jiffy = 0, 
+  llc_shared_map = {{bits = {0}}}, x86_max_cores = 0, apicid = 0, 
+  initial_apicid = 0, x86_clflush_size = 32, booted_cores = 0, 
+  phys_proc_id = 0, cpu_core_id = 0, cpu_index = 0, x86_hyper_vendor = 0}
+```
+
+  f. `filter_cpuid_features` about other features of current cpu.
+
+  The result of `boot_cpu_data` after executed early_cpu_init:
+  
+```boot_cpu_data
+
+(gdb) p boot_cpu_data
+$46 = {x86 = 6 '\006', x86_vendor = 0 '\000', x86_model = 6 '\006', 
+  x86_mask = 3 '\003', wp_works_ok = -1 '\377', hlt_works_ok = 1 '\001', 
+  hard_math = 1 '\001', rfu = 0 '\000', fdiv_bug = -1 '\377', 
+  f00f_bug = 0 '\000', coma_bug = 0 '\000', pad0 = 0 '\000', 
+  x86_virt_bits = 32 ' ', x86_phys_bits = 36 '$', x86_coreid_bits = 0 '\000', 
+  extended_cpuid_level = 2147483652, cpuid_level = 4, x86_capability = {
+    125873145, 0, 0, 0, 2155872257, 0, 0, 0, 0}, 
+  x86_vendor_id = "GenuineIntel\000\000\000", 
+  x86_model_id = '\000' <repeats 63 times>, x86_cache_size = 0, 
+  x86_cache_alignment = 32, x86_power = 0, loops_per_jiffy = 0, 
+  llc_shared_map = {{bits = {0}}}, x86_max_cores = 0, apicid = 0, 
+  initial_apicid = 0, x86_clflush_size = 32, booted_cores = 0, 
+  phys_proc_id = 0, cpu_core_id = 0, cpu_index = 0, x86_hyper_vendor = 0}
+
+```
 
 # Links
   * [Giant lock](https://en.wikipedia.org/wiki/Giant_lock)

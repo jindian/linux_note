@@ -62,7 +62,10 @@
                         |--cpuid_ecx
                         |--cpu_has                                      # arch/x86/include/asm/cpufeature.h:184
                         |--init_scattered_cpuid_features                # arch/x86/kernel/cpu/addon_cpuid_features.c:
-                    
+                    |--early_init_intel                                 # arch/x86/kernel/cpu/intel.c:31
+                        |--clear_cpu_cap                                # arch/x86/include/asm/cpufeature.h:200
+                            |--clear_bit                                # arch/x86/include/asm/bitops.h:97
+
 
                             
 ```
