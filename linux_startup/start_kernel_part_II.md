@@ -33,7 +33,43 @@ initialize page address hash table `page_address_htable` and lock of `page_addre
   1. Initialize common cpu data of all cpus, source information of cpu initialized before start_kernel in arch/x86/kernel/head_32.S.
   2. We don't config CONFIG_X86_VISWS, the defination of function `visws_early_detect` is NULL.
   3. CONFIG_VMI is not configured, the defination of function `vmi_init` is same as `visws_early_detect`.
-  4. `early_cpu_init`
+  4. `early_cpu_init` intialize cpu information, it firstly get information of kernel support cpu, listed as follow, after that identify the cpu it used in this linux initialization.
+  
+kernel supports cpu listed as follow:
+
+```kernel_support_cpu
+
+(gdb) p count
+$1 = 7
+(gdb) p cpu_devs[0]
+$2 = (const struct cpu_dev *) 0xc1687140 <intel_cpu_dev>
+(gdb) p cpu_devs[0].c_ident
+$3 = {0xc15d066a "GenuineIntel", 0x0}
+(gdb) p cpu_devs[1]
+$4 = (const struct cpu_dev *) 0xc1687280 <amd_cpu_dev>
+(gdb) p cpu_devs[1].c_ident
+$5 = {0xc15d085e "AuthenticAMD", 0x0}
+(gdb) p cpu_devs[2]
+$6 = (const struct cpu_dev *) 0xc16873c0 <nsc_cpu_dev>
+(gdb) p cpu_devs[2].c_ident
+$7 = {0xc15d08a5 "Geode by NSC", 0x0}
+(gdb) p cpu_devs[3]
+$8 = (const struct cpu_dev *) 0xc1687500 <cyrix_cpu_dev>
+(gdb) p cpu_devs[3].c_ident
+$9 = {0xc15d087f "CyrixInstead", 0x0}
+(gdb) p cpu_devs[4]
+$10 = (const struct cpu_dev *) 0xc1687720 <centaur_cpu_dev>
+(gdb) p cpu_devs[4].c_ident
+$11 = {0xc15d0919 "CentaurHauls", 0x0}
+(gdb) p cpu_devs[5]
+$12 = (const struct cpu_dev *) 0xc1687860 <transmeta_cpu_dev>
+(gdb) p cpu_devs[5].c_ident
+$13 = {0xc15d093c "GenuineTMx86", 0xc15d0949 "TransmetaCPU"}
+(gdb) p cpu_devs[6]
+$14 = (const struct cpu_dev *) 0xc16879a0 <umc_cpu_dev>
+(gdb) p cpu_devs[6].c_ident
+$15 = {0xc15d0956 "UMC UMC UMC", 0x0}
+```
 
 # Links
   * [Giant lock](https://en.wikipedia.org/wiki/Giant_lock)

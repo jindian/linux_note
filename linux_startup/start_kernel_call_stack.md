@@ -44,7 +44,9 @@
             |--visws_early_detect        # We don't use visual workstation, this routine could be ingnored
             |--vmi_init                  # Same as visws_early_detect because of no configuration in linux config file
             |--early_cpu_init                                            # arch/x86/kernel/cpu/common.c:659
-                |--early_identify_cpu
+                |--early_identify_cpu                                    # arch/x86/kernel/cpu/common.c:621
+                    |--have_cpuid_p                                      # arch/x86/kernel/cpu/common.c:204
+                        |--flag_is_changeable_p                          # arch/x86/kernel/cpu/common.c:175
 ```
 
 
