@@ -145,7 +145,14 @@ $22 = 0x200000
 
   b. Get cpu information with `cpu_detect` in which it involves [cpuid](https://en.wikipedia.org/wiki/CPUID) instruction finally with different operation id, get verder id with opcode 0 and get processor info and feature bits.
   
-
+  c. Get cpu vender with `get_cpu_vendor`, vender information in `boot_cpu_data` is 
+  
+```
+(gdb) p c->x86_vendor_id 
+$24 = "GenuineIntel\000\000\000"
+```
+  
+  d. Get cpu capability with `get_cpu_cap`
 
 
 

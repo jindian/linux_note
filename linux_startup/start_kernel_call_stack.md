@@ -51,6 +51,9 @@
                         |--cpuid                                         # arch/x86/include/asm/processor.h:648
                             |--__cpuid                                   # arch/x86/include/asm/processor.h:577
                                 |--native_cpuid                          # arch/x86/include/asm/processor.h:179
+                    |--get_cpu_vendor                                    # arch/x86/kernel/cpu/common.c
+                    |--get_cpu_cap
+                    
 
                             
 ```
