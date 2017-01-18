@@ -47,6 +47,12 @@
                 |--early_identify_cpu                                    # arch/x86/kernel/cpu/common.c:621
                     |--have_cpuid_p                                      # arch/x86/kernel/cpu/common.c:204
                         |--flag_is_changeable_p                          # arch/x86/kernel/cpu/common.c:175
+                    |--cpu_detect                                        # arch/x86/kernel/cpu/common.c:514
+                        |--cpuid                                         # arch/x86/include/asm/processor.h:648
+                            |--__cpuid                                   # arch/x86/include/asm/processor.h:577
+                                |--native_cpuid                          # arch/x86/include/asm/processor.h:179
+
+                            
 ```
 
 

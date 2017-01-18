@@ -73,7 +73,7 @@ $15 = {0xc15d0956 "UMC UMC UMC", 0x0}
 
   In `early_identify_cpu`:
   
-  a. Check cpu has cpuid instruction enabled or not with `have_cpuid_p` which further involves `flag_is_changeable_p`, the entire proceduce of `flag_is_changeable_p` please take following gdb information as reference:
+  a. Check cpu has cpuid instruction enabled or not with `have_cpuid_p` which further involves `flag_is_changeable_p`, the entire proceduce of `flag_is_changeable_p` please take following debug information as reference:
   
   ```flag_is_changeable_p
   
