@@ -143,6 +143,12 @@ $21 = 0x200000
 $22 = 0x200000
   ```
 
+  b. Get cpu information with `cpu_detect` in which it involves [cpuid](https://en.wikipedia.org/wiki/CPUID) instruction finally with different operation id, get verder id with opcode 0 and get processor info and feature bits.
+  
+
+
+
+
 # Links
   * [Giant lock](https://en.wikipedia.org/wiki/Giant_lock)
   * [Big Kernel Lock](https://kernelnewbies.org/BigKernelLock)
@@ -151,3 +157,4 @@ $22 = 0x200000
   * [Paging](https://en.wikipedia.org/wiki/Paging)
   * [CONFIG_X86_VISWS: SGI 320/540 (Visual Workstation)](http://cateee.net/lkddb/web-lkddb/X86_VISWS.html)
   * [SGI Visual Workstation](http://www.nekochan.net/wiki/SGI_Visual_Workstation)
+  * [CPUID](https://en.wikipedia.org/wiki/CPUID)
