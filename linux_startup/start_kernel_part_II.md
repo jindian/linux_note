@@ -152,7 +152,8 @@ $22 = 0x200000
 $24 = "GenuineIntel\000\000\000"
 ```
   
-  d. Get cpu capability with `get_cpu_cap`
+  d. Get cpu capability with `get_cpu_cap`, check the [cpuid](https://en.wikipedia.org/wiki/CPUID) instruction introduction  for the result of opecode 1. Finally initialize the scattered cpu feature with `init_scattered_cpuid_features`.
+
 
 
 

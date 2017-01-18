@@ -51,8 +51,17 @@
                         |--cpuid                                         # arch/x86/include/asm/processor.h:648
                             |--__cpuid                                   # arch/x86/include/asm/processor.h:577
                                 |--native_cpuid                          # arch/x86/include/asm/processor.h:179
-                    |--get_cpu_vendor                                    # arch/x86/kernel/cpu/common.c
-                    |--get_cpu_cap
+                    |--get_cpu_vendor                                    # arch/x86/kernel/cpu/common.c:487
+                    |--get_cpu_cap                                       # arch/x86/kernel/cpu/common.c:544
+                        |--cpuid
+                        |--cpuid_eax                                     # arch/x86/include/asm/processor.h:670
+                            |--cpuid
+                                |--__cpuid
+                                    |--native_cpuid
+                        |--cpuid_edx
+                        |--cpuid_ecx
+                        |--cpu_has                                      # arch/x86/include/asm/cpufeature.h:184
+                        |--init_scattered_cpuid_features                # arch/x86/kernel/cpu/addon_cpuid_features.c:
                     
 
                             
