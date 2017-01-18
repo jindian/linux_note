@@ -65,6 +65,7 @@
                     |--early_init_intel                                 # arch/x86/kernel/cpu/intel.c:31
                         |--clear_cpu_cap                                # arch/x86/include/asm/cpufeature.h:200
                             |--clear_bit                                # arch/x86/include/asm/bitops.h:97
+            |--early_ioremap_init                                       # arch/x86/mm/ioremap.c:430
 
 
                             
