@@ -70,7 +70,12 @@
                     |--__fix_to_virt                                    # arch/x86/include/asm/fixmap.h:179
                     |--read_cr3                                         # arch/x86/include/asm/system.h:310
                         |--native_read_cr3                              # arch/x86/include/asm/system.h:244
-                    |--
+                |--pmd_populate_kernel                                  # arch/x86/include/asm/pgalloc.h:62
+                    |--__pa                                             # arch/x86/include/asm/page.h:36
+                        |--__phys_addr                                  # arch/x86/mm/physaddr.c:48
+                    |--set_pmd                                          # arch/x86/include/asm/pgtable.h:38
+                        |--native_set_pmd                               # arch/x86/include/asm/pgtable-3level.h:39
+                            set_64bit                                   # arch/x86/include/asm/cmpxchg_32.h:33
 
 
 
