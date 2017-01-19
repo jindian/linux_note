@@ -76,6 +76,7 @@
                     |--set_pmd                                          # arch/x86/include/asm/pgtable.h:38
                         |--native_set_pmd                               # arch/x86/include/asm/pgtable-3level.h:39
                             set_64bit                                   # arch/x86/include/asm/cmpxchg_32.h:33
+            |--old_decode_dev                                           # include/linux/kdev_t.h:31
 
 
 
