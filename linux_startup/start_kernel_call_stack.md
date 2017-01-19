@@ -67,8 +67,10 @@
                             |--clear_bit                                # arch/x86/include/asm/bitops.h:97
             |--early_ioremap_init                                       # arch/x86/mm/ioremap.c:430
                 |--early_ioremap_pmd                                    # arch/x86/mm/ioremap.c:412
+                    |--__fix_to_virt                                    # arch/x86/include/asm/fixmap.h:179
                     |--read_cr3                                         # arch/x86/include/asm/system.h:310
                         |--native_read_cr3                              # arch/x86/include/asm/system.h:244
+                    |--
 
 
 
