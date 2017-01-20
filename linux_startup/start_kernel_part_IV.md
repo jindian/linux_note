@@ -13,3 +13,6 @@
 p boot_command_line 
 $73 = 0xc17304c0 <boot_command_line> "BOOT_IMAGE=/boot/vmlinuz-2.6.32.69 root=/dev/sda"
 ```
+
+## parse early boot command line
+
