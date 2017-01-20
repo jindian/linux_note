@@ -274,9 +274,11 @@ struct x86_init_ops x86_init __initdata = {
 	},
 };  
 ```
-   
-  
+
+  8. `setup_memory_map` sanitize BOIS [e820](https://en.wikipedia.org/wiki/E820) map which responsed by e820 as Some e820 responses include overlapping entries. The following replaces the original e820 map with a new one, removing overlaps, and resolving conflicting memory types in favor of highest numbered type. After sanitized setup kernel e820 memory map with the updated BIOS e820 map.
 
 # Links
   * [control register CR3](https://en.wikipedia.org/wiki/Control_register#CR3)
   * [Using I/O Memory](http://www.makelinux.net/ldd3/?u=chp-9-sect-4)
+  * [e820](https://en.wikipedia.org/wiki/E820)
+  * [INT 15h, AX=E820h - Query System Address Map](http://www.uruk.org/orig-grub/mem64mb.html)
