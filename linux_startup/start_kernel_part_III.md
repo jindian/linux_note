@@ -275,7 +275,7 @@ struct x86_init_ops x86_init __initdata = {
 };  
 ```
 
-  8. `setup_memory_map` sanitize BOIS [e820](https://en.wikipedia.org/wiki/E820) map which responsed by e820 as Some e820 responses include overlapping entries. The following replaces the original e820 map with a new one, removing overlaps, and resolving conflicting memory types in favor of highest numbered type. After sanitized setup kernel e820 memory map with the updated BIOS e820 map.
+  8. `setup_memory_map` sanitize BOIS [e820](https://en.wikipedia.org/wiki/E820) map which responsed by e820 as some e820 responses include overlapping entries, replaces the original e820 map with a new one, removing overlaps, and resolving conflicting memory types in favor of highest numbered type. After sanitized setup kernel e820 memory map with the updated BIOS e820 map.
   
 ```BIOS_e820_map
 
