@@ -78,7 +78,9 @@
                             set_64bit                                   # arch/x86/include/asm/cmpxchg_32.h:33
             |--old_decode_dev                                           # include/linux/kdev_t.h:31
                 |--MKDEV                                                # include/linux/kdev_t.h:9
-            x86_init.oem.arch_setup -> x86_init_noop                    # arch/x86/kernel/x86_init.c:18
+            |--x86_init.oem.arch_setup -> x86_init_noop                 # arch/x86/kernel/x86_init.c:18
+            |--setup_memory_map                                         # arch/x86/kernel/e820.c:1464
+            
             
 
 
@@ -90,3 +92,5 @@
 # Links
   * [SMP Boot](http://www.tldp.org/HOWTO/Linux-i386-Boot-Code-HOWTO/smpboot.html)
   * [Linux Kernel 2.4 Internals](http://www.tldp.org/LDP/lki/lki.html#toc4)
+  * [e820](https://en.wikipedia.org/wiki/E820)
+  * [INT 15h, AX=E820h - Query System Address Map](http://www.uruk.org/orig-grub/mem64mb.html)
