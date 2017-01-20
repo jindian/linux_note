@@ -20,7 +20,7 @@ $73 = 0xc17304c0 <boot_command_line> "BOOT_IMAGE=/boot/vmlinuz-2.6.32.69 root=/d
 
 ##  _initialize reserve early setup data_
 
-  Value of setup_data in linux boot protocol in our image is not set, we could ignore this routine.
+  Value of setup_data in linux boot protocol in our image is not set, we could ignore `reserve_early_setup_data`.
   PCI device details are recorded in a singly-linked list at boot_params.hdr.setup_data, but we have no such device here, so ignore it.
 
 ```reserve_early_setup_data
@@ -30,6 +30,10 @@ $83 = 0x20a
 (gdb) p /x boot_params.hdr.setup_data
 $84 = 0x0
 ```
+
+## 
+  
+  `acpi_mps_check`
 
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)

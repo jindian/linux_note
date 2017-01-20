@@ -94,7 +94,7 @@
                     |--parse_args                                       # kernel/params.c:131
             |--vmi_activate                                             # arch/x86/include/asm/vmi.h:232
             |--reserve_early_setup_data                                 # arch/x86/kernel/setup.c:467
-            
+            |--acpi_mps_check                                           # arch/x86/kernel/acpi/boot.c:1673
 
 
 
