@@ -31,9 +31,9 @@ $83 = 0x20a
 $84 = 0x0
 ```
 
-## Check if ACPI is disabled and MPS code is not built-in
+## _check acpi_
   
-  `acpi_mps_check` return directly.
+  `acpi_mps_check` Check if ACPI is disabled and MPS code is not built-in, return directly.
 
 
 
