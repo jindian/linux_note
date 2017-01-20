@@ -303,10 +303,169 @@ $62 = 0x20a
 ```
 
   10. `e820_reserve_setup_data` setup e820 data, here is e820_saved.
-  11. 
+  11. `copy_edd` copy the [BIOS EDD](http://www-pc.uni-regensburg.de/hardware/TECHDOK/ATA_EDD_11.PDF) information from boot_params into a safe place.
+
+```edd
+
+(gdb) p /x edd.mbr_signature
+$68 = {0xb70f66d0, 0x681efbe2, 0x66cb029b, 0x3a7c3e81, 0x5a5aaa55, 
+  0x80bf1775, 0x4d43b93a, 0x29c03166, 0x2e9c1f9, 0x66ab66f3, 0x2a81e8, 
+  0x40b86600, 0x66000003, 0x5be8, 0xfce9f400, 0x665366ff}
+(gdb) p /x edd.edd_info
+$69 = {{device = 0x0, version = 0x0, interface_support = 0x0, 
+    legacy_max_cylinder = 0x0, legacy_max_head = 0x0, 
+    legacy_sectors_per_track = 0x0, params = {length = 0x0, info_flags = 0x0, 
+      num_default_cylinders = 0x0, num_default_heads = 0x0, 
+      sectors_per_track = 0x0, number_of_sectors = 0x0, 
+      bytes_per_sector = 0x0, dpte_ptr = 0x0, key = 0x0, 
+      device_path_info_length = 0x0, reserved2 = 0x0, reserved3 = 0x0, 
+      host_bus_type = {0x0, 0x0, 0x0, 0x0}, interface_type = {0x0, 0x0, 0x0, 
+        0x0, 0x0, 0x0, 0x0, 0x0}, interface_path = {isa = {
+          base_address = 0x0, reserved1 = 0x0, reserved2 = 0x0}, pci = {
+          bus = 0x0, slot = 0x0, function = 0x0, channel = 0x0, 
+          reserved = 0x0}, ibnd = {reserved = 0x0}, xprs = {reserved = 0x0}, 
+        htpt = {reserved = 0x0}, unknown = {reserved = 0x0}}, device_path = {
+        ata = {device = 0x0, reserved1 = 0x0, reserved2 = 0x0, 
+          reserved3 = 0x0, reserved4 = 0x0}, atapi = {device = 0x0, 
+          lun = 0x0, reserved1 = 0x0, reserved2 = 0x0, reserved3 = 0x0, 
+          reserved4 = 0x0}, scsi = {id = 0x0, lun = 0x0, reserved1 = 0x0, 
+          reserved2 = 0x0}, usb = {serial_number = 0x0, reserved = 0x0}, 
+        i1394 = {eui = 0x0, reserved = 0x0}, fibre = {wwid = 0x0, lun = 0x0}, 
+        i2o = {identity_tag = 0x0, reserved = 0x0}, raid = {
+          array_number = 0x0, reserved1 = 0x0, reserved2 = 0x0}, sata = {
+          device = 0x0, reserved1 = 0x0, reserved2 = 0x0, reserved3 = 0x0, 
+          reserved4 = 0x0}, unknown = {reserved1 = 0x0, reserved2 = 0x0}}, 
+      reserved4 = 0x0, checksum = 0x0}}, {device = 0x0, version = 0x0, 
+    interface_support = 0x0, legacy_max_cylinder = 0x0, 
+    legacy_max_head = 0x0, legacy_sectors_per_track = 0x0, params = {
+      length = 0x0, info_flags = 0x0, num_default_cylinders = 0x0, 
+      num_default_heads = 0x0, sectors_per_track = 0x0, 
+      number_of_sectors = 0x0, bytes_per_sector = 0x0, dpte_ptr = 0x0, 
+      key = 0x0, device_path_info_length = 0x0, reserved2 = 0x0, 
+      reserved3 = 0x0, host_bus_type = {0x0, 0x0, 0x0, 0x0}, 
+      interface_type = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, 
+      interface_path = {isa = {base_address = 0x0, reserved1 = 0x0, 
+          reserved2 = 0x0}, pci = {bus = 0x0, slot = 0x0, function = 0x0, 
+          channel = 0x0, reserved = 0x0}, ibnd = {reserved = 0x0}, xprs = {
+          reserved = 0x0}, htpt = {reserved = 0x0}, unknown = {
+          reserved = 0x0}}, device_path = {ata = {device = 0x0, 
+          reserved1 = 0x0, reserved2 = 0x0, reserved3 = 0x0, 
+          reserved4 = 0x0}, atapi = {device = 0x0, lun = 0x0, 
+          reserved1 = 0x0, reserved2 = 0x0, reserved3 = 0x0, 
+          reserved4 = 0x0}, scsi = {id = 0x0, lun = 0x0, reserved1 = 0x0, 
+          reserved2 = 0x0}, usb = {serial_number = 0x0, reserved = 0x0}, 
+        i1394 = {eui = 0x0, reserved = 0x0}, fibre = {wwid = 0x0, lun = 0x0}, 
+        i2o = {identity_tag = 0x0, reserved = 0x0}, raid = {
+          array_number = 0x0, reserved1 = 0x0, reserved2 = 0x0}, sata = {
+          device = 0x0, reserved1 = 0x0, reserved2 = 0x0, reserved3 = 0x0, 
+          reserved4 = 0x0}, unknown = {reserved1 = 0x0, reserved2 = 0x0}}, 
+      reserved4 = 0x0, checksum = 0x0}}, {device = 0x0, version = 0x0, 
+    interface_support = 0x0, legacy_max_cylinder = 0x0, 
+    legacy_max_head = 0x0, legacy_sectors_per_track = 0x0, params = {
+      length = 0x0, info_flags = 0x0, num_default_cylinders = 0x0, 
+      num_default_heads = 0x0, sectors_per_track = 0x0, 
+      number_of_sectors = 0x0, bytes_per_sector = 0x0, dpte_ptr = 0x0, 
+      key = 0x0, device_path_info_length = 0x0, reserved2 = 0x0, 
+      reserved3 = 0x0, host_bus_type = {0x0, 0x0, 0x0, 0x0}, 
+      interface_type = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, 
+      interface_path = {isa = {base_address = 0x0, reserved1 = 0x0, 
+          reserved2 = 0x0}, pci = {bus = 0x0, slot = 0x0, function = 0x0, 
+          channel = 0x0, reserved = 0x0}, ibnd = {reserved = 0x0}, xprs = {
+          reserved = 0x0}, htpt = {reserved = 0x0}, unknown = {
+          reserved = 0x0}}, device_path = {ata = {device = 0x0, 
+          reserved1 = 0x0, reserved2 = 0x0, reserved3 = 0x0, 
+          reserved4 = 0x0}, atapi = {device = 0x0, lun = 0x0, 
+          reserved1 = 0x0, reserved2 = 0x0, reserved3 = 0x0, 
+          reserved4 = 0x0}, scsi = {id = 0x0, lun = 0x0, reserved1 = 0x0, 
+          reserved2 = 0x0}, usb = {serial_number = 0x0, reserved = 0x0}, 
+        i1394 = {eui = 0x0, reserved = 0x0}, fibre = {wwid = 0x0, lun = 0x0}, 
+        i2o = {identity_tag = 0x0, reserved = 0x0}, raid = {
+          array_number = 0x0, reserved1 = 0x0, reserved2 = 0x0}, sata = {
+          device = 0x0, reserved1 = 0x0, reserved2 = 0x0, reserved3 = 0x0, 
+          reserved4 = 0x0}, unknown = {reserved1 = 0x0, reserved2 = 0x0}}, 
+      reserved4 = 0x0, checksum = 0x0}}, {device = 0x0, version = 0x0, 
+    interface_support = 0x0, legacy_max_cylinder = 0x0, 
+    legacy_max_head = 0x0, legacy_sectors_per_track = 0x0, params = {
+      length = 0x0, info_flags = 0x0, num_default_cylinders = 0x0, 
+      num_default_heads = 0x0, sectors_per_track = 0x0, 
+      number_of_sectors = 0x0, bytes_per_sector = 0x0, dpte_ptr = 0x0, 
+      key = 0x0, device_path_info_length = 0x0, reserved2 = 0x0, 
+      reserved3 = 0x0, host_bus_type = {0x0, 0x0, 0x0, 0x0}, 
+      interface_type = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, 
+      interface_path = {isa = {base_address = 0x0, reserved1 = 0x0, 
+          reserved2 = 0x0}, pci = {bus = 0x0, slot = 0x0, function = 0x0, 
+          channel = 0x0, reserved = 0x0}, ibnd = {reserved = 0x0}, xprs = {
+          reserved = 0x0}, htpt = {reserved = 0x0}, unknown = {
+          reserved = 0x0}}, device_path = {ata = {device = 0x0, 
+          reserved1 = 0x0, reserved2 = 0x0, reserved3 = 0x0, 
+          reserved4 = 0x0}, atapi = {device = 0x0, lun = 0x0, 
+          reserved1 = 0x0, reserved2 = 0x0, reserved3 = 0x0, 
+          reserved4 = 0x0}, scsi = {id = 0x0, lun = 0x0, reserved1 = 0x0, 
+          reserved2 = 0x0}, usb = {serial_number = 0x0, reserved = 0x0}, 
+        i1394 = {eui = 0x0, reserved = 0x0}, fibre = {wwid = 0x0, lun = 0x0}, 
+        i2o = {identity_tag = 0x0, reserved = 0x0}, raid = {
+          array_number = 0x0, reserved1 = 0x0, reserved2 = 0x0}, sata = {
+          device = 0x0, reserved1 = 0x0, reserved2 = 0x0, reserved3 = 0x0, 
+          reserved4 = 0x0}, unknown = {reserved1 = 0x0, reserved2 = 0x0}}, 
+      reserved4 = 0x0, checksum = 0x0}}, {device = 0x0, version = 0x0, 
+    interface_support = 0x0, legacy_max_cylinder = 0x0, 
+    legacy_max_head = 0x0, legacy_sectors_per_track = 0x0, params = {
+      length = 0x0, info_flags = 0x0, num_default_cylinders = 0x0, 
+      num_default_heads = 0x0, sectors_per_track = 0x0, 
+      number_of_sectors = 0x0, bytes_per_sector = 0x0, dpte_ptr = 0x0, 
+      key = 0x0, device_path_info_length = 0x0, reserved2 = 0x0, 
+      reserved3 = 0x0, host_bus_type = {0x0, 0x0, 0x0, 0x0}, 
+      interface_type = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, 
+      interface_path = {isa = {base_address = 0x0, reserved1 = 0x0, 
+          reserved2 = 0x0}, pci = {bus = 0x0, slot = 0x0, function = 0x0, 
+          channel = 0x0, reserved = 0x0}, ibnd = {reserved = 0x0}, xprs = {
+          reserved = 0x0}, htpt = {reserved = 0x0}, unknown = {
+          reserved = 0x0}}, device_path = {ata = {device = 0x0, 
+          reserved1 = 0x0, reserved2 = 0x0, reserved3 = 0x0, 
+          reserved4 = 0x0}, atapi = {device = 0x0, lun = 0x0, 
+          reserved1 = 0x0, reserved2 = 0x0, reserved3 = 0x0, 
+          reserved4 = 0x0}, scsi = {id = 0x0, lun = 0x0, reserved1 = 0x0, 
+          reserved2 = 0x0}, usb = {serial_number = 0x0, reserved = 0x0}, 
+        i1394 = {eui = 0x0, reserved = 0x0}, fibre = {wwid = 0x0, lun = 0x0}, 
+        i2o = {identity_tag = 0x0, reserved = 0x0}, raid = {
+          array_number = 0x0, reserved1 = 0x0, reserved2 = 0x0}, sata = {
+          device = 0x0, reserved1 = 0x0, reserved2 = 0x0, reserved3 = 0x0, 
+          reserved4 = 0x0}, unknown = {reserved1 = 0x0, reserved2 = 0x0}}, 
+      reserved4 = 0x0, checksum = 0x0}}, {device = 0x0, version = 0x0, 
+    interface_support = 0x0, legacy_max_cylinder = 0x0, 
+    legacy_max_head = 0x0, legacy_sectors_per_track = 0x0, params = {
+      length = 0x0, info_flags = 0x0, num_default_cylinders = 0x0, 
+      num_default_heads = 0x0, sectors_per_track = 0x0, 
+      number_of_sectors = 0x0, bytes_per_sector = 0x0, dpte_ptr = 0x0, 
+      key = 0x0, device_path_info_length = 0x0, reserved2 = 0x0, 
+      reserved3 = 0x0, host_bus_type = {0x0, 0x0, 0x0, 0x0}, 
+      interface_type = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, 
+      interface_path = {isa = {base_address = 0x0, reserved1 = 0x0, 
+          reserved2 = 0x0}, pci = {bus = 0x0, slot = 0x0, function = 0x0, 
+          channel = 0x0, reserved = 0x0}, ibnd = {reserved = 0x0}, xprs = {
+          reserved = 0x0}, htpt = {reserved = 0x0}, unknown = {
+          reserved = 0x0}}, device_path = {ata = {device = 0x0, 
+          reserved1 = 0x0, reserved2 = 0x0, reserved3 = 0x0, 
+          reserved4 = 0x0}, atapi = {device = 0x0, lun = 0x0, 
+          reserved1 = 0x0, reserved2 = 0x0, reserved3 = 0x0, 
+          reserved4 = 0x0}, scsi = {id = 0x0, lun = 0x0, reserved1 = 0x0, 
+          reserved2 = 0x0}, usb = {serial_number = 0x0, reserved = 0x0}, 
+        i1394 = {eui = 0x0, reserved = 0x0}, fibre = {wwid = 0x0, lun = 0x0}, 
+        i2o = {identity_tag = 0x0, reserved = 0x0}, raid = {
+          array_number = 0x0, reserved1 = 0x0, reserved2 = 0x0}, sata = {
+          device = 0x0, reserved1 = 0x0, reserved2 = 0x0, reserved3 = 0x0, 
+          reserved4 = 0x0}, unknown = {reserved1 = 0x0, reserved2 = 0x0}}, 
+      reserved4 = 0x0, checksum = 0x0}}}
+(gdb) p /x edd.mbr_signature_nr
+$70 = 0x0
+(gdb) p /x edd.edd_info_nr
+$71 = 0x0
+```
 
 # Links
   * [control register CR3](https://en.wikipedia.org/wiki/Control_register#CR3)
   * [Using I/O Memory](http://www.makelinux.net/ldd3/?u=chp-9-sect-4)
   * [e820](https://en.wikipedia.org/wiki/E820)
   * [INT 15h, AX=E820h - Query System Address Map](http://www.uruk.org/orig-grub/mem64mb.html)
+  * [BIOS Enhanced Disk Drive Specification](http://www-pc.uni-regensburg.de/hardware/TECHDOK/ATA_EDD_11.PDF)
+  
