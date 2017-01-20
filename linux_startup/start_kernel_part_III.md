@@ -291,7 +291,7 @@ f0000,     10000,     2
 fffc0000,  40000,     2
 ```
 
-
+  9. `parse_setup_data` parse setup data in `boot_params`,
 
 # Links
   * [control register CR3](https://en.wikipedia.org/wiki/Control_register#CR3)
