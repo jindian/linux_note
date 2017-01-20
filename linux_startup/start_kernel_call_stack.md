@@ -81,7 +81,11 @@
             |--x86_init.oem.arch_setup -> x86_init_noop                 # arch/x86/kernel/x86_init.c:18
             |--setup_memory_map                                         # arch/x86/kernel/e820.c:1464
                 |--default_machine_specific_memory_setup                # arch/x86/kernel/e820.c:1426
-                    |--sanitize_e820_map                                # arch/x86/kernel/e820.c
+                    |--sanitize_e820_map                                # arch/x86/kernel/e820.c:235
+                    |--append_e820_map                                  # arch/x86/kernel/e820.c:423
+                        |--__append_e820_map                            # arch/x86/kernel/e820.c:394
+                            |--e820_add_region                          # arch/x86/kernel/e820.c:129
+                                |--__e820_add_region                    # arch/x86/kernel/e820.c:113
             
             
 
