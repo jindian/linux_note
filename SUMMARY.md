@@ -27,5 +27,5 @@
     * [start_kernel part I](linux_startup/start_kernel_part_I.md)
     * [start_kernel part II](linux_startup/start_kernel_part_II.md)
     * [start_kernel part III](linux_startup/start_kernel_part_III.md)
-    * [start_kernel part III](linux_startup/start_kernel_part_IV.md)
+    * [start_kernel part IV](linux_startup/start_kernel_part_IV.md)
 
