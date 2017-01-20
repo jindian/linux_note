@@ -90,6 +90,10 @@
             |--e820_reserve_setup_data                                  # arch/x86/kernel/setup.c:441
             |--copy_edd                                                 # arch/x86/kernel/setup.c:252
             |--parse_early_param                                        # init/main.c:468
+                |--parse_early_options                                  # init/main.c:462
+                    |--parse_args                                       # kernel/params.c:131
+            |--vmi_activate                                             # arch/x86/include/asm/vmi.h:232
+            |--reserve_early_setup_data                                 # arch/x86/kernel/setup.c:467
             
 
 

@@ -16,3 +16,17 @@ $73 = 0xc17304c0 <boot_command_line> "BOOT_IMAGE=/boot/vmlinuz-2.6.32.69 root=/d
 
 ## _parse early boot command line_
 
+  Parse command line `BOOT_IMAGE=/boot/vmlinuz-2.6.32.69 root=/dev/sda` with `parse_early_param`, finally involved routine is `parse_args`.
+
+##  _initialize reserve early setup data_
+
+  Value of setup_data in linux boot protocol in our image is not set, we could ignore this routine, later we could modify setup_data and try again here.
+
+```reserve_early_setup_data
+
+(gdb) p /x boot_params.hdr.version 
+$83 = 0x20a
+(gdb) p /x boot_params.hdr.setup_data
+$84 = 0x0
+```
+
