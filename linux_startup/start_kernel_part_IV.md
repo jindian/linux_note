@@ -36,7 +36,9 @@ $84 = 0x0
   `acpi_mps_check` If CONFIG_X86_LOCAL_APIC is set and CONFIG_x86_MPPAARSE is
 not set, acpi_mps_check prints warning message if the one of the command line options: acpi=off , acpi=noirq or pci=noacpi passed to the kernel. If acpi_mps_check returns 1 which means that we disable local APIC and clears X86_FEATURE_APIC bit in the of the current CPU with the setup_clear_cpu_cap macro.
 
-
+## _dump pci devices_
+  
+  Dump pic devices with `early_dump_pci_devices` if `pci_early_dump_regs` set with nonzero.
 
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)

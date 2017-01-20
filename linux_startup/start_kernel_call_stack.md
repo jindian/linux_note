@@ -95,6 +95,8 @@
             |--vmi_activate                                             # arch/x86/include/asm/vmi.h:232
             |--reserve_early_setup_data                                 # arch/x86/kernel/setup.c:467
             |--acpi_mps_check                                           # arch/x86/kernel/acpi/boot.c:1673
+            |--setup_clear_cpu_cap
+            |--early_dump_pci_devices                                   # arch/x86/pci/early.c:88
 
 
 
