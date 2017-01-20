@@ -302,6 +302,8 @@ $60 = 0
 $62 = 0x20a
 ```
 
+  10. `e820_reserve_setup_data`
+
 # Links
   * [control register CR3](https://en.wikipedia.org/wiki/Control_register#CR3)
   * [Using I/O Memory](http://www.makelinux.net/ldd3/?u=chp-9-sect-4)

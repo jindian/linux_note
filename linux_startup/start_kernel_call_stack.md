@@ -87,7 +87,7 @@
                             |--e820_add_region                          # arch/x86/kernel/e820.c:129
                                 |--__e820_add_region                    # arch/x86/kernel/e820.c:113
             |--parse_setup_data                                         # arch/x86/kernel/setup.c:419
-            
+            |--e820_reserve_setup_data                                  # arch/x86/kernel/setup.c:441
             
 
 
