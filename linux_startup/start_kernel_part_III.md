@@ -302,7 +302,8 @@ $60 = 0
 $62 = 0x20a
 ```
 
-  10. `e820_reserve_setup_data`
+  10. `e820_reserve_setup_data` setup e820 data, here is e820_saved.
+  11. 
 
 # Links
   * [control register CR3](https://en.wikipedia.org/wiki/Control_register#CR3)
