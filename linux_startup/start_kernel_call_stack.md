@@ -89,6 +89,7 @@
             |--parse_setup_data                                         # arch/x86/kernel/setup.c:419
             |--e820_reserve_setup_data                                  # arch/x86/kernel/setup.c:441
             |--copy_edd                                                 # arch/x86/kernel/setup.c:252
+            |--parse_early_param                                        # init/main.c:468
             
 
 
