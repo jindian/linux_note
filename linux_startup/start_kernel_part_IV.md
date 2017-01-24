@@ -86,9 +86,13 @@ char * __devinit  pcibios_setup(char *str)
   
   From above defination, early parameters are stored in section `.init.setup` with uniqure identifier. Early parameters are parsed by routine `parse_early_param`, we just introduced it in `setup_arch` which will in involved in start_kernel again after `setup_arch`.
 
-  In our `boot_command_line` we haven't set `pci=earlydump`, let's set value of `pci_early_dump_regs` as 1 mannually to check the detail of routine `early_dump_pci_devices`
+  In our `boot_command_line` we haven't set `pci=earlydump`, let's set value of `pci_early_dump_regs` as 1 mannually to check the detail of routine `early_dump_pci_devices`.
   
+  `early_dump_pci_devices` reads pci configuration and print it to kernel log.
+
+## _finish e820 parsing_
   
+  Sanitize e820 map if `userdef` set as 1, the value is set as 1 in `parse_memopt` or `parse_memmap_opt`, both of the routines are response function of memory early parameter.
 
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)

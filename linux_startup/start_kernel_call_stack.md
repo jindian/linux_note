@@ -97,6 +97,11 @@
             |--acpi_mps_check                                           # arch/x86/kernel/acpi/boot.c:1673
             |--setup_clear_cpu_cap
             |--early_dump_pci_devices                                   # arch/x86/pci/early.c:88
+                |--read_pci_config                                      # arch/x86/pci/early.c:10
+                |--early_dump_pci_device                                # arch/x86/pci/early.c:66
+                    |--read_pci_config
+                |--read_pci_config_byte                                 # arch/x86/pci/early.c:20
+            |--finish_e820_parsing                                      # arch/x86/kernel/e820.c:1304
 
 
 
