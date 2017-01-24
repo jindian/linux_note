@@ -111,6 +111,19 @@ void __init finish_e820_parsing(void)
 }
 ```
 
+  `sanitize_e820_map` already introduced in setup_memory_map.
+
+## _initialize efi_
+  
+  `efi_init` is used to map physical memory to EFI memory map if `efi_enabled` set with nonzero which is ignored as we don't use efi boot here.
+
+## 
+
+
+
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)
   * [MultiProcessor Specification](http://download.intel.com/design/archives/processors/pro/docs/24201606.pdf)
+  * [Add efi e820 memory mapping on x86](http://yarchive.net/comp/linux/efi.html)
+  * [Converting EFI memory Map to E820 map](http://stackoverflow.com/questions/17591351/converting-efi-memory-map-to-e820-map)
+  * [Why do we pass memory map both in e820 and efi_info](http://lists.infradead.org/pipermail/kexec/2014-May/011764.html)
