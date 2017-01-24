@@ -117,7 +117,7 @@ void __init finish_e820_parsing(void)
   
   `efi_init` is used to map physical memory to EFI memory map if `efi_enabled` set with nonzero which is ignored as we don't use efi boot here.
 
-## _scan dmi device_
+## _scan dmi devices_
   
   `dmi_scan_machine`
 
