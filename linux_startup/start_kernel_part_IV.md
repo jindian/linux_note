@@ -127,8 +127,9 @@ void __init finish_e820_parsing(void)
 
 (gdb) p nrpages 
 $1 = 16
-
 ```
+
+  After mapping memory region completed, check if `_DMI_` string presents with routine `dmi_present`.
 
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)
