@@ -104,6 +104,13 @@
             |--finish_e820_parsing                                      # arch/x86/kernel/e820.c:1304
             |--efi_init                                                 # arch/x86/kernel/efi.c:317
             |--dmi_scan_machine                                         # drivers/firmware/dmi_scan.c:372
+                |--dmi_ioremap -> early_ioremap                         # arch/x86/include/asm/dmi.h:16
+                    |--__early_ioremap                                  # arch/x86/mm/ioremap.c:529
+                        |--early_set_fixmap                             # arch/x86/mm/ioremap.c:488
+                            |--__early_set_fixmap                       # arch/x86/mm/ioremap.c:469
+                                |--early_ioremap_pte                    # arch/x86/mm/ioremap.c:423
+                                    |--set_pte
+                
 
 
 
