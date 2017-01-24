@@ -92,7 +92,24 @@ char * __devinit  pcibios_setup(char *str)
 
 ## _finish e820 parsing_
   
-  Sanitize e820 map if `userdef` set as 1, the value is set as 1 in `parse_memopt` or `parse_memmap_opt`, both of the routines are response function of memory early parameter.
+  Sanitize e820 map if `userdef` set as 1, the value of `userdef` is set as 1 in `parse_memopt` or `parse_memmap_opt`, both of the routines are response function of memory early parameters.
+
+```finish_e820_parsing
+
+void __init finish_e820_parsing(void)
+{
+	if (userdef) {
+		u32 nr = e820.nr_map;
+
+		if (sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &nr) < 0)
+			early_panic("Invalid user supplied memory map");
+		e820.nr_map = nr;
+
+		printk(KERN_INFO "user-defined physical RAM map:\n");
+		e820_print_map("user");
+	}
+}
+```
 
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)
