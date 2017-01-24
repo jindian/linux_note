@@ -130,4 +130,5 @@ void __init finish_e820_parsing(void)
   * [Converting EFI memory Map to E820 map](http://stackoverflow.com/questions/17591351/converting-efi-memory-map-to-e820-map)
   * [Why do we pass memory map both in e820 and efi_info](http://lists.infradead.org/pipermail/kexec/2014-May/011764.html)
   * [Unified Extensible Firmware Interface](https://en.wikipedia.org/wiki/Unified_Extensible_Firmware_Interface)
+  * [System Management BIOS](http://wiki.osdev.org/System_Management_BIOS)
   
