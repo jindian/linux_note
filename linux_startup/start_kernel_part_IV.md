@@ -38,7 +38,26 @@ not set, acpi_mps_check prints warning message if the one of the command line op
 
 ## _dump pci devices_
   
-  Dump pic devices with `early_dump_pci_devices` if `pci_early_dump_regs` set with nonzero.
+  Dump pic devices with `early_dump_pci_devices` if `pci_early_dump_regs` set with nonzero. `pci_early_dump_regs` defined in `arch/x86/pci/common.c` line 22, it set as 1 in routine `pcibios_setup` defined in `arch/x86/pci/common.c` line 442 if we take `pci=earlydump` in boot command line.
+  
+```pcibios_setup
+
+char * __devinit  pcibios_setup(char *str)
+{
+
+    ......
+    
+        } else if (!strcmp(str, "earlydump")) {
+                pci_early_dump_regs = 1;
+                return NULL;
+        }
+        
+    ......
+```
+
+Every architecture has its own implementation of routine `pcibios_setup`. `pcibios_setup` involved by `pci_setup` in file `drivers/pci/pci.c` line 2763, `pci_setup` is the response function of early parameter `pci`.
+
+
 
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)
