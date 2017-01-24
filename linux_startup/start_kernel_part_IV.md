@@ -117,7 +117,9 @@ void __init finish_e820_parsing(void)
   
   `efi_init` is used to map physical memory to EFI memory map if `efi_enabled` set with nonzero which is ignored as we don't use efi boot here.
 
-## 
+## _scan dmi device_
+  
+  `dmi_scan_machine`
 
 
 
@@ -127,3 +129,5 @@ void __init finish_e820_parsing(void)
   * [Add efi e820 memory mapping on x86](http://yarchive.net/comp/linux/efi.html)
   * [Converting EFI memory Map to E820 map](http://stackoverflow.com/questions/17591351/converting-efi-memory-map-to-e820-map)
   * [Why do we pass memory map both in e820 and efi_info](http://lists.infradead.org/pipermail/kexec/2014-May/011764.html)
+  * [Unified Extensible Firmware Interface](https://en.wikipedia.org/wiki/Unified_Extensible_Firmware_Interface)
+  

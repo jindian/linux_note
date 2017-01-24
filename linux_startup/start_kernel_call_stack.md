@@ -102,6 +102,8 @@
                     |--read_pci_config
                 |--read_pci_config_byte                                 # arch/x86/pci/early.c:20
             |--finish_e820_parsing                                      # arch/x86/kernel/e820.c:1304
+            |--efi_init                                                 # arch/x86/kernel/efi.c:317
+            |--dmi_scan_machine                                         # drivers/firmware/dmi_scan.c:372
 
 
 
