@@ -38,7 +38,7 @@ not set, acpi_mps_check prints warning message if the one of the command line op
 
 ## _dump pci devices_
   
-  Dump pic devices with `early_dump_pci_devices` if `pci_early_dump_regs` set with nonzero. `pci_early_dump_regs` defined in `arch/x86/pci/common.c` line 22, it set as 1 in routine `pcibios_setup` defined in `arch/x86/pci/common.c` line 442 if we take `pci=earlydump` in boot command line.
+  Dump pic devices with `early_dump_pci_devices` if `pci_early_dump_regs` set with nonzero. `pci_early_dump_regs` defined in `arch/x86/pci/common.c` line 22, it set as 1 in routine `pcibios_setup` defined in `arch/x86/pci/common.c` line 522 if we take `pci=earlydump` in boot command line.
   
 ```pcibios_setup
 
@@ -55,9 +55,40 @@ char * __devinit  pcibios_setup(char *str)
     ......
 ```
 
-Every architecture has its own implementation of routine `pcibios_setup`. `pcibios_setup` involved by `pci_setup` in file `drivers/pci/pci.c` line 2763, `pci_setup` is the response function of early parameter `pci`.
+  Every architecture has its own implementation of routine `pcibios_setup`. `pcibios_setup` involved by `pci_setup` in file `drivers/pci/pci.c` line 2763, `pci_setup` is the response function of early parameter `pci`.
 
+  All early parameters defined with same macro `#define early_param(str, fn)` in file  `linux/init.h` line 241, for example: `early_param("pci", pci_setup)`.
+  
+```early_param
 
+/*
+ * Only for really core code.  See moduleparam.h for the normal way.
+ *
+ * Force the alignment so the compiler doesn't space elements of the
+ * obs_kernel_param "array" too far apart in .init.setup.
+ */
+#define __setup_param(str, unique_id, fn, early)                        \
+        static const char __setup_str_##unique_id[] __initconst \
+                __aligned(1) = str; \
+        static struct obs_kernel_param __setup_##unique_id      \
+                __used __section(.init.setup)                   \
+                __attribute__((aligned((sizeof(long)))))        \
+                = { __setup_str_##unique_id, fn, early }
+
+#define __setup(str, fn)                                        \
+        __setup_param(str, fn, fn, 0)
+
+/* NOTE: fn is as per module_param, not __setup!  Emits warning if fn
+ * returns non-zero. */
+#define early_param(str, fn)                                    \
+        __setup_param(str, fn, fn, 1)
+```
+  
+  From above defination, early parameters are stored in section `.init.setup` with uniqure identifier. Early parameters are parsed by routine `parse_early_param`, we just introduced it in `setup_arch` which will in involved in start_kernel again after `setup_arch`.
+
+  In our `boot_command_line` we haven't set `pci=earlydump`, let's set value of `pci_early_dump_regs` as 1 mannually to check the detail of routine `early_dump_pci_devices`
+  
+  
 
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)
