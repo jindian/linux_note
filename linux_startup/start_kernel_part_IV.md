@@ -119,6 +119,8 @@ void __init finish_e820_parsing(void)
 
 ## _scan dmi devices_
   
+  System Management BIOS (SMBIOS) is a standard developed by DMTF. The purpose of this standard is to allow the operating system to retrieve information about the PC. On booting the SMBIOS will put a table somewhere in memory. By parsing this table it is possible to access information about the computer and its capabilities. The SMBIOS Entry Point Table is located somewhere between the addresses 0xF0000 and 0xFFFFF, and must be on a 16-byte boundary. To find the specific location of the start of the table it is necessary to search that region of memory for the string "_SM_", and then check the structure's checksum (add all bytes and see if the lowest 8 bits of the result are zero).
+  
   `dmi_scan_machine`
 
 
@@ -131,4 +133,5 @@ void __init finish_e820_parsing(void)
   * [Why do we pass memory map both in e820 and efi_info](http://lists.infradead.org/pipermail/kexec/2014-May/011764.html)
   * [Unified Extensible Firmware Interface](https://en.wikipedia.org/wiki/Unified_Extensible_Firmware_Interface)
   * [System Management BIOS](http://wiki.osdev.org/System_Management_BIOS)
+  
   
