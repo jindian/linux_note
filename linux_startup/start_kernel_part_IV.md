@@ -117,9 +117,9 @@ void __init finish_e820_parsing(void)
   
   `efi_init` is used to map physical memory to EFI memory map if `efi_enabled` set with nonzero which is ignored as we don't use efi boot here.
 
-## _scan dmi devices_
+## _scan memory of SMBIOS to find the entry of I/O device table_
   
-  System Management BIOS (SMBIOS) is a standard developed by DMTF. The purpose of this standard is to allow the operating system to retrieve information about the PC. On booting the SMBIOS will put a table somewhere in memory. By parsing this table it is possible to access information about the computer and its capabilities. The SMBIOS Entry Point Table is located somewhere between the addresses 0xF0000 and 0xFFFFF, and must be on a 16-byte boundary. To find the specific location of the start of the table it is necessary to search that region of memory for the string "_SM_", and then check the structure's checksum (add all bytes and see if the lowest 8 bits of the result are zero).
+  System Management BIOS (SMBIOS) is a standard developed by DMTF. The purpose of this standard is to allow the operating system to retrieve information about the PC. On booting the SMBIOS will put a table somewhere in memory. By parsing this table it is possible to access information about the computer and its capabilities. The SMBIOS Entry Point Table is located somewhere between the addresses 0xF0000 and 0xFFFFF, and must be on a 16-byte boundary. To find the specific location of the start of the table it is necessary to search that region of memory for the string "_DMI_", and then check the structure's checksum (add all bytes and see if the lowest 8 bits of the result are zero).
   
   `dmi_scan_machine`
 
