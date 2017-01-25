@@ -119,6 +119,8 @@
                         |--dmi_iounmap
                 |--dmi_iounmap
             |--dmi_check_system                                         # drivers/firmware/dmi_scan.c:467
+                |--dmi_matches                                          # drivers/firmware/dmi_scan.c:426
+                |--dmi_low_memory_corruption                            # arch/x86/kernel/setup.c:634
                 
 
 

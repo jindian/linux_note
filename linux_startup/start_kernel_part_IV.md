@@ -147,7 +147,7 @@ $10 = 0xffd00b10 "_DMI_.3\001\300\t\017"
 
 ## _check system DMI data_
 
-  
+  There is a known issue about low memory corruption BIOS problem with specific BIOS vender or board name, all these information are saved in a list named `bad_bios_dmi_table`, check the system DMI data, if matches, working around the BIOS low RAM curruption problem with `dmi_low_memory_corruption`.
 
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)
