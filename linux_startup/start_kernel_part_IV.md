@@ -238,15 +238,50 @@ int vmware_platform(void)
   If linux kernel run in VMware, after above routine executing complete, specified bit of cpu mask set as enable to represent the capacity of the cpu. After that, get cpu frequency of VMware and initlize specific value in `x86_platform`.
 
 ## _probe roms_
-  
  
-  `probe_roms`
+  `probe_roms` probe roms include video, PCI, system, extension and adapter.
   
   All rom resources defined in file arch/x86/kernel/probe_roms_32.c
   
+##### _video rom_
+  From [physical memory layout of the PC](http://files.osdev.org/mirrors/geezer/osd/ram/index.htm#layout), video rom start from 0xc0000, read video rom signature at address `0xc00c0000` which already converted to virtual address.
   
+```romsignature
+
+romsignature (rom=rom@entry=0xc00c0000 "U\252G\351\036K\201")
+    at arch/x86/kernel/probe_roms_32.c:83
+```
+
+  From debug information, the half word start from `0xc00c0000` is 0xaa55 and we find the correct start address of video rom, otherwise continue iterating memory block until find the result.
   
+```
+
+(gdb) info registers eax
+eax            0xc00c0000	-1072955392
+(gdb) x/w 0xc00c0000
+0xc00c0000:	0xe947aa55
+```
   
+  Find end address of video rom after checking the checksum correctly.
+  
+```romchecksum
+
+(gdb) p length
+$11 = 0
+(gdb) p sum
+$12 = 0 '\000'
+```
+  
+  Request I/O resource for video rom with `request_resource`
+  
+```__request_resource
+
+(gdb) p /x *new
+$15 = {start = 0xc0000, end = 0xc8dff, name = 0xc15cfa8e, flags = 0x80002200, 
+  parent = 0xc16997c0, sibling = 0x0, child = 0x0}
+(gdb) p (char*)0xc15cfa8e
+$16 = 0xc15cfa8e "Video ROM"
+```
 
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)
@@ -261,5 +296,7 @@ int vmware_platform(void)
   * [How the linux kernel knows it's running in a Virtual Machine](http://perfolys.io/2016/09/06/how-the-linux-kernel-knows-its-running-in-a-virtual-machine/)
   * `Memory Map (x86): http://wiki.osdev.org/Memory_Map_(x86)` //gitbook bug
   * [Physical memory layout of the PC](http://files.osdev.org/mirrors/geezer/osd/ram/index.htm#layout)
+  * [BDA - BIOS Data Area - PC Memory Map](http://stanislavs.org/helppc/bios_data_area.html)
+  
 
   

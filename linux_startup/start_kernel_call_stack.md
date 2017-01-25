@@ -138,6 +138,13 @@
                     |--probe_kernel_address -> ... __copy_from_user_inatomic ...                             
                                                                          # include/linux/uaccess.h:74
                                                                          # include/linux/uaccess.h:89
+                |--probe_kernel_address
+                |--romchecksum                                           # arch/x86/kernel/probe_roms_32.c:86
+                    |--probe_kernel_address
+                |--request_resource                                      # kernel/resource.c:198
+                    |--write_lock
+                    |--__request_resource                                # kernel/resource.c:144
+                    |--write_unlock
                     
 ```
 
