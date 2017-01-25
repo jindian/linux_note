@@ -60,77 +60,77 @@
                                     |--native_cpuid
                         |--cpuid_edx
                         |--cpuid_ecx
-                        |--cpu_has                                      # arch/x86/include/asm/cpufeature.h:184
-                        |--init_scattered_cpuid_features                # arch/x86/kernel/cpu/addon_cpuid_features.c:
-                    |--early_init_intel                                 # arch/x86/kernel/cpu/intel.c:31
-                        |--clear_cpu_cap                                # arch/x86/include/asm/cpufeature.h:200
-                            |--clear_bit                                # arch/x86/include/asm/bitops.h:97
-            |--early_ioremap_init                                       # arch/x86/mm/ioremap.c:430
-                |--early_ioremap_pmd                                    # arch/x86/mm/ioremap.c:412
-                    |--__fix_to_virt                                    # arch/x86/include/asm/fixmap.h:179
-                    |--read_cr3                                         # arch/x86/include/asm/system.h:310
-                        |--native_read_cr3                              # arch/x86/include/asm/system.h:244
-                |--pmd_populate_kernel                                  # arch/x86/include/asm/pgalloc.h:62
-                    |--__pa                                             # arch/x86/include/asm/page.h:36
-                        |--__phys_addr                                  # arch/x86/mm/physaddr.c:48
-                    |--set_pmd                                          # arch/x86/include/asm/pgtable.h:38
-                        |--native_set_pmd                               # arch/x86/include/asm/pgtable-3level.h:39
-                            set_64bit                                   # arch/x86/include/asm/cmpxchg_32.h:33
-            |--old_decode_dev                                           # include/linux/kdev_t.h:31
-                |--MKDEV                                                # include/linux/kdev_t.h:9
-            |--x86_init.oem.arch_setup -> x86_init_noop                 # arch/x86/kernel/x86_init.c:18
-            |--setup_memory_map                                         # arch/x86/kernel/e820.c:1464
-                |--default_machine_specific_memory_setup                # arch/x86/kernel/e820.c:1426
-                    |--sanitize_e820_map                                # arch/x86/kernel/e820.c:235
-                    |--append_e820_map                                  # arch/x86/kernel/e820.c:423
-                        |--__append_e820_map                            # arch/x86/kernel/e820.c:394
-                            |--e820_add_region                          # arch/x86/kernel/e820.c:129
-                                |--__e820_add_region                    # arch/x86/kernel/e820.c:113
-            |--parse_setup_data                                         # arch/x86/kernel/setup.c:419
-            |--e820_reserve_setup_data                                  # arch/x86/kernel/setup.c:441
-            |--copy_edd                                                 # arch/x86/kernel/setup.c:252
-            |--parse_early_param                                        # init/main.c:468
-                |--parse_early_options                                  # init/main.c:462
-                    |--parse_args                                       # kernel/params.c:131
-            |--vmi_activate                                             # arch/x86/include/asm/vmi.h:232
-            |--reserve_early_setup_data                                 # arch/x86/kernel/setup.c:467
-            |--acpi_mps_check                                           # arch/x86/kernel/acpi/boot.c:1673
+                        |--cpu_has                                       # arch/x86/include/asm/cpufeature.h:184
+                        |--init_scattered_cpuid_features                 # arch/x86/kernel/cpu/addon_cpuid_features.c:
+                    |--early_init_intel                                  # arch/x86/kernel/cpu/intel.c:31
+                        |--clear_cpu_cap                                 # arch/x86/include/asm/cpufeature.h:200
+                            |--clear_bit                                 # arch/x86/include/asm/bitops.h:97
+            |--early_ioremap_init                                        # arch/x86/mm/ioremap.c:430
+                |--early_ioremap_pmd                                     # arch/x86/mm/ioremap.c:412
+                    |--__fix_to_virt                                     # arch/x86/include/asm/fixmap.h:179
+                    |--read_cr3                                          # arch/x86/include/asm/system.h:310
+                        |--native_read_cr3                               # arch/x86/include/asm/system.h:244
+                |--pmd_populate_kernel                                   # arch/x86/include/asm/pgalloc.h:62
+                    |--__pa                                              # arch/x86/include/asm/page.h:36
+                        |--__phys_addr                                   # arch/x86/mm/physaddr.c:48
+                    |--set_pmd                                           # arch/x86/include/asm/pgtable.h:38
+                        |--native_set_pmd                                # arch/x86/include/asm/pgtable-3level.h:39
+                            set_64bit                                    # arch/x86/include/asm/cmpxchg_32.h:33
+            |--old_decode_dev                                            # include/linux/kdev_t.h:31
+                |--MKDEV                                                 # include/linux/kdev_t.h:9
+            |--x86_init.oem.arch_setup -> x86_init_noop                  # arch/x86/kernel/x86_init.c:18
+            |--setup_memory_map                                          # arch/x86/kernel/e820.c:1464
+                |--default_machine_specific_memory_setup                 # arch/x86/kernel/e820.c:1426
+                    |--sanitize_e820_map                                 # arch/x86/kernel/e820.c:235
+                    |--append_e820_map                                   # arch/x86/kernel/e820.c:423
+                        |--__append_e820_map                             # arch/x86/kernel/e820.c:394
+                            |--e820_add_region                           # arch/x86/kernel/e820.c:129
+                                |--__e820_add_region                     # arch/x86/kernel/e820.c:113
+            |--parse_setup_data                                          # arch/x86/kernel/setup.c:419
+            |--e820_reserve_setup_data                                   # arch/x86/kernel/setup.c:441
+            |--copy_edd                                                  # arch/x86/kernel/setup.c:252
+            |--parse_early_param                                         # init/main.c:468
+                |--parse_early_options                                   # init/main.c:462
+                    |--parse_args                                        # kernel/params.c:131
+            |--vmi_activate                                              # arch/x86/include/asm/vmi.h:232
+            |--reserve_early_setup_data                                  # arch/x86/kernel/setup.c:467
+            |--acpi_mps_check                                            # arch/x86/kernel/acpi/boot.c:1673
             |--setup_clear_cpu_cap
-            |--early_dump_pci_devices                                   # arch/x86/pci/early.c:88
-                |--read_pci_config                                      # arch/x86/pci/early.c:10
-                |--early_dump_pci_device                                # arch/x86/pci/early.c:66
+            |--early_dump_pci_devices                                    # arch/x86/pci/early.c:88
+                |--read_pci_config                                       # arch/x86/pci/early.c:10
+                |--early_dump_pci_device                                 # arch/x86/pci/early.c:66
                     |--read_pci_config
-                |--read_pci_config_byte                                 # arch/x86/pci/early.c:20
-            |--finish_e820_parsing                                      # arch/x86/kernel/e820.c:1304
-            |--efi_init                                                 # arch/x86/kernel/efi.c:317
-            |--dmi_scan_machine                                         # drivers/firmware/dmi_scan.c:372
-                |--dmi_ioremap -> early_ioremap                         # arch/x86/include/asm/dmi.h:16
-                    |--__early_ioremap                                  # arch/x86/mm/ioremap.c:529
-                        |--early_set_fixmap                             # arch/x86/mm/ioremap.c:488
-                            |--__early_set_fixmap                       # arch/x86/mm/ioremap.c:469
-                                |--early_ioremap_pte                    # arch/x86/mm/ioremap.c:423
+                |--read_pci_config_byte                                  # arch/x86/pci/early.c:20
+            |--finish_e820_parsing                                       # arch/x86/kernel/e820.c:1304
+            |--efi_init                                                  # arch/x86/kernel/efi.c:317
+            |--dmi_scan_machine                                          # drivers/firmware/dmi_scan.c:372
+                |--dmi_ioremap -> early_ioremap                          # arch/x86/include/asm/dmi.h:16
+                    |--__early_ioremap                                   # arch/x86/mm/ioremap.c:529
+                        |--early_set_fixmap                              # arch/x86/mm/ioremap.c:488
+                            |--__early_set_fixmap                        # arch/x86/mm/ioremap.c:469
+                                |--early_ioremap_pte                     # arch/x86/mm/ioremap.c:423
                                     |--set_pte
-                |--dmi_present                                          # drivers/firmware/dmi_scan.c:346
-                    |--dmi_walk_early                                   # drivers/firmware/dmi_scan.c:104
+                |--dmi_present                                           # drivers/firmware/dmi_scan.c:346
+                    |--dmi_walk_early                                    # drivers/firmware/dmi_scan.c:104
                         |--dmi_ioremap
-                        |--dmi_table                                    # drivers/firmware/dmi_scan.c:71
-                            |--dmi_decode                               # drivers/firmware/dmi_scan.c:303
-                        |--add_device_randomness                        # drivers/char/random.c"632
+                        |--dmi_table                                     # drivers/firmware/dmi_scan.c:71
+                            |--dmi_decode                                # drivers/firmware/dmi_scan.c:303
+                        |--add_device_randomness                         # drivers/char/random.c"632
                         |--dmi_iounmap
                 |--dmi_iounmap
-            |--dmi_check_system                                         # drivers/firmware/dmi_scan.c:467
-                |--dmi_matches                                          # drivers/firmware/dmi_scan.c:426
-                |--dmi_low_memory_corruption                            # arch/x86/kernel/setup.c:634
-            |--init_hypervisor_platform                                 # arch/x86/kernel/cpu/hypervisor.c:52
-                |--init_hypervisor                                      # arch/x86/kernel/cpu/hypervisor.c:46
-                    |--detect_hypervisor_vendor                         # arch/x86/kernel/cpu/hypervisor.c:28
-                        |--vmware_platform                              # arch/x86/kernel/cpu/vmware.c:93
-                            |--cpuid                                    # arch/x86/include/asm/processor.h:648
-                                |--__cpuid -> native_cpuid              # arch/x86/include/asm/processor.h:577
-                                                                        # arch/x86/include/asm/processor.h:179
-                    |--hypervisor_set_feature_bits                      # arch/x86/kernel/cpu/hypervisor.c:38
-                |--vmware_platform_setup                                # arch/x86/kernel/cpu/vmware.c:75
-            |--probe_roms                                               # arch/x86/kernel/probe_roms_32.c:95
+            |--dmi_check_system                                          # drivers/firmware/dmi_scan.c:467
+                |--dmi_matches                                           # drivers/firmware/dmi_scan.c:426
+                |--dmi_low_memory_corruption                             # arch/x86/kernel/setup.c:634
+            |--init_hypervisor_platform                                  # arch/x86/kernel/cpu/hypervisor.c:52
+                |--init_hypervisor                                       # arch/x86/kernel/cpu/hypervisor.c:46
+                    |--detect_hypervisor_vendor                          # arch/x86/kernel/cpu/hypervisor.c:28
+                        |--vmware_platform                               # arch/x86/kernel/cpu/vmware.c:93
+                            |--cpuid                                     # arch/x86/include/asm/processor.h:648
+                                |--__cpuid -> native_cpuid               # arch/x86/include/asm/processor.h:577
+                                                                         # arch/x86/include/asm/processor.h:179
+                    |--hypervisor_set_feature_bits                       # arch/x86/kernel/cpu/hypervisor.c:38
+                |--vmware_platform_setup                                 # arch/x86/kernel/cpu/vmware.c:75
+            |--probe_roms                                                # arch/x86/kernel/probe_roms_32.c:95
 ```
 
 
