@@ -206,6 +206,39 @@ void __init init_hypervisor_platform(void)
 }
 ```
 
+  How to detect the hypervisor? For example VMware:
+  
+  It uses cpuid instruction in cpuid routine to get vendor information, results stored in registers eax, ebx, ecx, edx, appends the result to a single string.
+  
+```vmware_platform
+
+int vmware_platform(void)
+{
+	if (cpu_has_hypervisor) {
+		unsigned int eax, ebx, ecx, edx;
+		char hyper_vendor_id[13];
+
+		cpuid(CPUID_VMWARE_INFO_LEAF, &eax, &ebx, &ecx, &edx);
+		memcpy(hyper_vendor_id + 0, &ebx, 4);
+		memcpy(hyper_vendor_id + 4, &ecx, 4);
+		memcpy(hyper_vendor_id + 8, &edx, 4);
+		hyper_vendor_id[12] = '\0';
+		if (!strcmp(hyper_vendor_id, "VMwareVMware"))
+			return 1;
+	} else if (dmi_available && dmi_name_in_serial("VMware") &&
+		   __vmware_platform())
+		return 1;
+
+	return 0;
+}
+```
+
+  But we don't run linux kernel in VMware, above routine finally return 1.
+  
+  If linux kernel run in VMware, after above routine executing complete, specified bit of cpu mask set as enable to represent the capacity of the cpu.
+  
+  
+
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)
   * [MultiProcessor Specification](http://download.intel.com/design/archives/processors/pro/docs/24201606.pdf)
