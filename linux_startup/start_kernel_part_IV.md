@@ -117,11 +117,13 @@ void __init finish_e820_parsing(void)
   
   `efi_init` is used to map physical memory to EFI memory map if `efi_enabled` set with nonzero which is ignored as we don't use efi boot here.
 
-## _scan memory of SMBIOS to find the entry of I/O device table_
+## _scan memory of SMBIOS to get the DMI table_
 
   DMI is the abbreviated terms of [Desktop Management Interface](https://en.wikipedia.org/wiki/Desktop_Management_Interface)
   
   System Management BIOS (SMBIOS) is a standard developed by DMTF. The purpose of this standard is to allow the operating system to retrieve information about the PC. On booting the SMBIOS will put a table somewhere in memory. By parsing this table it is possible to access information about the computer and its capabilities. The SMBIOS Entry Point Table is located somewhere between the addresses 0xF0000 and 0xFFFFF, and must be on a 16-byte boundary. To find the specific location of the start of the table it is necessary to search that region of memory for the string "_DMI_", and then check the structure's checksum (add all bytes and see if the lowest 8 bits of the result are zero).
+  
+  There are two approaches to scan SMBIOS, one with efi table and the other with e820 memory map, here we use the second approach.
   
   `dmi_scan_machine` firstly mappes address 0xF0000 size 0x10000 with `dmi_ioremap` which expands to `early_ioremap`, `early_ioremap` involves `__early_ioremap` inside which we could find above memory block is devided into 16 pages for mapping and set to page table with `early_set_fixmap`.
 
@@ -143,7 +145,9 @@ $10 = 0xffd00b10 "_DMI_.3\001\300\t\017"
 
   If find dmi table, decode the table and save the dmi string.
 
+## _check system DMI data_
 
+  
 
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)
