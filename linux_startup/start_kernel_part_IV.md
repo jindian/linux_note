@@ -235,7 +235,9 @@ int vmware_platform(void)
 
   But we don't run linux kernel in VMware, above routine finally return 1.
   
-  If linux kernel run in VMware, after above routine executing complete, specified bit of cpu mask set as enable to represent the capacity of the cpu.
+  If linux kernel run in VMware, after above routine executing complete, specified bit of cpu mask set as enable to represent the capacity of the cpu. After that, get cpu frequency of VMware and initlize specific value in `x86_platform`.
+
+
   
   
 

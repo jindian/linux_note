@@ -128,8 +128,8 @@
                             |--cpuid                                    # arch/x86/include/asm/processor.h:648
                                 |--__cpuid -> native_cpuid              # arch/x86/include/asm/processor.h:577
                                                                         # arch/x86/include/asm/processor.h:179
-:
-                            
+                    |--hypervisor_set_feature_bits                      # arch/x86/kernel/cpu/hypervisor.c:38
+                |--vmware_platform_setup                                # arch/x86/kernel/cpu/vmware.c:75                            
 ```
 
 
