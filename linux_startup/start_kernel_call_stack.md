@@ -121,10 +121,14 @@
             |--dmi_check_system                                         # drivers/firmware/dmi_scan.c:467
                 |--dmi_matches                                          # drivers/firmware/dmi_scan.c:426
                 |--dmi_low_memory_corruption                            # arch/x86/kernel/setup.c:634
-                
-
-
-
+            |--init_hypervisor_platform                                 # arch/x86/kernel/cpu/hypervisor.c:52
+                |--init_hypervisor                                      # arch/x86/kernel/cpu/hypervisor.c:46
+                    |--detect_hypervisor_vendor                         # arch/x86/kernel/cpu/hypervisor.c:28
+                        |--vmware_platform                              # arch/x86/kernel/cpu/vmware.c:93
+                            |--cpuid                                    # arch/x86/include/asm/processor.h:648
+                                |--__cpuid -> native_cpuid              # arch/x86/include/asm/processor.h:577
+                                                                        # arch/x86/include/asm/processor.h:179
+:
                             
 ```
 
