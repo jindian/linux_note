@@ -133,6 +133,10 @@
             |--probe_roms                                                # arch/x86/kernel/probe_roms_32.c:95
                 |--isa_bus_to_virt -> phys_to_virt                       # arch/x86/include/asm/io.h:135
                                                                          # arch/x86/include/asm/io.h:115
+                    |--__va                                              # arch/x86/include/asm/page.h:42
+                |--romsignature                                          # arch/x86/kernel/probe_roms_32.c:78
+                    |--probe_kernel_address
+                    
 ```
 
 
