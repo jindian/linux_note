@@ -165,7 +165,9 @@ $25 = {0x0, 0xc1f43000 <.brk.pagetables+8192> "Bochs",
   0xc1f43074 <.brk.pagetables+8308> ""}
 ```
 
-## __
+## _detect if kernel is running in Virtual Machine_
+
+  
 
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)
@@ -177,4 +179,5 @@ $25 = {0x0, 0xc1f43000 <.brk.pagetables+8192> "Bochs",
   * [System Management BIOS](http://wiki.osdev.org/System_Management_BIOS)
   * [Desktop Management Interface](https://en.wikipedia.org/wiki/Desktop_Management_Interface)
   * [LowMemoryCorruption](https://wiki.ubuntu.com/Kernel/Quirks/LowMemoryCorruption)
+  * [How the linux kernel knows it's running in a Virtual Machine](http://perfolys.io/2016/09/06/how-the-linux-kernel-knows-its-running-in-a-virtual-machine/)
   
