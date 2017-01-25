@@ -176,5 +176,5 @@ $25 = {0x0, 0xc1f43000 <.brk.pagetables+8192> "Bochs",
   * [Unified Extensible Firmware Interface](https://en.wikipedia.org/wiki/Unified_Extensible_Firmware_Interface)
   * [System Management BIOS](http://wiki.osdev.org/System_Management_BIOS)
   * [Desktop Management Interface](https://en.wikipedia.org/wiki/Desktop_Management_Interface)
-  
+  * [LowMemoryCorruption](https://wiki.ubuntu.com/Kernel/Quirks/LowMemoryCorruption)
   
