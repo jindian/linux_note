@@ -167,7 +167,44 @@ $25 = {0x0, 0xc1f43000 <.brk.pagetables+8192> "Bochs",
 
 ## _detect if kernel is running in Virtual Machine_
 
-  `init_hypervisor_platform`
+  `init_hypervisor_platform` initialize hypervisor if kernel is running in virtual machine.
+  
+  `init_hypervisor` is involved by `init_hypervisor_platform`, in which it first detect hypervisor exits or not with `detect_hypervisor_vendor`.
+  
+  In our kernel only VMware platform is checked, but it's not enough, in lator version of linux kernel, more types of virtual machine are checked.
+
+```
+
+detect_hypervisor_vendor(struct cpuinfo_x86 *c)
+{
+	if (vmware_platform())
+		c->x86_hyper_vendor = X86_HYPER_VENDOR_VMWARE;
+	else
+		c->x86_hyper_vendor = X86_HYPER_VENDOR_NONE;
+}
+
+static inline void __cpuinit
+hypervisor_set_feature_bits(struct cpuinfo_x86 *c)
+{
+	if (boot_cpu_data.x86_hyper_vendor == X86_HYPER_VENDOR_VMWARE) {
+		vmware_set_feature_bits(c);
+		return;
+	}
+}
+
+void __cpuinit init_hypervisor(struct cpuinfo_x86 *c)
+{
+	detect_hypervisor_vendor(c);
+	hypervisor_set_feature_bits(c);
+}
+
+void __init init_hypervisor_platform(void)
+{
+	init_hypervisor(&boot_cpu_data);
+	if (boot_cpu_data.x86_hyper_vendor == X86_HYPER_VENDOR_VMWARE)
+		vmware_platform_setup();
+}
+```
 
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)
