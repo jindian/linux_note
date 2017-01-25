@@ -118,6 +118,7 @@
                         |--add_device_randomness                        # drivers/char/random.c"632
                         |--dmi_iounmap
                 |--dmi_iounmap
+            |--dmi_check_system                                         # drivers/firmware/dmi_scan.c:467
                 
 
 
