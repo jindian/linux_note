@@ -237,7 +237,9 @@ int vmware_platform(void)
   
   If linux kernel run in VMware, after above routine executing complete, specified bit of cpu mask set as enable to represent the capacity of the cpu. After that, get cpu frequency of VMware and initlize specific value in `x86_platform`.
 
-
+## _probe roms_
+  
+  `probe_roms`
   
   
 
