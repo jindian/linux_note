@@ -135,7 +135,9 @@
                                                                          # arch/x86/include/asm/io.h:115
                     |--__va                                              # arch/x86/include/asm/page.h:42
                 |--romsignature                                          # arch/x86/kernel/probe_roms_32.c:78
-                    |--probe_kernel_address                              # include/linux/uaccess.h:74
+                    |--probe_kernel_address -> ... __copy_from_user_inatomic ...                             
+                                                                         # include/linux/uaccess.h:74
+                                                                         # include/linux/uaccess.h:89
                     
 ```
 

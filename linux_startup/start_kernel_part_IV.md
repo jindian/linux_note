@@ -258,4 +258,6 @@ int vmware_platform(void)
   * [Desktop Management Interface](https://en.wikipedia.org/wiki/Desktop_Management_Interface)
   * [LowMemoryCorruption](https://wiki.ubuntu.com/Kernel/Quirks/LowMemoryCorruption)
   * [How the linux kernel knows it's running in a Virtual Machine](http://perfolys.io/2016/09/06/how-the-linux-kernel-knows-its-running-in-a-virtual-machine/)
+  * [Memory Map (x86)](http://wiki.osdev.org/Memory_Map_(x86))
+
   
