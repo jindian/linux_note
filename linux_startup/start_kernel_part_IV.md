@@ -129,7 +129,15 @@ void __init finish_e820_parsing(void)
 $1 = 16
 ```
 
-  After mapping memory region completed, check if `_DMI_` string presents with routine `dmi_present`.
+  After mapping memory region completed, iterates mapped memory to check if `_DMI_` string presents with routine `dmi_present`.
+
+```dmi_present
+
+(gdb) p p
+$9 = 0xffd00000 ""
+(gdb) p q
+$10 = 0xffd00b10 "_DMI_.3\001\300\t\017"
+```
 
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)

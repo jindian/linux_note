@@ -110,6 +110,14 @@
                             |--__early_set_fixmap                       # arch/x86/mm/ioremap.c:469
                                 |--early_ioremap_pte                    # arch/x86/mm/ioremap.c:423
                                     |--set_pte
+                |--dmi_present                                          # drivers/firmware/dmi_scan.c:346
+                    |--dmi_walk_early                                   # drivers/firmware/dmi_scan.c:104
+                        |--dmi_ioremap
+                        |--dmi_table                                    # drivers/firmware/dmi_scan.c:71
+                            |--dmi_decode                               # drivers/firmware/dmi_scan.c:303
+                        |--add_device_randomness                        # drivers/char/random.c"632
+                        |--dmi_iounmap
+                |--dmi_iounmap
                 
 
 
