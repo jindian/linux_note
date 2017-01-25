@@ -241,6 +241,8 @@ int vmware_platform(void)
   
   `probe_roms`
   
+  `adapter_rom_resources` defined in file arch/x86/kernel/probe_roms_32.c line 37
+  
   
 
 # Links

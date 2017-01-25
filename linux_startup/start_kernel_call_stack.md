@@ -131,6 +131,8 @@
                     |--hypervisor_set_feature_bits                       # arch/x86/kernel/cpu/hypervisor.c:38
                 |--vmware_platform_setup                                 # arch/x86/kernel/cpu/vmware.c:75
             |--probe_roms                                                # arch/x86/kernel/probe_roms_32.c:95
+                |--isa_bus_to_virt -> phys_to_virt                       # arch/x86/include/asm/io.h:135
+                                                                         # arch/x86/include/asm/io.h:115
 ```
 
 
