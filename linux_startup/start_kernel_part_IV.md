@@ -139,6 +139,10 @@ $9 = 0xffd00000 ""
 $10 = 0xffd00b10 "_DMI_.3\001\300\t\017"
 ```
 
+  If find dmi table, decode the table and save the dmi string.
+
+
+
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)
   * [MultiProcessor Specification](http://download.intel.com/design/archives/processors/pro/docs/24201606.pdf)
