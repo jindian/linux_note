@@ -283,6 +283,20 @@ $15 = {start = 0xc0000, end = 0xc8dff, name = 0xc15cfa8e, flags = 0x80002200,
 $16 = 0xc15cfa8e "Video ROM"
 ```
 
+##### _system rom_
+
+  The subprocedure of system rom is much simpler, just request I/O resource for system rom.
+  
+##### _extension rom_
+
+  Similar with video rom.
+
+##### adapter rom
+
+  The number of adapter resources is much more than above resources, every adapter resource should be checked on 2k boundaries.
+
+
+
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)
   * [MultiProcessor Specification](http://download.intel.com/design/archives/processors/pro/docs/24201606.pdf)
