@@ -167,7 +167,7 @@ $25 = {0x0, 0xc1f43000 <.brk.pagetables+8192> "Bochs",
 
 ## _detect if kernel is running in Virtual Machine_
 
-  
+  `init_hypervisor_platform`
 
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)
