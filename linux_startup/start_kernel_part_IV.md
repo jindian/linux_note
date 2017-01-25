@@ -149,6 +149,24 @@ $10 = 0xffd00b10 "_DMI_.3\001\300\t\017"
 
   There is a known issue about low memory corruption BIOS problem with specific BIOS vender or board name, all these information are saved in a list named `bad_bios_dmi_table`, check the system DMI data, if matches, working around the BIOS low RAM curruption problem with `dmi_low_memory_corruption`.
 
+```dmi_ident
+
+(gdb) p dmi_ident 
+$25 = {0x0, 0xc1f43000 <.brk.pagetables+8192> "Bochs", 
+  0xc1f43008 <.brk.pagetables+8200> "Bochs", 
+  0xc1f43010 <.brk.pagetables+8208> "01/01/2011", 
+  0xc1f4301c <.brk.pagetables+8220> "QEMU", 
+  0xc1f43024 <.brk.pagetables+8228> "Standard PC (i440FX + PIIX, 1996)", 
+  0xc1f43048 <.brk.pagetables+8264> "pc-i440fx-trusty", 
+  0xc1f4305c <.brk.pagetables+8284> "", 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 
+  0xc1f43060 <.brk.pagetables+8288> "Bochs", 
+  0xc1f43068 <.brk.pagetables+8296> "1", 
+  0xc1f4306c <.brk.pagetables+8300> "", 0xc1f43070 <.brk.pagetables+8304> "", 
+  0xc1f43074 <.brk.pagetables+8308> ""}
+```
+
+## __
+
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)
   * [MultiProcessor Specification](http://download.intel.com/design/archives/processors/pro/docs/24201606.pdf)
