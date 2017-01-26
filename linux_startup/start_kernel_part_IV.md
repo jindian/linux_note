@@ -297,7 +297,9 @@ $16 = 0xc15cfa8e "Video ROM"
 
 ## insert resources to resource tree
 
-  Insert kernel code, kernel data and kernel bss to resource tree
+  Insert kernel code, kernel data and kernel bss to resource tree.
+
+
 
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)
