@@ -299,6 +299,24 @@ $16 = 0xc15cfa8e "Video ROM"
 
   Insert kernel code, kernel data and kernel bss to resource tree.
 
+## check the processor, if bad cpu detected, take extra action
+
+  Information of the `boot_cpu_data` as follow, our cpu should not be the bad processor.
+  
+  If it's the bad processor, update memory range in e820 map and sanitize the map again.
+
+```boot_cpu_data
+
+(gdb) p boot_cpu_data.x86_vendor
+$2 = 0 '\000'
+(gdb) p boot_cpu_data.x86
+$3 = 6 '\006'
+(gdb) p boot_cpu_data.x86_model
+$4 = 6 '\006'
+(gdb) p boot_cpu_data.x86_mask 
+$5 = 3 '\003'
+```
+
 
 
 # Links

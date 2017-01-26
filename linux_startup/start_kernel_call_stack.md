@@ -150,6 +150,8 @@
                     |--__insert_resource                                 # kernel/resource.c:379
                         |--__request_resource
                 |--write_unlock
+            |--ppro_with_ram_bug                                         # arch/x86/kernel/cpu/intel.c:143
+            
                 
                     
 ```
