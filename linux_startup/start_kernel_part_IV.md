@@ -295,7 +295,9 @@ $16 = 0xc15cfa8e "Video ROM"
 
   The number of adapter resources is much more than above resources, every adapter resource should be checked on 2k boundaries.
 
+## insert resources to resource tree
 
+  Insert kernel code, kernel data and kernel bss to resource tree
 
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)
@@ -311,6 +313,7 @@ $16 = 0xc15cfa8e "Video ROM"
   * `Memory Map (x86): http://wiki.osdev.org/Memory_Map_(x86)` //gitbook bug
   * [Physical memory layout of the PC](http://files.osdev.org/mirrors/geezer/osd/ram/index.htm#layout)
   * [BDA - BIOS Data Area - PC Memory Map](http://stanislavs.org/helppc/bios_data_area.html)
+  * [data segment](https://en.wikipedia.org/wiki/Data_segment)
   
 
   

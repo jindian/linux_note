@@ -145,6 +145,12 @@
                     |--write_lock
                     |--__request_resource                                # kernel/resource.c:144
                     |--write_unlock
+            |--insert_resource                                           # kernel/resource.c:439
+                |--write_lock
+                    |--__insert_resource                                 # kernel/resource.c:379
+                        |--__request_resource
+                |--write_unlock
+                
                     
 ```
 
