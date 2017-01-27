@@ -337,6 +337,14 @@ $8 = 1
 $9 = 16777216
 ```
 
+  The result of highest page frame number:
+
+```result_of_highest_pfn
+
+(gdb) p last_pfn
+$12 = 32766
+```
+
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)
   * [MultiProcessor Specification](http://download.intel.com/design/archives/processors/pro/docs/24201606.pdf)
