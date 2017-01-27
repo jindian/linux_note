@@ -151,6 +151,8 @@
                         |--__request_resource
                 |--write_unlock
             |--ppro_with_ram_bug                                         # arch/x86/kernel/cpu/intel.c:143
+            |--e820_end_of_ram_pfn                                       # arch/x86/kernel/e820.c:1145
+                |--e820_end_pfn                                          # arch/x86/kernel/e820.c:1111
             
                 
                     
