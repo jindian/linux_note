@@ -317,7 +317,25 @@ $4 = 6 '\006'
 $5 = 3 '\003'
 ```
 
+## find the highest page frame number we have available
 
+  Some of the debug information when involving routine e820_end_pfn:
+
+```e820_end_pfn
+
+(gdb) p e820.nr_map 
+$6 = 6
+(gdb) p e820
+$7 = {nr_map = 6, map = {{addr = 0, size = 654336, type = 1}, {addr = 654336, 
+      size = 1024, type = 2}, {addr = 983040, size = 65536, type = 2}, {
+      addr = 1048576, size = 133160960, type = 1}, {addr = 134209536, 
+      size = 8192, type = 2}, {addr = 4294705152, size = 262144, type = 2}, {
+      addr = 0, size = 0, type = 0} <repeats 125 times>}}
+(gdb) p type
+$8 = 1
+(gdb) p limit_pfn
+$9 = 16777216
+```
 
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)
