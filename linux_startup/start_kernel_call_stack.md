@@ -154,6 +154,14 @@
             |--e820_end_of_ram_pfn                                       # arch/x86/kernel/e820.c:1145
                 |--e820_end_pfn                                          # arch/x86/kernel/e820.c:1111
             |--early_reserve_e820_mpc_new                                # arch/x86/kernel/mpparse.c:957
+                |--early_reserve_e820
+            |--mtrr_bp_init                                              # arch/x86/kernel/cpu/mtrr/main.c:654
+                |--init_ifs                                              # arch/x86/kernel/cpu/mtrr/main.c:592
+                    |--amd_init_mtrr                                     # arch/x86/kernel/cpu/mtrr/amd.c:120
+                    |--cyrix_init_mtrr                                   # arch/x86/kernel/cpu/mtrr/cyrix.c:278
+                    |--centaur_init_mtrr                                 # arch/x86/kernel/cpu/mtrr/centaur.c:123
+                
+            
             
                 
                     

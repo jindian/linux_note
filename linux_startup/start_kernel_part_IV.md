@@ -345,7 +345,7 @@ $9 = 16777216
 $12 = 32766
 ```
 
-## preallocate 4k for mptable mpc
+## _preallocate 4k for mptable mpc_
 
   Preallocate 4k for mptable mpc if take with parameter `alloc_mptable`.
   
@@ -361,6 +361,45 @@ $14 = 0
 $15 = 0
 ```
 
+## _initialize mtrrs on the boot cpu_
+
+  On Intel P6 family processors (Pentium Pro, Pentium II and later) the [Memory Type Range Registers (MTRRs)](https://www.kernel.org/doc/Documentation/x86/mtrr.txt) may be used to control processor access to memory ranges. This is most useful when you have a video (VGA) card on a PCI or AGP bus. Enabling write-combining allows bus write transfers to be combined into a larger transfer before bursting over the PCI/AGP bus. This can increase performance of image write operations 2.5 times or more.
+  
+  MTRR use is replaced on modern x86 hardware with PAT. Direct MTRR use by drivers on Linux is now completely phased out, device drivers should use arch_phys_wc_add() in combination with ioremap_wc() to make MTRR effective on non-PAT systems while a no-op but equally effective on PAT enabled systems.
+
+  Even if Linux does not use MTRRs directly, some x86 platform firmware may still set up MTRRs early before booting the OS. They do this as some platform firmware may still have implemented access to MTRRs which would be controlled and handled by the platform firmware directly. An example of platform use of MTRRs is through the use of SMI handlers, one case could be for fan control, the platform code would need uncachable access to some of its fan control registers. Such platform access does not need any Operating System MTRR code in place other than mtrr_type_lookup() to ensure any OS specific mapping requests are aligned with platform MTRR setup. If MTRRs are only set up by the platform firmware code though and the OS does not make any specific MTRR mapping requests mtrr_type_lookup() should always return MTRR_TYPE_INVALID.
+
+  Our cpu has no mtrr after checking cpu mask from following debug informtion:
+  
+```has_cpu_mtrr
+
+mtrr_bp_init () at arch/x86/kernel/cpu/mtrr/main.c:662
+662		if (cpu_has_mtrr) {
+(gdb) n
+696			switch (boot_cpu_data.x86_vendor) {
+(gdb) p boot_cpu_data
+$16 = {x86 = 6 '\006', x86_vendor = 0 '\000', x86_model = 6 '\006', 
+  x86_mask = 3 '\003', wp_works_ok = -1 '\377', hlt_works_ok = 1 '\001', 
+  hard_math = 1 '\001', rfu = 0 '\000', fdiv_bug = -1 '\377', 
+  f00f_bug = 0 '\000', coma_bug = 0 '\000', pad0 = 0 '\000', 
+  x86_virt_bits = 32 ' ', x86_phys_bits = 36 '$', x86_coreid_bits = 0 '\000', 
+  extended_cpuid_level = 2147483652, cpuid_level = 4, x86_capability = {
+    125873145, 0, 0, 0, 2155872257, 0, 0, 0, 0}, 
+  x86_vendor_id = "GenuineIntel\000\000\000", 
+  x86_model_id = '\000' <repeats 63 times>, x86_cache_size = 0, 
+  x86_cache_alignment = 32, x86_power = 0, loops_per_jiffy = 0, 
+  llc_shared_map = {{bits = {0}}}, x86_max_cores = 0, apicid = 0, 
+  initial_apicid = 0, x86_clflush_size = 32, booted_cores = 0, 
+  phys_proc_id = 0, cpu_core_id = 0, cpu_index = 0, x86_hyper_vendor = 0}
+(gdb) n
+660		phys_addr = 32;
+(gdb) 
+724		if (mtrr_if) {
+(gdb) p mtrr_if
+$17 = (struct mtrr_ops *) 0x0
+```
+
+  Interface of mtrr is 0x0, out cpu doesn't supoort MTRR at all.
 
 
 # Links
@@ -379,6 +418,7 @@ $15 = 0
   * [BDA - BIOS Data Area - PC Memory Map](http://stanislavs.org/helppc/bios_data_area.html)
   * [data segment](https://en.wikipedia.org/wiki/Data_segment)
   * [MP Configuration Table](http://download.intel.com/design/archives/processors/pro/docs/24201606.pdf)
+  * [MTRR (Memory Type Range Register) control](https://www.kernel.org/doc/Documentation/x86/mtrr.txt)
   
 
   
