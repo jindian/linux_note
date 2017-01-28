@@ -351,6 +351,18 @@ $12 = 32766
   
   The [MP Configuration Table](http://download.intel.com/design/archives/processors/pro/docs/24201606.pdf). This table is optional. The table is composed of a base section and an extended section. The base section contains entries that are completely backwards compatible with previous versions of this specification. The extended section contains additional entry types. The MP configuration table contains explicit configuration information about APICs, processors, buses, and interrupts. The table consists of a header, followed by a number of entries of various types. The format and length of each entry depends on its type. When present, this configuration table must be stored either in a non-reported system RAM or within the BIOS read-only memory space.
 
+  Obviously our kernel didn't take with above parameter from following debug information:
+
+```alloc_mptable
+
+(gdb) p enable_update_mptable 
+$14 = 0
+(gdb) p alloc_mptable 
+$15 = 0
+```
+
+
+
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)
   * [MultiProcessor Specification](http://download.intel.com/design/archives/processors/pro/docs/24201606.pdf)
