@@ -345,6 +345,12 @@ $9 = 16777216
 $12 = 32766
 ```
 
+## preallocate 4k for mptable mpc
+
+  Preallocate 4k for mptable mpc if take with parameter `alloc_mptable`.
+  
+  The [MP Configuration Table](http://download.intel.com/design/archives/processors/pro/docs/24201606.pdf). This table is optional. The table is composed of a base section and an extended section. The base section contains entries that are completely backwards compatible with previous versions of this specification. The extended section contains additional entry types. The MP configuration table contains explicit configuration information about APICs, processors, buses, and interrupts. The table consists of a header, followed by a number of entries of various types. The format and length of each entry depends on its type. When present, this configuration table must be stored either in a non-reported system RAM or within the BIOS read-only memory space.
+
 # Links
   * [setup_data](https://lwn.net/Articles/632528/)
   * [MultiProcessor Specification](http://download.intel.com/design/archives/processors/pro/docs/24201606.pdf)
@@ -360,6 +366,7 @@ $12 = 32766
   * [Physical memory layout of the PC](http://files.osdev.org/mirrors/geezer/osd/ram/index.htm#layout)
   * [BDA - BIOS Data Area - PC Memory Map](http://stanislavs.org/helppc/bios_data_area.html)
   * [data segment](https://en.wikipedia.org/wiki/Data_segment)
+  * [MP Configuration Table](http://download.intel.com/design/archives/processors/pro/docs/24201606.pdf)
   
 
   
