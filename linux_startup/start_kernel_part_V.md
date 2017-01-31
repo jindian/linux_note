@@ -17,3 +17,5 @@ $18 = 0
 1035			return 0;
 ```
 
+## determine low and high memory ranges
+

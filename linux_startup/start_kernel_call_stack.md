@@ -161,6 +161,8 @@
                     |--cyrix_init_mtrr                                   # arch/x86/kernel/cpu/mtrr/cyrix.c:278
                     |--centaur_init_mtrr                                 # arch/x86/kernel/cpu/mtrr/centaur.c:123
             |--mtrr_trim_uncached_memory                                 # arch/x86/kernel/cpu/mtrr/cleanup.c:992
+            |--find_low_pfn_range                                        # arch/x86/mm/init_32.c:699
+                |--lowmem_pfn_init                                       # arch/x86/mm/init_32.c:622
                 
             
             
