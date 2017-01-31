@@ -160,6 +160,7 @@
                     |--amd_init_mtrr                                     # arch/x86/kernel/cpu/mtrr/amd.c:120
                     |--cyrix_init_mtrr                                   # arch/x86/kernel/cpu/mtrr/cyrix.c:278
                     |--centaur_init_mtrr                                 # arch/x86/kernel/cpu/mtrr/centaur.c:123
+            |--mtrr_trim_uncached_memory                                 # arch/x86/kernel/cpu/mtrr/cleanup.c:992
                 
             
             
