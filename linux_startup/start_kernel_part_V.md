@@ -61,3 +61,6 @@ find_low_pfn_range () at arch/x86/mm/init_32.c:703
 703	}
 ```
 
+## setup bios corruption check
+
+  
