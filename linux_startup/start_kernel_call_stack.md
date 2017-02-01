@@ -163,6 +163,8 @@
             |--mtrr_trim_uncached_memory                                 # arch/x86/kernel/cpu/mtrr/cleanup.c:992
             |--find_low_pfn_range                                        # arch/x86/mm/init_32.c:699
                 |--lowmem_pfn_init                                       # arch/x86/mm/init_32.c:622
+            |--setup_bios_corruption_check                               # arch/x86/kernel/check.c:60
+                |--find_e820_area_size                                   # arch/x86/kernel/e820.c:1032
                 
             
             
