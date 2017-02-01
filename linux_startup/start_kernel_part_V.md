@@ -19,3 +19,45 @@ $18 = 0
 
 ## determine low and high memory ranges
 
+  All of RAM fits into lowmem - but if user wants highmem artificially via the highmem=x boot parameter then create it
+
+```find_low_pfn_range
+
+find_low_pfn_range () at arch/x86/mm/init_32.c:699
+699		if (max_pfn <= MAXMEM_PFN)
+(gdb) p /x max_pfn
+$19 = 0x7ffe
+(gdb) n
+696	{
+(gdb) 
+699		if (max_pfn <= MAXMEM_PFN)
+(gdb) 
+700			lowmem_pfn_init();
+(gdb) s
+lowmem_pfn_init () at arch/x86/mm/init_32.c:625
+625		max_low_pfn = max_pfn;
+(gdb) p max_pfn
+$20 = 32766
+(gdb) n
+627		if (highmem_pages == -1)
+(gdb) p highmem_pages
+$21 = 4294967295
+(gdb) p /x highmem_pages
+$22 = 0xffffffff
+(gdb) n
+625		max_low_pfn = max_pfn;
+(gdb) 
+627		if (highmem_pages == -1)
+(gdb) 
+628			highmem_pages = 0;
+(gdb) 
+630		if (highmem_pages >= max_pfn) {
+(gdb) 
+635		if (highmem_pages) {
+(gdb) 
+647	}
+(gdb) 
+find_low_pfn_range () at arch/x86/mm/init_32.c:703
+703	}
+```
+
