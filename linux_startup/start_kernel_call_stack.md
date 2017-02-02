@@ -165,6 +165,7 @@
                 |--lowmem_pfn_init                                       # arch/x86/mm/init_32.c:622
             |--setup_bios_corruption_check                               # arch/x86/kernel/check.c:60
                 |--find_e820_area_size                                   # arch/x86/kernel/e820.c:1032
+            |--reserve_brk                                               # arch/x86/kernel/setup.c:299
                 
             
             
