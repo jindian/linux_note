@@ -67,6 +67,8 @@ find_low_pfn_range () at arch/x86/mm/init_32.c:703
 
 ## early reserve memory for brk erea
 
+  Reserve memory for brk area.
+  
   About brk here are some information from the description of heap
   
   The heap area commonly begins at the end of the .bss and .data segments and grows to larger addresses from there. The heap area is managed by malloc, calloc, realloc, and free, which may use the [brk and sbrk](https://en.wikipedia.org/wiki/Sbrk) system calls to adjust its size (note that the use of brk/sbrk and a single "heap area" is not required to fulfill the contract of malloc/calloc/realloc/free; they may also be implemented using mmap/munmap to reserve/unreserve potentially non-contiguous regions of virtual memory into the process' virtual address space). The heap area is shared by all threads, shared libraries, and dynamically loaded modules in a process.
