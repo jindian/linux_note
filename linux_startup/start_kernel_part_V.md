@@ -73,6 +73,13 @@ find_low_pfn_range () at arch/x86/mm/init_32.c:703
   
   The heap area commonly begins at the end of the .bss and .data segments and grows to larger addresses from there. The heap area is managed by malloc, calloc, realloc, and free, which may use the [brk and sbrk](https://en.wikipedia.org/wiki/Sbrk) system calls to adjust its size (note that the use of brk/sbrk and a single "heap area" is not required to fulfill the contract of malloc/calloc/realloc/free; they may also be implemented using mmap/munmap to reserve/unreserve potentially non-contiguous regions of virtual memory into the process' virtual address space). The heap area is shared by all threads, shared libraries, and dynamically loaded modules in a process.
 
+## initialize memory map
+
+  Setup the direct mapping of the physical memory at PAGE_OFFSET.
+  This runs before bootmem is initialized and gets pages directly from the physical memory. To access them they are temporarily mapped.
+  
+  
+
 # Links:
   [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
   [data segment](https://en.wikipedia.org/wiki/Data_segment)

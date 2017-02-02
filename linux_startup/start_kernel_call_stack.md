@@ -167,6 +167,13 @@
                 |--find_e820_area_size                                   # arch/x86/kernel/e820.c:1032
             |--reserve_brk                                               # arch/x86/kernel/setup.c:299
                 |--reserve_early                                         # arch/x86/kernel/e820.c:894
+                    |--drop_overlaps_that_are_ok                         # arch/x86/kernel/e820.c:781
+                    |--__reserve_early                                   # arch/x86/kernel/e820.c:838
+                        |--find_overlapped_early                         # arch/x86/kernel/e820.c:739
+            |--init_gbpages
+            |--init_memory_mapping                                       # arch/x86/mm/init.c:123
+            
+                    
                 
             
             
