@@ -63,4 +63,5 @@ find_low_pfn_range () at arch/x86/mm/init_32.c:703
 
 ## setup bios corruption check
 
-  
+  Find memory aread need to be scanned and update the found address and its size to a dedicated array.
+
