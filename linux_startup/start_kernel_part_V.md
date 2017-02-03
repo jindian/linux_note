@@ -78,6 +78,10 @@ find_low_pfn_range () at arch/x86/mm/init_32.c:703
   Setup the direct mapping of the physical memory at PAGE_OFFSET.
   This runs before bootmem is initialized and gets pages directly from the physical memory. To access them they are temporarily mapped.
   
+  set [NX-bit](https://de.wikipedia.org/wiki/NX-Bit) if nx enabled, active pse and pge in cpu mask if dedicated feature available, finally initialize page table.
+  
+  
+  
   
 
 # Links:

@@ -173,6 +173,7 @@
             |--init_gbpages
             |--init_memory_mapping                                       # arch/x86/mm/init.c:123
                 |--set_nx                                                # arch/x86/mm/setup_nx.c:37
+                |--set_in_cr4                                            # arch/x86/include/asm/processor.h:605
                 
             
                     
