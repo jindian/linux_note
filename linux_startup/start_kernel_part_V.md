@@ -81,6 +81,9 @@ find_low_pfn_range () at arch/x86/mm/init_32.c:703
   
 
 # Links:
-  [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
-  [data segment](https://en.wikipedia.org/wiki/Data_segment)
+  * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
+  * [data segment](https://en.wikipedia.org/wiki/Data_segment)
+  * [Physical Address Extension](https://en.wikipedia.org/wiki/Physical_Address_Extension)
+  * [NX-Bit](https://de.wikipedia.org/wiki/NX-Bit)
+  
 
