@@ -80,8 +80,15 @@ find_low_pfn_range () at arch/x86/mm/init_32.c:703
   
   set [NX-bit](https://de.wikipedia.org/wiki/NX-Bit) if nx enabled, active pse and pge in cpu mask if dedicated feature available, finally initialize page table.
   
-  
-  
+```max_pfn_mapped
+
+(gdb) p /x max_pfn_mapped
+$45 = 0x7ffe
+```
+
+## reserve memory for initrd
+
+  [initrd (initial ramdisk)](https://en.wikipedia.org/wiki/Initrd) is a scheme for loading a temporary root file system into memory, which may be used as part of the Linux startup process. initrd and initramfs refer to two different methods of achieving this. Both are commonly used to make preparations before the real root file system can be mounted
   
 
 # Links:
@@ -89,5 +96,6 @@ find_low_pfn_range () at arch/x86/mm/init_32.c:703
   * [data segment](https://en.wikipedia.org/wiki/Data_segment)
   * [Physical Address Extension](https://en.wikipedia.org/wiki/Physical_Address_Extension)
   * [NX-Bit](https://de.wikipedia.org/wiki/NX-Bit)
+  * [initrd](https://en.wikipedia.org/wiki/Initrd)
   
 
