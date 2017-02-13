@@ -133,6 +133,8 @@ void __init io_delay_init(void)
 ```
   
 
+## parse the ACPI tables
+
   
   
   
@@ -147,5 +149,5 @@ void __init io_delay_init(void)
   * [NX-Bit](https://de.wikipedia.org/wiki/NX-Bit)
   * [initrd](https://en.wikipedia.org/wiki/Initrd)
   * [kernel parameters](https://chromium.googlesource.com/chromiumos/third_party/kernel/+/master/Documentation/kernel-parameters.txt)
-  
+  * [ACPI in Linux](https://www.kernel.org/doc/ols/2005/ols2005v1-pages-59-76.pdf)
 
