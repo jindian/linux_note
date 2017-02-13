@@ -176,6 +176,8 @@
                 |--set_in_cr4                                            # arch/x86/include/asm/processor.h:605
             |--reserve_initrd                                            # arch/x86/kernel/setup.c:374
             |--io_delay_init                                             # arch/x86/kernel/io_delay.c:105
+                |--dmi_check_system                                      # drivers/firmware/dmi_scan.c:467
+                    |--dmi_matches                                       # drivers/firmware/dmi_scan.c:426
                 
             
                     
