@@ -88,7 +88,7 @@ $45 = 0x7ffe
 
 ## reserve memory for initrd
 
-  [initrd (initial ramdisk)](https://en.wikipedia.org/wiki/Initrd) is a scheme for loading a temporary root file system into memory, which may be used as part of the Linux startup process. initrd and initramfs refer to two different methods of achieving this. Both are commonly used to make preparations before the real root file system can be mounted
+  [initrd (initial ramdisk)](https://en.wikipedia.org/wiki/Initrd) is a scheme for loading a temporary root file system into memory, which may be used as part of the Linux startup process. initrd and initramfs refer to two different methods of achieving this. Both are commonly used to make preparations before the real root file system can be mounted.
   
 
 # Links:
