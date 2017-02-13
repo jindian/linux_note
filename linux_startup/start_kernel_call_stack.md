@@ -178,7 +178,7 @@
             |--io_delay_init                                             # arch/x86/kernel/io_delay.c:105
                 |--dmi_check_system                                      # drivers/firmware/dmi_scan.c:467
                     |--dmi_matches                                       # drivers/firmware/dmi_scan.c:426
-            |--reserve_crashkernel                                       # 
+            |--reserve_crashkernel                                       # arch/x86/kernel/setup.c:531
                 
             
                     
