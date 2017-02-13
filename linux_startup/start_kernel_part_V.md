@@ -133,12 +133,28 @@ void __init io_delay_init(void)
 ```
   
 
-## parse the ACPI tables
+## parse the [ACPI tables](http://wiki.xomb.org/index.php?title=ACPI_Tables)
 
+  The ACPI is the now preferred (and bloated) way of gathering information about the system.
   
+  The bread of ACPI to most OS purposes involve reading through the complicated mess of tables.
   
+  The first table is one that has to be searched for much like the MP tables (Exception being if you are using EFI). It is the RSDP table. This table contains the information necessary to find the other gazillion tables in existence.
   
-  
+  The table's actual definition will be listed below.
+
+```ACPI_tables
+
+1 Tables
+  1.1 RSDP
+  1.2 RSDT
+  1.3 XSDT
+  1.4 MADT
+    1.4.1 LocalAPIC Entry
+    1.4.2 IO APIC Entry
+    1.4.3 Interrupt Source Override
+```  
+
   
   
 
@@ -150,4 +166,5 @@ void __init io_delay_init(void)
   * [initrd](https://en.wikipedia.org/wiki/Initrd)
   * [kernel parameters](https://chromium.googlesource.com/chromiumos/third_party/kernel/+/master/Documentation/kernel-parameters.txt)
   * [ACPI in Linux](https://www.kernel.org/doc/ols/2005/ols2005v1-pages-59-76.pdf)
+  * [ACPI Tables](http://wiki.xomb.org/index.php?title=ACPI_Tables)
 
