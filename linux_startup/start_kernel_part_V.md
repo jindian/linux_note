@@ -106,7 +106,17 @@ initrd_start = 0xc77b5000
 initrd_end = 0xc7a45498
 ```
 
-## 
+## override I/O delay port
+  
+```io_delay_init
+
+void __init io_delay_init(void)
+{
+        if (!io_delay_override)
+                dmi_check_system(io_delay_0xed_port_dmi_table);
+}
+```
+  Inside io_delay_init it first check the value of `io_delay_override` which set when early parameter `io_delay` exists in linux start command line.
 
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
