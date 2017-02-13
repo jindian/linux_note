@@ -117,6 +117,20 @@ void __init io_delay_init(void)
 }
 ```
   Inside io_delay_init it first check the value of `io_delay_override` which is set when early parameter `io_delay` exists in linux start command line. If the option of `io_delay` doesn't set in command line, do further actions with `dmi_check_system` with `io_delay_0xed_port_dmi_table` as input parameter. `io_delay_0xed_port_dmi_table` is a list of quirk table for systems that misbehave (lock up, etc.) if port 0x80 is used. Scan the list with current system parameters, if matches call the configured function of the list item.
+
+```io_delay_of_kernel_parameters
+
+
+	io_delay=	[X86] I/O delay method
+		0x80
+			Standard port 0x80 based delay
+		0xed
+			Alternate port 0xed based delay (needed on some systems)
+		udelay
+			Simple two microseconds delay
+		none
+			No delay
+```
   
 
   
