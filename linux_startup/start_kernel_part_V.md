@@ -132,5 +132,6 @@ void __init io_delay_init(void)
   * [Physical Address Extension](https://en.wikipedia.org/wiki/Physical_Address_Extension)
   * [NX-Bit](https://de.wikipedia.org/wiki/NX-Bit)
   * [initrd](https://en.wikipedia.org/wiki/Initrd)
+  * [kernel parameters](https://chromium.googlesource.com/chromiumos/third_party/kernel/+/master/Documentation/kernel-parameters.txt)
   
 
