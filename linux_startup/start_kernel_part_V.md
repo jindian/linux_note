@@ -158,7 +158,7 @@ void __init io_delay_init(void)
   Inside `acpi_boot_table_init` it first initialize the ACPI boot-time table parse with `acpi_table_init` which locate and checksum all ACPI tables. Next try to find table with id `BOOT`, if success execute handler, the handler is a function pointer for further actions. Finally ACPI maintains a blacklist based on the table headers. But this blacklist is somewhat primitive.
 When an entry matches the system, it either prints warnings or invokes acpi=off.
 
-  
+  Inside `early_acpi_boot_init` process the Multiple APIC Description Table (MADT), if present.  
   
 
 # Links:

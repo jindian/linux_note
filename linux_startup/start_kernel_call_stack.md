@@ -184,6 +184,12 @@
                 |--acpi_table_parse                                      # drivers/acpi/tables.c:278
                     |--acpi_get_table_with_size                          # drivers/acpi/acpica/tbxface.c:377
                 |--acpi_blacklisted                                      # drivers/acpi/blacklist.c:112
+            |--early_acpi_boot_init                                      # arch/x86/kernel/acpi/boot.c:1578
+                |--early_acpi_process_madt                               # arch/x86/kernel/acpi/boot.c:1159
+                    |--acpi_table_parse
+                    |--early_acpi_parse_madt_lapic_addr_ovr              # arch/x86/kernel/acpi/boot.c:759
+                        |--acpi_table_parse_madt
+                        |--acpi_register_lapic_address
             |--reserve_crashkernel                                       # arch/x86/kernel/setup.c:531
                 
             
