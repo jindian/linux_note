@@ -191,7 +191,11 @@
                         |--acpi_table_parse_madt
                         |--acpi_register_lapic_address
             |--initmem_init                                              # arch/x86/mm/init_32.c:706
-                |--e820_register_active_regions                          # arch/x86/kernel/e820.c:
+                |--e820_register_active_regions                          # arch/x86/kernel/e820.c:1188
+                    |--e820_find_active_region                           # arch/x86/kernel/e820.c:1158
+                    |--add_active_range                                  # mm/page_alloc.c:3974
+                |--sparse_memory_present_with_active_regions             # mm/page_alloc.c:3461
+                |--setup_bootmem_allocator                               # arch/x86/mm/init_32.c
             |--reserve_crashkernel                                       # arch/x86/kernel/setup.c:531
                 
             

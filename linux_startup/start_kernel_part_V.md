@@ -160,7 +160,7 @@ When an entry matches the system, it either prints warnings or invokes acpi=off.
 
   Inside `early_acpi_boot_init` process the Multiple APIC Description Table (MADT), if present.  
   
-## setup memory ragion for high memory and setup Boot Memory Allocator
+## setup node map and Boot Memory Allocator
 
   About Boot Memory Allocator please reference chapter 5 of [Understanding Linux Virtual Memory Manager](https://www.kernel.org/doc/gorman/pdf/understand.pdf)
 
@@ -173,6 +173,18 @@ max_pfn = 0x7ffe
 (gdb) printf "max_low_pfn = 0x%x\n", max_low_pfn
 max_low_pfn = 0x7ffe
 ```
+
+  Before setup boot memory allocator, the result is
+
+```boot_memory_information
+
+(gdb) printf "num_physpages = 0x%x\nhigh_memory = 0x%x\nmax_mapnr = 0x%x\n", num_physpages, high_memory, max_mapnr
+num_physpages = 0x7ffe
+high_memory = 0xc7ffe000
+max_mapnr = 0x7ffe
+```
+
+  Next we will focus on `setup_bootmem_allocator`
 
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
