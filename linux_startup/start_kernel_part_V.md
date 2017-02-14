@@ -160,7 +160,17 @@ When an entry matches the system, it either prints warnings or invokes acpi=off.
 
   Inside `early_acpi_boot_init` process the Multiple APIC Description Table (MADT), if present.  
   
-## setup node information and boot time memory allocator
+## setup memory ragion for high memory and setup Boot Memory Allocator
+
+  Here are value of low and high pfn before allocate memory region for high memory.
+
+```variable_of_pfn
+
+(gdb) printf "max_pfn = 0x%x\n", max_pfn
+max_pfn = 0x7ffe
+(gdb) printf "max_low_pfn = 0x%x\n", max_low_pfn
+max_low_pfn = 0x7ffe
+```
 
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
@@ -172,4 +182,5 @@ When an entry matches the system, it either prints warnings or invokes acpi=off.
   * [ACPI in Linux](https://www.kernel.org/doc/ols/2005/ols2005v1-pages-59-76.pdf)
   * [ACPI Tables](http://wiki.xomb.org/index.php?title=ACPI_Tables)
   * [The State of ACPI in the Linux Kernel](https://landley.net/kdocs/ols/2004/ols2004v1-pages-121-132.pdf)
+  * [Understanding Linux Virtual Memory Manager](https://www.kernel.org/doc/gorman/pdf/understand.pdf)
 
