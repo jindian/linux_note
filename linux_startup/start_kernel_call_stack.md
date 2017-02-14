@@ -191,6 +191,7 @@
                         |--acpi_table_parse_madt
                         |--acpi_register_lapic_address
             |--initmem_init                                              # arch/x86/mm/init_32.c:706
+                |--e820_register_active_regions                          # arch/x86/kernel/e820.c:
             |--reserve_crashkernel                                       # arch/x86/kernel/setup.c:531
                 
             
