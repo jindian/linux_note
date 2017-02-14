@@ -162,6 +162,8 @@ When an entry matches the system, it either prints warnings or invokes acpi=off.
   
 ## setup memory ragion for high memory and setup Boot Memory Allocator
 
+  About Boot Memory Allocator please reference chapter 5 of [Understanding Linux Virtual Memory Manager](https://www.kernel.org/doc/gorman/pdf/understand.pdf)
+
   Here are value of low and high pfn before allocate memory region for high memory.
 
 ```variable_of_pfn
