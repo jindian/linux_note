@@ -190,6 +190,7 @@
                     |--early_acpi_parse_madt_lapic_addr_ovr              # arch/x86/kernel/acpi/boot.c:759
                         |--acpi_table_parse_madt
                         |--acpi_register_lapic_address
+            |--initmem_init                                              # arch/x86/mm/init_32.c:706
             |--reserve_crashkernel                                       # arch/x86/kernel/setup.c:531
                 
             

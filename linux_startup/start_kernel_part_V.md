@@ -160,6 +160,7 @@ When an entry matches the system, it either prints warnings or invokes acpi=off.
 
   Inside `early_acpi_boot_init` process the Multiple APIC Description Table (MADT), if present.  
   
+## 
 
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
