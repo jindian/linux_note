@@ -178,7 +178,12 @@
             |--io_delay_init                                             # arch/x86/kernel/io_delay.c:105
                 |--dmi_check_system                                      # drivers/firmware/dmi_scan.c:467
                     |--dmi_matches                                       # drivers/firmware/dmi_scan.c:426
-            |--acpi_boot_table_init                                      # arch/x86/kernel/acpi/boot.c
+            |--acpi_boot_table_init                                      # arch/x86/kernel/acpi/boot.c:1537
+                |--acpi_table_init                                       # drivers/acpi/tables.c:338
+                    |--acpi_initialize_tables                            # drivers/acpi/acpica/tbxface.c:107
+                |--acpi_table_parse                                      # drivers/acpi/tables.c:278
+                    |--acpi_get_table_with_size                          # drivers/acpi/acpica/tbxface.c:377
+                |--acpi_blacklisted                                      # drivers/acpi/blacklist.c:112
             |--reserve_crashkernel                                       # arch/x86/kernel/setup.c:531
                 
             

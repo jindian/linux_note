@@ -153,7 +153,10 @@ void __init io_delay_init(void)
     1.4.1 LocalAPIC Entry
     1.4.2 IO APIC Entry
     1.4.3 Interrupt Source Override
-```  
+```
+
+  Inside `acpi_boot_table_init` it first initialize the ACPI boot-time table parse with `acpi_table_init` which locate and checksum all ACPI tables. Next try to find table with id `BOOT`, if success execute handler, the handler is a function pointer for further actions. Finally ACPI maintains a blacklist based on the table headers. But this blacklist is somewhat primitive.
+When an entry matches the system, it either prints warnings or invokes acpi=off.
 
   
   
@@ -167,4 +170,5 @@ void __init io_delay_init(void)
   * [kernel parameters](https://chromium.googlesource.com/chromiumos/third_party/kernel/+/master/Documentation/kernel-parameters.txt)
   * [ACPI in Linux](https://www.kernel.org/doc/ols/2005/ols2005v1-pages-59-76.pdf)
   * [ACPI Tables](http://wiki.xomb.org/index.php?title=ACPI_Tables)
+  * [The State of ACPI in the Linux Kernel](https://landley.net/kdocs/ols/2004/ols2004v1-pages-121-132.pdf)
 
