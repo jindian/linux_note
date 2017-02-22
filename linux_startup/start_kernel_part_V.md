@@ -238,6 +238,12 @@ acpi_realmode = 0xc0036000
 acpi_wakeup_address = 0x36000
 ```
 
+## find smp configure
+
+  [Symmetric multiprocessing(SMP)](https://en.wikipedia.org/wiki/Symmetric_multiprocessing) involves a symmetric multiprocessor system hardware and software architecture where two or more identical processors are connected to a single, shared main memory, have full access to all I/O devices, and are controlled by a single operating system instance that treats all processors equally, reserving none for special purposes. Most multiprocessor systems today use an SMP architecture. In the case of multi-core processors, the SMP architecture applies to the cores, treating them as separate processors.
+  
+  SMP systems are tightly coupled multiprocessor systems with a pool of homogeneous processors running independent of each other. Each processor, executing different programs and working on different sets of data, has the capability of sharing common resources (memory, I/O device, interrupt system and so on) that are connected using a system bus or a crossbar.
+
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
   * [data segment](https://en.wikipedia.org/wiki/Data_segment)
@@ -249,4 +255,5 @@ acpi_wakeup_address = 0x36000
   * [ACPI Tables](http://wiki.xomb.org/index.php?title=ACPI_Tables)
   * [The State of ACPI in the Linux Kernel](https://landley.net/kdocs/ols/2004/ols2004v1-pages-121-132.pdf)
   * [Understanding Linux Virtual Memory Manager](https://www.kernel.org/doc/gorman/pdf/understand.pdf)
+  * [Symmetric multiprocessing(SMP)](https://en.wikipedia.org/wiki/Symmetric_multiprocessing)
 
