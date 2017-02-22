@@ -221,12 +221,15 @@ wakeup_code_end = 0xc1497231
   
 ```___alloc_bootmem_nopanic
 
+
+  The allocated memory save to global variable as follow
+```
+
 ___alloc_bootmem_nopanic (size=size@entry=16384, align=align@entry=32, 
     goal=goal@entry=0, limit=limit@entry=4294967295) at mm/bootmem.c:582
 582			if (region)
 (gdb) p region
 $10 = (void *) 0xc0036000
-```
 
 ```
 
