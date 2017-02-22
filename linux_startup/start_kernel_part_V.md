@@ -254,6 +254,20 @@ acpi_wakeup_address = 0x36000
   2) Scan the top 1K of base RAM
   3) Scan the 64K of bios
 ```
+  
+  We finally found the signature in bois memory area, reserve the memory area.
+
+```
+
+$9 = (struct mpf_intel *) 0xc00f0b20
+(gdb) p *mpf
+$10 = {signature = "_MP_", physptr = 985904, length = 1 '\001', 
+  specification = 4 '\004', checksum = 86 'V', feature1 = 0 '\000', 
+  feature2 = 0 '\000', feature3 = 0 '\000', feature4 = 0 '\000', 
+  feature5 = 0 '\000'}
+```
+
+  If the signature is not found in above memory region, scan first 1K of 4K EBDA.
 
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
