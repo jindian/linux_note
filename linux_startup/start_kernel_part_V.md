@@ -246,12 +246,15 @@ acpi_wakeup_address = 0x36000
   
   `find_smp_config` involves `default_find_smp_config`, the platform setup functions in `x86_init` were assigned with the default functions for standard PC hardware.
   
-  Inside `default_find_smp_config` it involves `smp_scan_config` to scan a signature in follow memory area:
-  
-  	 1) Scan the bottom 1K for a signature
-	 2) Scan the top 1K of base RAM
-	 3) Scan the 64K of bios
-  
+  Inside `default_find_smp_config` it involves `smp_scan_config` to scan a signature in follow memory area
+
+```scan_area
+ 
+  1) Scan the bottom 1K for a signature
+  2) Scan the top 1K of base RAM
+  3) Scan the 64K of bios
+```
+
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
   * [data segment](https://en.wikipedia.org/wiki/Data_segment)
