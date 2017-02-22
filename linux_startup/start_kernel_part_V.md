@@ -277,7 +277,7 @@ $10 = {signature = "_MP_", physptr = 985904, length = 1 '\001',
   
 ## iSCSI Boot Firmware Table (iBFT) reservation
 
-  
+  The iSCSI Boot Firmware (iBF) Table (iBFT) is a block of information containing various parameters useful to the iSCSI Boot process. The iBFT is the mechanism by which iBF parameter values are conveyed to the operating system. The iBF builds and fills in the iBFT. The iBFT is available to the operating system to enable a consistent flow of the boot process.
 
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
