@@ -275,7 +275,9 @@ $10 = {signature = "_MP_", physptr = 985904, length = 1 '\001',
   
   In `reserve_crashkernel` after get total memory, it parse boot time command line to get `crash_base` and `crash_size`, then reserve memory base on `crash_base` and `crash_size`.
   
+## iSCSI Boot Firmware Table (iBFT) reservation
 
+  
 
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
@@ -290,5 +292,7 @@ $10 = {signature = "_MP_", physptr = 985904, length = 1 '\001',
   * [Understanding Linux Virtual Memory Manager](https://www.kernel.org/doc/gorman/pdf/understand.pdf)
   * [Symmetric multiprocessing(SMP)](https://en.wikipedia.org/wiki/Symmetric_multiprocessing)
   * [Kdump, A Kexec-based Kernel Crash Dumping Mechanism](http://lse.sourceforge.net/kdump/documentation/ols2oo5-kdump-paper.pdf)
+  * [iSCSI Boot Firmware Table (iBFT)](ftp://ftp.software.ibm.com/systems/support/bladecenter/iscsi_boot_firmware_table_v1.03.pdf)
+  
   
 
