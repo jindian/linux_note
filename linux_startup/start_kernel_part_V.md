@@ -269,6 +269,12 @@ $10 = {signature = "_MP_", physptr = 985904, length = 1 '\001',
 
   If the signature is not found in above memory region, scan first 1K of 4K EBDA.
 
+## capture kernel space reservation
+
+  On i386, the default location a kernel runs from is 1 MB. The capture kernel is compiled and linked to run from a non default location like 16MB. The first kernel needs to reserve a chunk of memory where the capture kernel and associated data can be pre-loaded. Capture kernel will directly run from this reserved memory location. This space reservation is done with the help of crashkernel=X@Y boot time parameter to first kernel, where X is the the amount of memory to be reserved and Y indicates the location where reserved memory section starts.
+  
+  
+
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
   * [data segment](https://en.wikipedia.org/wiki/Data_segment)
@@ -281,4 +287,6 @@ $10 = {signature = "_MP_", physptr = 985904, length = 1 '\001',
   * [The State of ACPI in the Linux Kernel](https://landley.net/kdocs/ols/2004/ols2004v1-pages-121-132.pdf)
   * [Understanding Linux Virtual Memory Manager](https://www.kernel.org/doc/gorman/pdf/understand.pdf)
   * [Symmetric multiprocessing(SMP)](https://en.wikipedia.org/wiki/Symmetric_multiprocessing)
+  * [Kdump, A Kexec-based Kernel Crash Dumping Mechanism](http://lse.sourceforge.net/kdump/documentation/ols2oo5-kdump-paper.pdf)
+  
 
