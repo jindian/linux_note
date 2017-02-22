@@ -207,6 +207,8 @@
                         |--___alloc_bootmem_nopanic                      # mm/bootmem.c:562
                             |--alloc_arch_preferred_bootmem              # mm/bootmem.c:541
                             |--alloc_bootmem_core                        # mm/bootmem.c:434
+            |--find_smp_config                                           # arch/x86/include/asm/mpspec.h:72
+                |--default_find_smp_config                               # arch/x86/kernel/mpparse.c:728
             |--reserve_crashkernel                                       # arch/x86/kernel/setup.c:531
                 
             
