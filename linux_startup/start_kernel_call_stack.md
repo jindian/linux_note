@@ -212,6 +212,10 @@
                     |--smp_scan_config                                   # arch/x86/kernel/mpparse.c:688
             |--reserve_crashkernel                                       # arch/x86/kernel/setup.c:531
                 |--get_total_mem                                         # arch/x86/kernel/setup.c:519
+                |--parse_crashkernel
+                |--reserve_bootmem_generic
+                |--insert_resource
+            |--reserve_ibft_region                                       # drivers/firmware/iscsi_ibft_find.c:55
                 
             
                     

@@ -273,7 +273,9 @@ $10 = {signature = "_MP_", physptr = 985904, length = 1 '\001',
 
   On i386, the default location a kernel runs from is 1 MB. The capture kernel is compiled and linked to run from a non default location like 16MB. The first kernel needs to reserve a chunk of memory where the capture kernel and associated data can be pre-loaded. Capture kernel will directly run from this reserved memory location. This space reservation is done with the help of crashkernel=X@Y boot time parameter to first kernel, where X is the the amount of memory to be reserved and Y indicates the location where reserved memory section starts.
   
+  In `reserve_crashkernel` after get total memory, it parse boot time command line to get `crash_base` and `crash_size`, then reserve memory base on `crash_base` and `crash_size`.
   
+
 
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
