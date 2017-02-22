@@ -217,7 +217,23 @@ wakeup_code_start =  0xc14932df
 wakeup_code_end = 0xc1497231
 ```
 
+  Because slab memory allocator not ready, allocate memory below 1MB, after return from routine `alloc_bootmem_core`, allocated memory shown as follow:
   
+```___alloc_bootmem_nopanic
+
+___alloc_bootmem_nopanic (size=size@entry=16384, align=align@entry=32, 
+    goal=goal@entry=0, limit=limit@entry=4294967295) at mm/bootmem.c:582
+582			if (region)
+(gdb) p region
+$10 = (void *) 0xc0036000
+```
+
+```
+
+(gdb) printf "acpi_realmode = 0x%x\nacpi_wakeup_address = 0x%x\n", acpi_realmode, acpi_wakeup_address
+acpi_realmode = 0xc0036000
+acpi_wakeup_address = 0x36000
+```
 
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
