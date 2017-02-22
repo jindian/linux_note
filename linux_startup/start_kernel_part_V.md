@@ -184,7 +184,28 @@ high_memory = 0xc7ffe000
 max_mapnr = 0x7ffe
 ```
 
-  Next we will focus on `setup_bootmem_allocator`
+  Next we will focus on `setup_bootmem_allocator`, calculate bitmap side in pages for low memory with `bootmem_bootmap_pages`, find a free area for the bitmap with `find_e820_area`, size of bitmap is 4096.
+  
+```bootmap_info
+
+(gdb) printf "bootmap = 0x%x\nbootmap_size = 0x%x\n", bootmap, bootmap_size
+bootmap = 0x35000
+bootmap_size = 0x1000
+```
+
+  Reserve memory range for the bitmap with `reserve_early`, it first have drop_overlaps_that_are_ok() drop any pre-existing 'overlap_ok' ranges, so that we can then reserve this memory range without risk of panic'ing on an overlapping overlap_ok early reservation, after that involve `__reserve_early` for memory allocation.
+
+
+```reserve_early
+
+(gdb) n
+784		reserve_early(bootmap, bootmap + bootmap_size, "BOOTMAP");
+(gdb) s
+reserve_early (start=217088, end=221184, name=name@entry=0xc15d27b4 "BOOTMAP")
+    at arch/x86/kernel/e820.c:895
+```
+  
+## reserve low memory region for sleep support
 
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)

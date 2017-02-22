@@ -196,6 +196,12 @@
                     |--add_active_range                                  # mm/page_alloc.c:3974
                 |--sparse_memory_present_with_active_regions             # mm/page_alloc.c:3461
                 |--setup_bootmem_allocator                               # arch/x86/mm/init_32.c
+                    |--bootmem_bootmap_pages                             # mm/bootmem.c:66
+                    |--find_e820_area                                    # arch/x86/kernel/e820.c:1000
+                    |--reserve_early                                     # arch/x86/kernel/e820.c:894
+                        |--drop_overlaps_that_are_ok                     # arch/x86/kernel/e820.c:781
+                        |--__reserve_early                               # arch/x86/kernel/e820.c:838
+            |--acpi_reserve_bootmem                                      # arch/x86/kernel/acpi/sleep.c:129
             |--reserve_crashkernel                                       # arch/x86/kernel/setup.c:531
                 
             
