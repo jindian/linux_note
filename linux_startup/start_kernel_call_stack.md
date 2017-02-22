@@ -202,6 +202,11 @@
                         |--drop_overlaps_that_are_ok                     # arch/x86/kernel/e820.c:781
                         |--__reserve_early                               # arch/x86/kernel/e820.c:838
             |--acpi_reserve_bootmem                                      # arch/x86/kernel/acpi/sleep.c:129
+                |--__alloc_bootmem_low                                   # mm/bootmem.c:747
+                    |--___alloc_bootmem                                  # mm/bootmem.c:613
+                        |--___alloc_bootmem_nopanic                      # mm/bootmem.c:562
+                            |--alloc_arch_preferred_bootmem              # mm/bootmem.c:541
+                            |--alloc_bootmem_core                        # mm/bootmem.c:434
             |--reserve_crashkernel                                       # arch/x86/kernel/setup.c:531
                 
             

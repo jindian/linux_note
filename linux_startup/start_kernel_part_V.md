@@ -207,6 +207,18 @@ reserve_early (start=217088, end=221184, name=name@entry=0xc15d27b4 "BOOTMAP")
   
 ## reserve low memory region for sleep support
 
+  Allocate a page from first 1MB of memory for the wakeup routine for when come back from sleop state.
+  
+  In `acpi_reserve_bootmem`, first check size of wakeup code.
+
+```wake_up_code
+
+wakeup_code_start =  0xc14932df
+wakeup_code_end = 0xc1497231
+```
+
+  
+
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
   * [data segment](https://en.wikipedia.org/wiki/Data_segment)
