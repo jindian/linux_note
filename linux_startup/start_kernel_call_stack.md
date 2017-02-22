@@ -209,6 +209,7 @@
                             |--alloc_bootmem_core                        # mm/bootmem.c:434
             |--find_smp_config                                           # arch/x86/include/asm/mpspec.h:72
                 |--default_find_smp_config                               # arch/x86/kernel/mpparse.c:728
+                    |--smp_scan_config                                   # arch/x86/kernel/mpparse.c:688
             |--reserve_crashkernel                                       # arch/x86/kernel/setup.c:531
                 
             
