@@ -376,22 +376,52 @@ static void __init permanent_kmaps_init(pgd_t *pgd_base)
 }
 ```
 
-  Page table initialized start from address `vaddr = 0xffa00000`, the first 8MB are already mapped by head.S.
+  Page table initialized start from address `vaddr = 0xffa00000`, the first 8MB are already mapped by head.S, here is some information when `permanent_kmaps_init` calls `page_table_range_init`.
 
 ```
 
-page_table_range_init (start=start@entry=4288675840, end=end@entry=4290772992, 
+page_table_range_init (start=start@entry=0xffa00000, end=end@entry=0xffc00000, 
     pgd_base=<optimized out>) at arch/x86/mm/init_32.c:209
 ```
   
   When page table initialization completed, flush TLB with `__flush_tlb_all`, in `__flush_tlb_all` if cpu has pge, involve `__flush_tlb_global` which read, modify and write to CR4.
   
-  
-  
-  
-  
-  
-`
+```__flush_tlb_all
+
+static inline void __flush_tlb_all(void)
+{
+	if (cpu_has_pge)
+		__flush_tlb_global();
+	else
+		__flush_tlb();
+}
+```  
+
+and `__flush_tlb_global`, `__flush_tlb_global` is a macro, after expanded it involves `__native_flush_tlb_global`.
+
+```__flush_tlb_global
+
+static inline void __native_flush_tlb_global(void)
+{
+	unsigned long flags;
+	unsigned long cr4;
+
+	/*
+	 * Read-modify-write to CR4 - protect it from preemption and
+	 * from interrupts. (Use the raw variant because this code can
+	 * be called from deep inside debugging code.)
+	 */
+	raw_local_irq_save(flags);
+
+	cr4 = native_read_cr4();
+	/* clear PGE */
+	native_write_cr4(cr4 & ~X86_CR4_PGE);
+	/* write old PGE again and flush TLBs */
+	native_write_cr4(cr4);
+
+	raw_local_irq_restore(flags);
+}
+```
   
   
 # Links:
