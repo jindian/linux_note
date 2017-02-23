@@ -277,6 +277,20 @@ $10 = {signature = "_MP_", physptr = 985904, length = 1 '\001',
 ## iSCSI Boot Firmware Table (iBFT) reservation
 
   The iSCSI Boot Firmware (iBF) Table (iBFT) is a block of information containing various parameters useful to the iSCSI Boot process. The iBFT is the mechanism by which iBF parameter values are conveyed to the operating system. The iBF builds and fills in the iBFT. The iBFT is available to the operating system to enable a consistent flow of the boot process.
+  
+  Routine `reserve_ibft_region` used to find the iSCSI Boot Formate Table. The logical kernel address is set in the ibft_addr global variable. Reserved memory for iSCSI Boot Firmware Table.
+
+  In our boot, iSCSI Boot Firmware Table is not found.
+
+```ibft_addr
+
+Breakpoint 3, reserve_ibft_region () at drivers/firmware/iscsi_ibft_find.c:81
+81		if (ibft_addr)
+(gdb) p ibft_addr 
+$1 = (struct ibft_table_header *) 0x0
+```
+
+## 
 
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
