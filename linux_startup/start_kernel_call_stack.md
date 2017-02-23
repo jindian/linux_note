@@ -216,6 +216,9 @@
                 |--reserve_bootmem_generic
                 |--insert_resource
             |--reserve_ibft_region                                       # drivers/firmware/iscsi_ibft_find.c:55
+                |--reserve_bootmem
+            |--x86_init.paging.pagetable_setup_start
+                -> native_pagetable_setup_start                          # arch/x86/mm/init_32.c:472
                 
             
                     
