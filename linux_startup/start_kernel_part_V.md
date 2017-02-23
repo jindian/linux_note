@@ -308,7 +308,17 @@ $1 = (struct ibft_table_header *) 0x0
   
   ![](/assets/four-level-pt.png)
   
+  The PGD remains the top-level directory, accessed via the mm_struct structure associated with each process. The PUD only exists on architectures which are using four-level tables; that is only x86-64, as of this writing, but other 64-bit architectures will probably use the fourth level in the future as well. The PMD and PTE function as they did in previous kernels; the PMD is absent if the architecture only supports two-level tables.
+  
+  Each level in the page table hierarchy is indexed with a subset of the bits in the virtual address of interest. Those bits are shown in the table to the below (for a few architectures). In the classic i386 architecture, only the PGD and PTE levels are actually used; the combined twenty bits allow up to 1 million pages (4GB) to be addressed. The i386 PAE mode adds the PMD level, but does not increase the virtual address space (it does expand the amount of physical memory which may be addressed, however). On the x86-64 architecture, four levels are used with a total of 35 bits for the page frame number. Before the patch was merged, the x86-64 architecture could not effectively use the fourth level and was limited to a 512GB virtual address space. Now x86-64 users can have a virtual address space covering 128TB of memory, which really should last them for a little while.
 
+```
+Architecture    Bits used
+                PGD	PUD	PMD	PTE
+i386	        22-31                12-21
+i386 (PAE mode) 30-31	 	21-29  12-20
+x86-64	      39-46  30-38  21-29  12-20
+```
 
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
