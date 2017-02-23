@@ -313,6 +313,7 @@ $1 = (struct ibft_table_header *) 0x0
   * [Page table](https://en.wikipedia.org/wiki/Page_table)
   * [Anatomy of a Program in Memory](http://duartes.org/gustavo/blog/post/anatomy-of-a-program-in-memory/)
   * [How the Kernel Manages Your Memory](http://duartes.org/gustavo/blog/post/how-the-kernel-manages-your-memory/)
+  * [Page Table Management](https://www.kernel.org/doc/gorman/html/understand/understand006.html)
   
   
 
