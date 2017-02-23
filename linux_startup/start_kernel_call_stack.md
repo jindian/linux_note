@@ -219,6 +219,12 @@
                 |--reserve_bootmem
             |--x86_init.paging.pagetable_setup_start
                 -> native_pagetable_setup_start                          # arch/x86/mm/init_32.c:472
+                |--paravirt_alloc_pmd                                    # arch/x86/include/asm/pgalloc.h:16
+            |--paging_init                                               # arch/x86/mm/init_32.c:818
+                |--pagetable_init                                        # arch/x86/mm/init_32.c:542
+                    |--permanent_kmaps_init                              # arch/x86/mm/init_32.c:397
+                    
+            
                 
             
                     

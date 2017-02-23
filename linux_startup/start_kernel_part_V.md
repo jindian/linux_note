@@ -321,6 +321,8 @@ x86-64	      39-46  30-38  21-29  12-20
 ```
   In `native_pagetable_setup_start` first remove any mappings which extend past the end of physical memory from the boot time page table.
   
+  After `native_pagetable_setup_start`, setup page tables with `paging_init`
+  
   
   
 # Links:
