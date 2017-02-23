@@ -223,7 +223,14 @@
             |--paging_init                                               # arch/x86/mm/init_32.c:818
                 |--pagetable_init                                        # arch/x86/mm/init_32.c:542
                     |--permanent_kmaps_init                              # arch/x86/mm/init_32.c:397
-                    
+                        |--page_table_range_init                         # arch/x86/mm/init_32.c:198
+                            |--one_md_table_init                         # arch/x86/mm/init_32.c:79
+                            |--one_page_table_init                       # arch/x86/mm/init_32.c:108
+                            |--page_table_kmap_check
+            
+                            
+                    |--__flush_tlb_all                                   # arch/x86/include/asm/tlbflush.h:49
+                        |--__native_flush_tlb_single                     # arch/x86/include/asm/tlbflush.h:44
             
                 
             

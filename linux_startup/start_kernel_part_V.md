@@ -312,6 +312,7 @@ $1 = (struct ibft_table_header *) 0x0
   
   Each level in the page table hierarchy is indexed with a subset of the bits in the virtual address of interest. Those bits are shown in the table to the below (for a few architectures). In the classic i386 architecture, only the PGD and PTE levels are actually used; the combined twenty bits allow up to 1 million pages (4GB) to be addressed. The i386 PAE mode adds the PMD level, but does not increase the virtual address space (it does expand the amount of physical memory which may be addressed, however). On the x86-64 architecture, four levels are used with a total of 35 bits for the page frame number. Before the patch was merged, the x86-64 architecture could not effectively use the fourth level and was limited to a 512GB virtual address space. Now x86-64 users can have a virtual address space covering 128TB of memory, which really should last them for a little while.
 
+
 ```
 Architecture    Bits used
                 PGD	PUD	PMD	PTE
@@ -319,11 +320,78 @@ i386	        22-31                12-21
 i386 (PAE mode) 30-31	 	21-29  12-20
 x86-64	      39-46  30-38  21-29  12-20
 ```
+
   In `native_pagetable_setup_start` first remove any mappings which extend past the end of physical memory from the boot time page table.
   
   After `native_pagetable_setup_start`, setup page tables with `paging_init`.
+
+```paging_init
+
+void __init paging_init(void)
+{
+	pagetable_init();
+
+	__flush_tlb_all();
+
+	kmap_init();
+
+	/*
+	 * NOTE: at this point the bootmem allocator is fully available.
+	 */
+	sparse_init();
+	zone_sizes_init();
+}
+```
+
+  `paging_init` call `pagetable_init`, it further involve `permanent_kmaps_init`
+
+```pagetable_init
+
+static void __init pagetable_init(void)
+{
+	pgd_t *pgd_base = swapper_pg_dir;
+
+	permanent_kmaps_init(pgd_base);
+}
+```
+
+```permanent_kmaps_init
+
+static void __init permanent_kmaps_init(pgd_t *pgd_base)
+{
+	unsigned long vaddr;
+	pgd_t *pgd;
+	pud_t *pud;
+	pmd_t *pmd;
+	pte_t *pte;
+
+	vaddr = PKMAP_BASE;
+	page_table_range_init(vaddr, vaddr + PAGE_SIZE*LAST_PKMAP, pgd_base);
+
+	pgd = swapper_pg_dir + pgd_index(vaddr);
+	pud = pud_offset(pgd, vaddr);
+	pmd = pmd_offset(pud, vaddr);
+	pte = pte_offset_kernel(pmd, vaddr);
+	pkmap_page_table = pte;
+}
+```
+
+  Page table initialized start from address `vaddr = 0xffa00000`, the first 8MB are already mapped by head.S.
+
+```
+
+page_table_range_init (start=start@entry=4288675840, end=end@entry=4290772992, 
+    pgd_base=<optimized out>) at arch/x86/mm/init_32.c:209
+```
+  
+  When page table initialization completed, flush TLB with `__flush_tlb_all`, in `__flush_tlb_all` if cpu has pge, involve `__flush_tlb_global` which read, modify and write to CR4.
   
   
+  
+  
+  
+  
+`
   
   
 # Links:
