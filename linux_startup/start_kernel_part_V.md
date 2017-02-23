@@ -292,7 +292,7 @@ $1 = (struct ibft_table_header *) 0x0
 
 ## setup page table
 
-  
+  A [page table](https://en.wikipedia.org/wiki/Page_table) is the data structure used by a virtual memory system in a computer operating system to store the mapping between virtual addresses and physical addresses. Virtual addresses are used by the accessing process, while physical addresses are used by the hardware, or more specifically, by the RAM subsystem.
 
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
