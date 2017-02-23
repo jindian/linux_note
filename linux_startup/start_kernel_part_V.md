@@ -293,6 +293,8 @@ $1 = (struct ibft_table_header *) 0x0
 ## setup page table
 
   A [page table](https://en.wikipedia.org/wiki/Page_table) is the data structure used by a virtual memory system in a computer operating system to store the mapping between virtual addresses and physical addresses. Virtual addresses are used by the accessing process, while physical addresses are used by the hardware, or more specifically, by the RAM subsystem.
+  
+  
 
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
@@ -309,6 +311,8 @@ $1 = (struct ibft_table_header *) 0x0
   * [Kdump, A Kexec-based Kernel Crash Dumping Mechanism](http://lse.sourceforge.net/kdump/documentation/ols2oo5-kdump-paper.pdf)
   * [iSCSI Boot Firmware Table (iBFT)](ftp://ftp.software.ibm.com/systems/support/bladecenter/iscsi_boot_firmware_table_v1.03.pdf)
   * [Page table](https://en.wikipedia.org/wiki/Page_table)
+  * [Anatomy of a Program in Memory](http://duartes.org/gustavo/blog/post/anatomy-of-a-program-in-memory/)
+  * [How the Kernel Manages Your Memory](http://duartes.org/gustavo/blog/post/how-the-kernel-manages-your-memory/)
   
   
 
