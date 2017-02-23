@@ -290,7 +290,9 @@ Breakpoint 3, reserve_ibft_region () at drivers/firmware/iscsi_ibft_find.c:81
 $1 = (struct ibft_table_header *) 0x0
 ```
 
-## 
+## setup page table
+
+  
 
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
@@ -306,6 +308,7 @@ $1 = (struct ibft_table_header *) 0x0
   * [Symmetric multiprocessing(SMP)](https://en.wikipedia.org/wiki/Symmetric_multiprocessing)
   * [Kdump, A Kexec-based Kernel Crash Dumping Mechanism](http://lse.sourceforge.net/kdump/documentation/ols2oo5-kdump-paper.pdf)
   * [iSCSI Boot Firmware Table (iBFT)](ftp://ftp.software.ibm.com/systems/support/bladecenter/iscsi_boot_firmware_table_v1.03.pdf)
+  * [Page table](https://en.wikipedia.org/wiki/Page_table)
   
   
 
