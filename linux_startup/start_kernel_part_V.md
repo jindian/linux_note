@@ -294,6 +294,16 @@ $1 = (struct ibft_table_header *) 0x0
 
   A [page table](https://en.wikipedia.org/wiki/Page_table) is the data structure used by a virtual memory system in a computer operating system to store the mapping between virtual addresses and physical addresses. Virtual addresses are used by the accessing process, while physical addresses are used by the hardware, or more specifically, by the RAM subsystem.
   
+  A single array large enough to hold the page table entries for a single process would be huge. On a typical x86 system, a page table entry requires 32 bits, so 1024 of them (covering 4MB of virtual address space) can be stored in one page. If the virtual address space is 3GB (as it is on many x86 systems), 768 pages would be required to hold all of the page table entries. Allocating that much contiguous memory (for each process) would be impossible, even if that sort of memory overhead were tolerable.
+  
+  The fact is that most processes only use a small portion of the total virtual address space - but the parts they use are widely scattered over that space. Program text lives down near the bottom, heap memory and dynamic libraries are distributed throughout the middle, and the stack is put up at the very top. So the real page table structure must handle a sparse, widely distributed set of virtual addresses without wasting excessive amounts of memory or requiring large, physically-contiguous arrays.
+
+  To that end, modern processors which use page tables use a hierarchical, tree structure. This structure allows the table to be broken up into individual pages, and the subtrees corresponding to unused parts of the address space can be absent. The Linux kernel works with a three-level structure which looks like this:
+
+  ![](/assets/pagetables.png)
+
+  On an x86 system running in the PAE mode (only needed when more than 4GB of memory is installed), all three levels of page tables are present. The page global directory (PGD) contains only four entries, each corresponding to 1GB of virtual address space; the PGD is indexed using the top two bits of the virtual address. Each PGD entry points to a page middle directory (PMD), which holds 512 entries indexed by bits 21-29 of the virtual address. The PMD entry (if it is not empty) points to an actual page table. Using bits 12-20 of the virtual address to index into that page table yields the actual physical address of the page, assuming that page is currently resident in RAM.
+
   
 
 # Links:
