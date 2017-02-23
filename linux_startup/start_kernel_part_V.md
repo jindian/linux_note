@@ -423,7 +423,13 @@ static inline void __native_flush_tlb_global(void)
 }
 ```
   
+  Cache the first kmap pte with `kmap_init`.
   
+  Initialize memory zone with `zone_sizes_init`.
+
+  Finally involve `native_pagetable_setup_done`.
+
+ 
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
   * [data segment](https://en.wikipedia.org/wiki/Data_segment)

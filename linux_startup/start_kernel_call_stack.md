@@ -231,6 +231,11 @@
                             
                     |--__flush_tlb_all                                   # arch/x86/include/asm/tlbflush.h:49
                         |--__native_flush_tlb_single                     # arch/x86/include/asm/tlbflush.h:44
+                    |--kmap_init                                         # arch/x86/mm/init_32.c:383
+                    |--zone_sizes_init                                   # arch/x86/mm/init_32.c:737
+            |--x86_init.paging.pagetable_setup_done
+                -> native_pagetable_setup_done                           # arch/x86/mm/init_32.c:504
+            
             
                 
             
