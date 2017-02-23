@@ -319,7 +319,10 @@ i386	        22-31                12-21
 i386 (PAE mode) 30-31	 	21-29  12-20
 x86-64	      39-46  30-38  21-29  12-20
 ```
-
+  In `native_pagetable_setup_start` first remove any mappings which extend past the end of physical memory from the boot time page table.
+  
+  
+  
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
   * [data segment](https://en.wikipedia.org/wiki/Data_segment)
