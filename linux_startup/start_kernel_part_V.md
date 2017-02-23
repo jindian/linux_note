@@ -230,7 +230,6 @@ ___alloc_bootmem_nopanic (size=size@entry=16384, align=align@entry=32,
 582			if (region)
 (gdb) p region
 $10 = (void *) 0xc0036000
-
 ```
 
 (gdb) printf "acpi_realmode = 0x%x\nacpi_wakeup_address = 0x%x\n", acpi_realmode, acpi_wakeup_address
