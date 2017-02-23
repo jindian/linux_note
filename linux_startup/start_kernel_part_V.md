@@ -304,7 +304,11 @@ $1 = (struct ibft_table_header *) 0x0
 
   On an x86 system running in the PAE mode (only needed when more than 4GB of memory is installed), all three levels of page tables are present. The page global directory (PGD) contains only four entries, each corresponding to 1GB of virtual address space; the PGD is indexed using the top two bits of the virtual address. Each PGD entry points to a page middle directory (PMD), which holds 512 entries indexed by bits 21-29 of the virtual address. The PMD entry (if it is not empty) points to an actual page table. Using bits 12-20 of the virtual address to index into that page table yields the actual physical address of the page, assuming that page is currently resident in RAM.
 
+  in 2.6.11, the page table structure will include a new level, called "PUD," placed immediately below the top-level PGD directory. The new page table structure looks like this:
   
+  ![](/assets/four-level-pt.png)
+  
+
 
 # Links:
   * [brk/sbrk](https://en.wikipedia.org/wiki/Sbrk)
