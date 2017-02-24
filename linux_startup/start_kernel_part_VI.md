@@ -129,7 +129,55 @@ struct apic apic_default = {
 };
 ```
 
+## set quirks for PIC devices
+
+  Sometimes there are bugs in the hardware itself. Quirks are software ways to work around these bugs.
+  
+```early_quirks
+
+void __init early_quirks(void)
+{
+	int slot, func;
+
+	if (!early_pci_allowed())
+		return;
+
+	/* Poor man's PCI discovery */
+	/* Only scan the root bus */
+	for (slot = 0; slot < 32; slot++)
+		for (func = 0; func < 8; func++) {
+			/* Only probe function 0 on single fn devices */
+			if (check_dev_quirk(0, slot, func))
+				break;
+		}
+}
+
+```
+  
+  In `early_quirks` checks if early PCI is allowed with `early_pci_allowed`.
+
+```early_pci_allowed
+
+int early_pci_allowed(void)
+{
+	return (pci_probe & (PCI_PROBE_CONF1|PCI_PROBE_NOEARLY)) ==
+			PCI_PROBE_CONF1;
+}
+```
+
+  Where `pci_probe` defined as follow:
+
+```pci_probe
+
+unsigned int pci_probe = PCI_PROBE_BIOS | PCI_PROBE_CONF1 | PCI_PROBE_CONF2 |
+				PCI_PROBE_MMCONF;
+```
+
+  Apply early quirk to a given PCI device with `check_dev_quirk`
+  
 # Links
 
   * [Trampoline](https://en.wikipedia.org/wiki/Trampoline_(computing)
-  * [Intel MultiProcessor Specification](http://download.intel.com/design/archives/processors/pro/docs/24201606.pdf) 
+  * [Intel MultiProcessor Specification](http://download.intel.com/design/archives/processors/pro/docs/24201606.pdf)
+  * [What are PCI quirks?](http://unix.stackexchange.com/questions/83390/what-are-pci-quirks) 
+  * [Quirks](https://wiki.ubuntu.com/X/Quirks)

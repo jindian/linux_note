@@ -239,7 +239,8 @@
                 |--clone_pgd_range                                       # arch/x86/include/asm/pgtable.h:619
             |--generic_apic_probe                                        # arch/x86/kernel/apic/probe_32.c:240
             |--early_quirks                                              # arch/x86/kernel/early-quirks.c:279
-                
+                |--early_pci_allowed                                     # arch/x86/pci/early.c
+                |--check_dev_quirk                                       # arch/x86/kernel/early-quirks.c:240
             
             
                 
