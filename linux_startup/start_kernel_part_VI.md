@@ -174,6 +174,48 @@ unsigned int pci_probe = PCI_PROBE_BIOS | PCI_PROBE_CONF1 | PCI_PROBE_CONF2 |
 ```
 
   Apply early quirk to a given PCI device with `check_dev_quirk`
+
+```check_dev_quirk
+
+static int __init check_dev_quirk(int num, int slot, int func)
+{
+	u16 class;
+	u16 vendor;
+	u16 device;
+	u8 type;
+	int i;
+
+	class = read_pci_config_16(num, slot, func, PCI_CLASS_DEVICE);
+
+	if (class == 0xffff)
+		return -1; /* no class, treat as single function */
+
+	vendor = read_pci_config_16(num, slot, func, PCI_VENDOR_ID);
+
+	device = read_pci_config_16(num, slot, func, PCI_DEVICE_ID);
+
+	for (i = 0; early_qrk[i].f != NULL; i++) {
+		if (((early_qrk[i].vendor == PCI_ANY_ID) ||
+			(early_qrk[i].vendor == vendor)) &&
+			((early_qrk[i].device == PCI_ANY_ID) ||
+			(early_qrk[i].device == device)) &&
+			(!((early_qrk[i].class ^ class) &
+			    early_qrk[i].class_mask))) {
+				if ((early_qrk[i].flags &
+				     QFLAG_DONE) != QFLAG_DONE)
+					early_qrk[i].f(num, slot, func);
+				early_qrk[i].flags |= QFLAG_APPLIED;
+			}
+	}
+
+	type = read_pci_config_byte(num, slot, func,
+				    PCI_HEADER_TYPE);
+	if (!(type & 0x80))
+		return -1;
+
+	return 0;
+}
+```
   
 # Links
 
