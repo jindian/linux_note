@@ -18,7 +18,16 @@ High-level programming
   As used in some Lisp implementations, a trampoline is a loop that iteratively invokes thunk-returning functions (continuation-passing style). A single trampoline suffices to express all control transfers of a program; a program so expressed is trampolined, or in trampolined style; converting a program to trampolined style is trampolining. Programmers can use trampolined functions to implement tail-recursive function calls in stack-oriented programming languages.
   In Java, trampoline refers to using reflection to avoid using inner classes, for example in event listeners. The time overhead of a reflection call is traded for the space overhead of an inner class. Trampolines in Java usually involve the creation of a GenericListener to pass events to an outer class.
 
-  `setup_trampoline_page_table` copy kernel address and initialize low mappings
+  `setup_trampoline_page_table` copy kernel address and initialize low mappings, inside `setup_trampoline_page_table` it involve `clone_pgd_range` to copy and initialize operation.
+
+```clone_pgd_range
+
+clone_pgd_range (dst=0xc18db018, count=1, src=<optimized out>)
+    at /home/start-kernel/work_space/github/linux_startup/linux-2.6.32.69/arch/x86/include/asm/pgtable.h:621
+    
+clone_pgd_range (dst=0xc18db000, count=1, src=<optimized out>)
+    at /home/start-kernel/work_space/github/linux_startup/linux-2.6.32.69/arch/x86/include/asm/pgtable.h:621
+```
 
 # Links
 
