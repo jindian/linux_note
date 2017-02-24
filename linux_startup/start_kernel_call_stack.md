@@ -243,6 +243,7 @@
                 |--check_dev_quirk                                       # arch/x86/kernel/early-quirks.c:240
                     |--read_pci_config_16                                # arch/x86/pci/early.c:29
                     |--read_pci_config_byte                              # arch/x86/pci/early.c:20
+            |--acpi_boot_init                                            # arch/x86/kernel/acpi/boot.c:1595
             
             
                 
