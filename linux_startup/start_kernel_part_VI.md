@@ -9,6 +9,7 @@ Low-level programming
   Trampolines (sometimes referred to as indirect jump vectors) are memory locations holding addresses pointing to interrupt service routines, I/O routines, etc. Execution jumps into the trampoline and then immediately jumps out, or bounces, hence the term trampoline. They have many uses:
 
 CPUs
+
   Trampoline can be used to overcome the limitations imposed by a CPU architecture that expects to always find vectors in fixed locations.
   When an operating system is booted on a symmetric multiprocessing (SMP) machine, only one processor, the boot-strap processor, will be active. After the operating system has configured itself, it will instruct the other processors to jump to a piece of trampoline code that will initialize the processors and wait for the operating system to start scheduling threads on them.
 
