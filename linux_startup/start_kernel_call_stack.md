@@ -236,6 +236,7 @@
             |--x86_init.paging.pagetable_setup_done
                 -> native_pagetable_setup_done                           # arch/x86/mm/init_32.c:504
             |--setup_trampoline_page_table                               # arch/x86/kernel/trampoline.c:44
+                |--clone_pgd_range                                       # arch/x86/include/asm/pgtable.h:619
             
             
                 
