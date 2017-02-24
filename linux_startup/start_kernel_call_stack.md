@@ -238,7 +238,7 @@
             |--setup_trampoline_page_table                               # arch/x86/kernel/trampoline.c:44
                 |--clone_pgd_range                                       # arch/x86/include/asm/pgtable.h:619
             |--generic_apic_probe                                        # arch/x86/kernel/apic/probe_32.c:240
-            |--
+            |--early_quirks                                              # arch/x86/kernel/early-quirks.c:279
                 
             
             
