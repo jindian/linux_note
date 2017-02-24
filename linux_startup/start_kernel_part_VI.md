@@ -173,7 +173,30 @@ unsigned int pci_probe = PCI_PROBE_BIOS | PCI_PROBE_CONF1 | PCI_PROBE_CONF2 |
 				PCI_PROBE_MMCONF;
 ```
 
-  Apply early quirk to a given PCI device with `check_dev_quirk`
+  Apply early quirk to a given PCI device with `check_dev_quirk`, it read PCI configuration, if the result matches with information in pre-configured `early_qrk`, apply it. `early_qrk` defination as follow:
+  
+```early_qrk
+
+/*
+ * Only works for devices on the root bus. If you add any devices
+ * not on bus 0 readd another loop level in early_quirks(). But
+ * be careful because at least the Nvidia quirk here relies on
+ * only matching on bus 0.
+ */
+static struct chipset early_qrk[] __initdata = {
+	{ PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID,
+	  PCI_CLASS_BRIDGE_PCI, PCI_ANY_ID, QFLAG_APPLY_ONCE, nvidia_bugs },
+	{ PCI_VENDOR_ID_VIA, PCI_ANY_ID,
+	  PCI_CLASS_BRIDGE_PCI, PCI_ANY_ID, QFLAG_APPLY_ONCE, via_bugs },
+	{ PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB,
+	  PCI_CLASS_BRIDGE_HOST, PCI_ANY_ID, 0, fix_hypertransport_config },
+	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_IXP400_SMBUS,
+	  PCI_CLASS_SERIAL_SMBUS, PCI_ANY_ID, 0, ati_bugs },
+	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_SBX00_SMBUS,
+	  PCI_CLASS_SERIAL_SMBUS, PCI_ANY_ID, 0, ati_bugs_contd },
+	{}
+};
+```
 
 ```check_dev_quirk
 
@@ -216,10 +239,27 @@ static int __init check_dev_quirk(int num, int slot, int func)
 	return 0;
 }
 ```
-  
+
+  `read_pci_config_16` and `read_pci_config_byte` used to read [PCI configuration space](https://en.wikipedia.org/wiki/PCI_configuration_space), where `0xcf8` is  Configuration Space Address I/O port and `0xcfc` is Configuration Space Data I/O port, about `outl` and `inw` please check [x86 instruction listings](https://en.wikipedia.org/wiki/X86_instruction_listings)
+
+```read_pci_config_16
+
+u16 read_pci_config_16(u8 bus, u8 slot, u8 func, u8 offset)
+{
+	u16 v;
+	outl(0x80000000 | (bus<<16) | (slot<<11) | (func<<8) | offset, 0xcf8);
+	v = inw(0xcfc + (offset&2));
+	pr_debug("%x reading 2 from %x: %x\n", slot, offset, v);
+	return v;
+}
+```
+
 # Links
 
   * [Trampoline](https://en.wikipedia.org/wiki/Trampoline_(computing)
   * [Intel MultiProcessor Specification](http://download.intel.com/design/archives/processors/pro/docs/24201606.pdf)
   * [What are PCI quirks?](http://unix.stackexchange.com/questions/83390/what-are-pci-quirks) 
   * [Quirks](https://wiki.ubuntu.com/X/Quirks)
+  * [PCI configuration space](https://en.wikipedia.org/wiki/PCI_configuration_space)
+  * [x86 instruction listings](https://en.wikipedia.org/wiki/X86_instruction_listings)
+  
