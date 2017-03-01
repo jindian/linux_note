@@ -621,8 +621,99 @@ acpi_table_parse (id=id@entry=0xc15cfd85 "HPET",
   
 ## get boot-time SMP configuration
 
-  
+  `get_smp_config` involves `default_get_smp_config` confiured in x86_init.
 
+```get_smp_config
+
+static inline void get_smp_config(void)
+{
+	x86_init.mpparse.get_smp_config(0);
+}
+```
+
+  `default_get_smp_config` scans the memory blocks for an SMP configuration block, 
+
+```default_get_smp_config
+
+void __init default_get_smp_config(unsigned int early)
+{
+	struct mpf_intel *mpf = mpf_found;
+
+	if (!mpf)
+		return;
+
+	if (acpi_lapic && early)
+		return;
+
+	/*
+	 * MPS doesn't support hyperthreading, aka only have
+	 * thread 0 apic id in MPS table
+	 */
+	if (acpi_lapic && acpi_ioapic)
+		return;
+
+	printk(KERN_INFO "Intel MultiProcessor Specification v1.%d\n",
+	       mpf->specification);
+#if defined(CONFIG_X86_LOCAL_APIC) && defined(CONFIG_X86_32)
+	if (mpf->feature2 & (1 << 7)) {
+		printk(KERN_INFO "    IMCR and PIC compatibility mode.\n");
+		pic_mode = 1;
+	} else {
+		printk(KERN_INFO "    Virtual Wire compatibility mode.\n");
+		pic_mode = 0;
+	}
+#endif
+	/*
+	 * Now see if we need to read further.
+	 */
+	if (mpf->feature1 != 0) {
+		if (early) {
+			/*
+			 * local APIC has default address
+			 */
+			mp_lapic_addr = APIC_DEFAULT_PHYS_BASE;
+			return;
+		}
+
+		printk(KERN_INFO "Default MP configuration #%d\n",
+		       mpf->feature1);
+		construct_default_ISA_mptable(mpf->feature1);
+
+	} else if (mpf->physptr) {
+		if (check_physptr(mpf, early))
+			return;
+	} else
+		BUG();
+
+	if (!early)
+		printk(KERN_INFO "Processors: %d\n", num_processors);
+	/*
+	 * Only use the first configuration found.
+	 */
+}
+```
+
+  Debug information of our execution:
+
+```debug_info_default_get_smp_config
+
+default_get_smp_config (early=0) at arch/x86/kernel/mpparse.c:608
+608		struct mpf_intel *mpf = mpf_found;
+(gdb) n
+607	{
+(gdb) 
+610		if (!mpf)
+(gdb) 
+613		if (acpi_lapic && early)
+(gdb) 
+620		if (acpi_lapic && acpi_ioapic)
+(gdb) 
+661	}
+(gdb) p acpi_lapic
+$14 = 1
+(gdb) p acpi_ioapic 
+$15 = 1
+```
 
 
 # Links

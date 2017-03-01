@@ -247,6 +247,8 @@
                 |--acpi_table_parse                                      # drivers/acpi/tables.c:278
                 |--acpi_process_madt                                     # arch/x86/kernel/acpi/boot.c:1186
             |--sfi_init                                                  # drivers/sfi/sfi_core.c:385
+            |--get_smp_config                                            # arch/x86/include/asm/mpspec.h:60
+                |--default_get_smp_config                                # arch/x86/kernel/mpparse.c:606
             
             
                 
