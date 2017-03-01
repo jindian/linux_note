@@ -245,6 +245,7 @@
                     |--read_pci_config_byte                              # arch/x86/pci/early.c:20
             |--acpi_boot_init                                            # arch/x86/kernel/acpi/boot.c:1595
                 |--dmi_check_system                                      # drivers/firmware/dmi_scan.c:
+                    |--dmi_matches                                       # drivers/firmware/dmi_scan.c:427
             
             
                 

@@ -290,6 +290,63 @@ int __init acpi_boot_init(void)
 }
 ```
 
+  `acpi_boot_init` checks system DMI data with `dmi_check_system`, the array list `acpi_dmi_table_late` configured in file arch/x86/kernel/acpi/boot.c:1468
+  
+  `dmi_check_system` walks the list `acpi_dmi_table_late` running matching functions until someone returns non zero or we hit the end. Callback function is called for each successful match. Return the number of matches.
+
+```
+
+dmi_check_system (list=list@entry=0xc1738260 <acpi_dmi_table_late>)
+    at drivers/firmware/dmi_scan.c:469
+469		int count = 0;
+(gdb) n
+472		for (d = list; !dmi_is_end_of_table(d); d++)
+(gdb) 
+468	{
+(gdb) 
+472		for (d = list; !dmi_is_end_of_table(d); d++)
+(gdb) 
+473			if (dmi_matches(d)) {
+(gdb) s
+dmi_matches (dmi=dmi@entry=0xc1738260 <acpi_dmi_table_late>)
+    at drivers/firmware/dmi_scan.c:427
+427	{
+(gdb) n
+430		WARN(!dmi_initialized, KERN_ERR "dmi check: not initialized yet.\n");
+(gdb) 
+433			int s = dmi->matches[i].slot;
+(gdb) 
+434			if (s == DMI_NONE)
+(gdb) 
+436			if (dmi_ident[s]
+(gdb) 
+437			    && strstr(dmi_ident[s], dmi->matches[i].substr))
+(gdb) 
+440			return false;
+(gdb) 
+443	}
+(gdb) 
+dmi_check_system (list=list@entry=0xc1738260 <acpi_dmi_table_late>)
+    at drivers/firmware/dmi_scan.c:472
+472		for (d = list; !dmi_is_end_of_table(d); d++)
+(gdb) 
+473			if (dmi_matches(d)) {
+(gdb) 
+472		for (d = list; !dmi_is_end_of_table(d); d++)
+(gdb) 
+473			if (dmi_matches(d)) {
+(gdb) 
+472		for (d = list; !dmi_is_end_of_table(d); d++)
+(gdb) 
+473			if (dmi_matches(d)) {
+(gdb) 
+472		for (d = list; !dmi_is_end_of_table(d); d++)
+(gdb) 
+480	}
+```
+
+
+
 # Links
 
   * [Trampoline](https://en.wikipedia.org/wiki/Trampoline_(computing)
