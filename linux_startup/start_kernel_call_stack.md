@@ -227,8 +227,6 @@
                             |--one_md_table_init                         # arch/x86/mm/init_32.c:79
                             |--one_page_table_init                       # arch/x86/mm/init_32.c:108
                             |--page_table_kmap_check
-            
-                            
                     |--__flush_tlb_all                                   # arch/x86/include/asm/tlbflush.h:49
                         |--__native_flush_tlb_single                     # arch/x86/include/asm/tlbflush.h:44
                     |--kmap_init                                         # arch/x86/mm/init_32.c:383
@@ -244,8 +242,11 @@
                     |--read_pci_config_16                                # arch/x86/pci/early.c:29
                     |--read_pci_config_byte                              # arch/x86/pci/early.c:20
             |--acpi_boot_init                                            # arch/x86/kernel/acpi/boot.c:1595
-                |--dmi_check_system                                      # drivers/firmware/dmi_scan.c:
-                    |--dmi_matches                                       # drivers/firmware/dmi_scan.c:427
+                |--dmi_check_system                                      # drivers/firmware/dmi_scan.c:467
+                    |--dmi_matches                                       # drivers/firmware/dmi_scan.c:426
+                |--acpi_table_parse                                      # drivers/acpi/tables.c:278
+                |--acpi_process_madt                                     # arch/x86/kernel/acpi/boot.c:1186
+                    |--acpi_table_parse
             
             
                 

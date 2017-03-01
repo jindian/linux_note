@@ -347,12 +347,264 @@ dmi_check_system (list=list@entry=0xc1738260 <acpi_dmi_table_late>)
 
   Check acpi_disabled and acpi_ht
 
-```
+```acpi_disabled
 
 (gdb) p acpi_disabled
 $10 = 0
 (gdb) p acpi_ht
 $11 = 1
+```
+
+  Find table with id: ACPI_SIG_BOOT, run `acpi_parse_sbf` on it.
+
+```ACPI_SIG_BOOT
+
+1607		acpi_table_parse(ACPI_SIG_BOOT, acpi_parse_sbf);
+(gdb) s
+acpi_table_parse (id=id@entry=0xc16200b8 "BOOT", 
+    handler=handler@entry=0xc1703da2 <acpi_parse_sbf>)
+    at drivers/acpi/tables.c:283
+280		struct acpi_table_header *table = NULL;
+(gdb) n 
+283		if (acpi_disabled && !acpi_ht)
+(gdb) 
+286		if (!handler)
+(gdb) 
+289		if (strncmp(id, ACPI_SIG_MADT, 4) == 0)
+(gdb) 
+292			acpi_get_table_with_size(id, 0, &table, &tbl_size);
+(gdb) 
+294		if (table) {
+(gdb) n
+299			return 1;
+```
+
+  Find table with id: ACPI_SIG_FADT, run `acpi_parse_fadt` on it. `acpi_parse_fadt` initializes `pmtmr_ioport`. Unmap found table in early init memory.
+  
+```ACPI_SIG_FADT
+
+acpi_boot_init () at arch/x86/kernel/acpi/boot.c:1612
+1612		acpi_table_parse(ACPI_SIG_FADT, acpi_parse_fadt);
+(gdb) s
+acpi_table_parse (id=id@entry=0xc15d1245 "FACP", 
+    handler=handler@entry=0xc1704151 <acpi_parse_fadt>)
+    at drivers/acpi/tables.c:283
+280		struct acpi_table_header *table = NULL;
+(gdb) n
+283		if (acpi_disabled && !acpi_ht)
+(gdb) 
+286		if (!handler)
+(gdb) 
+289		if (strncmp(id, ACPI_SIG_MADT, 4) == 0)
+(gdb) 
+292			acpi_get_table_with_size(id, 0, &table, &tbl_size);
+(gdb) 
+294		if (table) {
+(gdb) 
+295			handler(table);
+(gdb) s
+acpi_parse_fadt (table=0xffd001c0) at arch/x86/kernel/acpi/boot.c:716
+716		if (acpi_gbl_FADT.header.revision >= FADT2_REVISION_ID) {
+(gdb) n
+732			pmtmr_ioport = acpi_gbl_FADT.pm_timer_block;
+(gdb) n
+734		if (pmtmr_ioport)
+(gdb) 
+735			printk(KERN_INFO PREFIX "PM-Timer IO Port: %#x\n",
+(gdb) 
+739	}
+(gdb) 
+acpi_table_parse (id=id@entry=0xc15d1245 "FACP", 
+    handler=handler@entry=0xc1704151 <acpi_parse_fadt>)
+    at drivers/acpi/tables.c:296
+296			early_acpi_os_unmap_memory(table, tbl_size);
+(gdb) s
+early_acpi_os_unmap_memory (virt=0xffd001c0, size=116)
+    at drivers/acpi/osl.c:317
+317		if (!acpi_gbl_permanent_mmap)
+(gdb) n
+316	{
+(gdb) 
+318			__acpi_unmap_table(virt, size);
+(gdb) s
+__acpi_unmap_table (map=0xffd001c0 "FACPt", size=116)
+    at arch/x86/kernel/acpi/boot.c:116
+116		if (!map || !size)
+(gdb) n
+115	{
+(gdb) 
+119		early_iounmap(map, size);
+(gdb) n
+120	}
+(gdb) 
+early_acpi_os_unmap_memory (virt=<optimized out>, size=<optimized out>)
+    at drivers/acpi/osl.c:319
+319	}
+(gdb) 
+acpi_table_parse (id=id@entry=0xc15d1245 "FACP", 
+    handler=handler@entry=0xc1704151 <acpi_parse_fadt>)
+    at drivers/acpi/tables.c:297
+297			return 0;
+(gdb) 
+300	}
+(gdb) 
+```
+
+  Process the Multiple APIC Description Table (MADT)
+  
+```MADT
+
+acpi_boot_init () at arch/x86/kernel/acpi/boot.c:1617
+1617		acpi_process_madt();
+(gdb) s
+acpi_process_madt () at arch/x86/kernel/acpi/boot.c:1191
+1191		if (!acpi_table_parse(ACPI_SIG_MADT, acpi_parse_madt)) {
+(gdb) s
+acpi_table_parse (id=id@entry=0xc15d1d24 "APIC", 
+    handler=handler@entry=0xc1703de8 <acpi_parse_madt>)
+    at drivers/acpi/tables.c:283
+280		struct acpi_table_header *table = NULL;
+(gdb) n
+283		if (acpi_disabled && !acpi_ht)
+(gdb) 
+286		if (!handler)
+
+(gdb) 
+289		if (strncmp(id, ACPI_SIG_MADT, 4) == 0)
+(gdb) 
+290			acpi_get_table_with_size(id, acpi_apic_instance, &table, &tbl_size);
+(gdb) 
+294		if (table) {
+(gdb) 
+295			handler(table);
+(gdb) s
+acpi_parse_madt (table=0xffd00b11) at arch/x86/kernel/acpi/boot.c:127
+127		if (!cpu_has_apic)
+(gdb) n
+124	{
+(gdb) 
+131		if (!madt) {
+(gdb) 
+136		if (madt->address) {
+(gdb) 
+139			printk(KERN_DEBUG PREFIX "Local APIC address 0x%08x\n",
+(gdb) 
+137			acpi_lapic_addr = (u64) madt->address;
+(gdb) 
+139			printk(KERN_DEBUG PREFIX "Local APIC address 0x%08x\n",
+(gdb) 
+143		default_acpi_madt_oem_check(madt->header.oem_id,
+(gdb) 
+144					    madt->header.oem_table_id);
+(gdb) s
+default_acpi_madt_oem_check (
+    oem_id=oem_id@entry=0xffd00b1b "BOCHS BXPCAPIC\001", 
+    oem_table_id=oem_table_id@entry=0xffd00b21 "BXPCAPIC\001")
+    at arch/x86/kernel/apic/probe_32.c:284
+284		for (i = 0; apic_probe[i]; ++i) {
+(gdb) n
+281	{
+(gdb) 
+284		for (i = 0; apic_probe[i]; ++i) {
+(gdb) 
+285			if (!apic_probe[i]->acpi_madt_oem_check)
+(gdb) 
+284		for (i = 0; apic_probe[i]; ++i) {
+(gdb) 
+297		return 0;
+(gdb) 
+298	}
+(gdb) 
+acpi_parse_madt (table=0xffd00b11) at arch/x86/kernel/acpi/boot.c:146
+146		return 0;
+(gdb) 
+147	}
+(gdb) n
+acpi_table_parse (id=id@entry=0xc15d1d24 "APIC", 
+    handler=handler@entry=0xc1703de8 <acpi_parse_madt>)
+    at drivers/acpi/tables.c:296
+296			early_acpi_os_unmap_memory(table, tbl_size);
+(gdb) 
+297			return 0;
+(gdb) 
+300	}
+(gdb) 
+acpi_process_madt () at arch/x86/kernel/acpi/boot.c:1196
+1196			error = acpi_parse_madt_lapic_entries();
+(gdb) 
+1198				acpi_lapic = 1;
+(gdb) 
+1203				error = acpi_parse_madt_ioapic_entries();
+(gdb) 
+1205					acpi_irq_model = ACPI_IRQ_MODEL_IOAPIC;
+(gdb) 
+1206					acpi_ioapic = 1;
+(gdb) 
+1208					smp_found_config = 1;
+(gdb) 
+1236		if (acpi_lapic && acpi_ioapic)
+(gdb) 
+1237			printk(KERN_INFO "Using ACPI (MADT) for SMP configuration "
+(gdb) 
+```
+
+  Find table with id: ACPI_SIG_HPET, run `acpi_parse_hpet` on it. 
+
+```
+
+1619		acpi_table_parse(ACPI_SIG_HPET, acpi_parse_hpet);
+(gdb) s
+acpi_table_parse (id=id@entry=0xc15cfd85 "HPET", 
+    handler=handler@entry=0xc1703e51 <acpi_parse_hpet>)
+    at drivers/acpi/tables.c:283
+283		if (acpi_disabled && !acpi_ht)
+(gdb) n
+286		if (!handler)
+(gdb) 
+289		if (strncmp(id, ACPI_SIG_MADT, 4) == 0)
+(gdb) 
+292			acpi_get_table_with_size(id, 0, &table, &tbl_size);
+(gdb) 
+294		if (table) {
+(gdb) 
+295			handler(table);
+(gdb) s
+acpi_parse_hpet (table=0xffd00b89) at arch/x86/kernel/acpi/boot.c:628
+628		if (!hpet_tbl) {
+(gdb) n
+633		if (hpet_tbl->address.space_id != ACPI_SPACE_MEM) {
+(gdb) 
+639		hpet_address = hpet_tbl->address.address;
+(gdb) 
+645		if (!hpet_address) {
+(gdb) 
+672		printk(KERN_INFO PREFIX "HPET id: %#x base: %#lx\n",
+(gdb) 
+680		hpet_res = alloc_bootmem(sizeof(*hpet_res) + HPET_RESOURCE_NAME_SIZE);
+(gdb) 
+682		hpet_res->name = (void *)&hpet_res[1];
+(gdb) 
+683		hpet_res->flags = IORESOURCE_MEM;
+(gdb) 
+684		snprintf((char *)hpet_res->name, HPET_RESOURCE_NAME_SIZE, "HPET %u",
+(gdb) 
+687		hpet_res->start = hpet_address;
+(gdb) 
+688		hpet_res->end = hpet_address + (1 * 1024) - 1;
+(gdb) 
+690		return 0;
+(gdb) 
+691	}
+(gdb) 
+acpi_table_parse (id=id@entry=0xc15cfd85 "HPET", 
+    handler=handler@entry=0xc1703e51 <acpi_parse_hpet>)
+    at drivers/acpi/tables.c:296
+296			early_acpi_os_unmap_memory(table, tbl_size);
+(gdb) 
+297			return 0;
+(gdb) 
+300	}
+(gdb) 
 ```
 
 # Links
