@@ -246,7 +246,7 @@
                     |--dmi_matches                                       # drivers/firmware/dmi_scan.c:426
                 |--acpi_table_parse                                      # drivers/acpi/tables.c:278
                 |--acpi_process_madt                                     # arch/x86/kernel/acpi/boot.c:1186
-                    |--acpi_table_parse
+            |--sfi_init                                                  # drivers/sfi/sfi_core.c:385
             
             
                 
