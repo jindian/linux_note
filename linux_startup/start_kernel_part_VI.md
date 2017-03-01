@@ -254,6 +254,8 @@ u16 read_pci_config_16(u8 bus, u8 slot, u8 func, u8 offset)
 }
 ```
 
+## 
+
 # Links
 
   * [Trampoline](https://en.wikipedia.org/wiki/Trampoline_(computing)
@@ -262,4 +264,7 @@ u16 read_pci_config_16(u8 bus, u8 slot, u8 func, u8 offset)
   * [Quirks](https://wiki.ubuntu.com/X/Quirks)
   * [PCI configuration space](https://en.wikipedia.org/wiki/PCI_configuration_space)
   * [x86 instruction listings](https://en.wikipedia.org/wiki/X86_instruction_listings)
+  * [Advanced Configuration and Power Interface](https://en.wikipedia.org/wiki/Advanced_Configuration_and_Power_Interface)
+  * [Desktop Management Interface](https://en.wikipedia.org/wiki/Desktop_Management_Interface)
+  * [System Management BIOS](https://en.wikipedia.org/wiki/System_Management_BIOS)
   
