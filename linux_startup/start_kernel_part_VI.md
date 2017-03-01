@@ -607,6 +607,22 @@ acpi_table_parse (id=id@entry=0xc15cfd85 "HPET",
 (gdb) 
 ```
 
+## initialize simple firmware interface
+
+  Simple Firmware Interface (SFI) is developed by Intel Corporation as a lightweight method for firmware to export static tables to the operating system. It is supported by Intel's hand-held Moorestown platform.
+
+  SFI tables are data structures in memory, and all SFI tables share a common table header format. The operating system finds the system table by searching 16 byte boundaries between physical address 0x000E0000 and 0x000FFFFF. SFI has CPU, APIC, Memory Map, Idle, Frequency, M-Timer, M-RTC, OEMx, Wake Vector, I²C Device, and a SPI Device table.
+
+  SFI provides access to a standard ACPI XSDT (Extended System Description Table). XSDT is used by SFI to prevent namespace collision between SPI and ACPI. It can access standard ACPI tables such as PCI Memory Configuration Table (MCFG).
+
+  `sfi_init` checks if acpi_disabled, disable sfi if acpi enabled.
+  
+  If acpi_disabled, find sfi memory region and sfi sigature with `sfi_find_syst` to get sfi table. Or checksum all the tables in SYST and print their headers with `sfi_parse_syst`. Or regiseter lapics and io-apics with `sfi_find_syst`.
+  
+##
+
+
+
 # Links
 
   * [Trampoline](https://en.wikipedia.org/wiki/Trampoline_(computing)
@@ -618,4 +634,5 @@ acpi_table_parse (id=id@entry=0xc15cfd85 "HPET",
   * [Advanced Configuration and Power Interface](https://en.wikipedia.org/wiki/Advanced_Configuration_and_Power_Interface)
   * [Desktop Management Interface](https://en.wikipedia.org/wiki/Desktop_Management_Interface)
   * [System Management BIOS](https://en.wikipedia.org/wiki/System_Management_BIOS)
+  * [Simple Firmware Interface](https://en.wikipedia.org/wiki/Simple_Firmware_Interface)
   
