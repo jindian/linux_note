@@ -292,9 +292,9 @@ int __init acpi_boot_init(void)
 
   `acpi_boot_init` checks system DMI data with `dmi_check_system`, the array list `acpi_dmi_table_late` configured in file arch/x86/kernel/acpi/boot.c:1468
   
-  `dmi_check_system` walks the list `acpi_dmi_table_late` running matching functions until someone returns non zero or we hit the end. Callback function is called for each successful match. Return the number of matches.
+  `dmi_check_system` walks the list `acpi_dmi_table_late` running matching functions until someone returns non zero or we hit the end. Callback function is called for each successful match. Return the number of matches. No match found from following debug information.
 
-```
+```dmi_check_system_debug
 
 dmi_check_system (list=list@entry=0xc1738260 <acpi_dmi_table_late>)
     at drivers/firmware/dmi_scan.c:469
@@ -345,7 +345,15 @@ dmi_check_system (list=list@entry=0xc1738260 <acpi_dmi_table_late>)
 480	}
 ```
 
+  Check acpi_disabled and acpi_ht
 
+```
+
+(gdb) p acpi_disabled
+$10 = 0
+(gdb) p acpi_ht
+$11 = 1
+```
 
 # Links
 
