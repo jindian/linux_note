@@ -619,7 +619,9 @@ acpi_table_parse (id=id@entry=0xc15cfd85 "HPET",
   
   If acpi_disabled, find sfi memory region and sfi sigature with `sfi_find_syst` to get sfi table. Or checksum all the tables in SYST and print their headers with `sfi_parse_syst`. Or regiseter lapics and io-apics with `sfi_find_syst`.
   
-##
+## get boot-time SMP configuration
+
+  
 
 
 
