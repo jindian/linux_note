@@ -254,7 +254,41 @@ u16 read_pci_config_16(u8 bus, u8 slot, u8 func, u8 offset)
 }
 ```
 
-## 
+## initialize ACPI
+
+  In computing, the Advanced Configuration and Power Interface (ACPI) specification provides an open standard that operating systems can use to perform discovery and configuration of computer hardware components, to perform power management by, for example, putting unused components to sleep, and to perform status monitoring. Internally, ACPI advertises the available components and their functions to the operating system kernel using instruction lists ("methods") provided through the system firmware (UEFI or BIOS), which the kernel parses; and then executes the desired operations (such as the initialization of hardware components) using an embedded minimal virtual machine.
+  
+```acpi_boot_init
+
+int __init acpi_boot_init(void)
+{
+	/* those are executed after early-quirks are executed */
+	dmi_check_system(acpi_dmi_table_late);
+
+	/*
+	 * If acpi_disabled, bail out
+	 * One exception: acpi=ht continues far enough to enumerate LAPICs
+	 */
+	if (acpi_disabled && !acpi_ht)
+		return 1;
+
+	acpi_table_parse(ACPI_SIG_BOOT, acpi_parse_sbf);
+
+	/*
+	 * set sci_int and PM timer address
+	 */
+	acpi_table_parse(ACPI_SIG_FADT, acpi_parse_fadt);
+
+	/*
+	 * Process the Multiple APIC Description Table (MADT), if present
+	 */
+	acpi_process_madt();
+
+	acpi_table_parse(ACPI_SIG_HPET, acpi_parse_hpet);
+
+	return 0;
+}
+```
 
 # Links
 
