@@ -631,7 +631,7 @@ static inline void get_smp_config(void)
 }
 ```
 
-  `default_get_smp_config` scans the memory blocks for an SMP configuration block, 
+  `default_get_smp_config` scans the memory blocks for an SMP configuration block
 
 ```default_get_smp_config
 
@@ -691,28 +691,6 @@ void __init default_get_smp_config(unsigned int early)
 	 * Only use the first configuration found.
 	 */
 }
-```
-
-  Debug information of our execution:
-
-```debug_info_default_get_smp_config
-
-default_get_smp_config (early=0) at arch/x86/kernel/mpparse.c:608
-608		struct mpf_intel *mpf = mpf_found;
-(gdb) n
-607	{
-(gdb) 
-610		if (!mpf)
-(gdb) 
-613		if (acpi_lapic && early)
-(gdb) 
-620		if (acpi_lapic && acpi_ioapic)
-(gdb) 
-661	}
-(gdb) p acpi_lapic
-$14 = 1
-(gdb) p acpi_ioapic 
-$15 = 1
 ```
 
 
