@@ -249,6 +249,7 @@
             |--sfi_init                                                  # drivers/sfi/sfi_core.c:385
             |--get_smp_config                                            # arch/x86/include/asm/mpspec.h:60
                 |--default_get_smp_config                                # arch/x86/kernel/mpparse.c:606
+            |--prefill_possible_map                                      # arch/x86/kernel/smpboot.c:1202
             
             
                 

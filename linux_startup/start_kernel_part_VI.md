@@ -654,6 +654,8 @@ void __init default_get_smp_config(unsigned int early)
 	 * thread 0 apic id in MPS table
 	 */
 	if (acpi_lapic && acpi_ioapic)
+(gdb) printf "acpi_lapic = %d, acpi_ioapic = %d\n", acpi_lapic, acpi_ioapic
+acpi_lapic = 1, acpi_ioapic = 1
 		return;
 
 	printk(KERN_INFO "Intel MultiProcessor Specification v1.%d\n",
@@ -696,6 +698,7 @@ void __init default_get_smp_config(unsigned int early)
 	 */
 }
 ```
+
 
 
 # Links
