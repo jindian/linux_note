@@ -707,7 +707,7 @@ acpi_lapic = 1, acpi_ioapic = 1
 
 ## initialize APIC mappings
 
-  `init_apic_mappings` checks `x2apic_mode` enabled or not, read acpi id with `read_apic_id` if enabled. Abviously in our environment `x2apic_mode` is disabled.
+  `init_apic_mappings` checks `x2apic_mode` enabled or not, read APIC id with `read_apic_id` if enabled. Abviously in our environment `x2apic_mode` is disabled.
 
 ```
 
@@ -717,7 +717,6 @@ init_apic_mappings () at arch/x86/kernel/apic/apic.c:1626
 1626		if (x2apic_mode) {
 (gdb) p x2apic_mode 
 $7 = 0
-
 ```
 
   The xAPIC architecture provided a key mechanism for interrupt delivery in many generations of Intel processors and platforms across different market segments. This document describes the x2APIC architecture which is extended from the xAPIC architecture (the latter was first implemented on Intel® Pentium® 4 Processors, and extended the APIC architecture implemented on Pentium and P6 processors). Extensions to the xAPIC architecture are intended primarily to increase processor addressability.
@@ -735,6 +734,37 @@ $7 = 0
 
   A processor’s support to operate its local APIC in the x2APIC mode can be detected by querying the extended feature flag information reported by CPUID. When CPUID is executed with EAX = 1, the returned value in ECX[Bit 21] indicates processor’s
 support for the x2APIC mode. If CPUID.(EAX=01H):ECX[Bit 21] is set, then the local APIC in the processor supports the x2APIC capability and can be placed into the x2APIC mode. This bit is set only when the x2APIC hardware is present.
+
+  `init_apic_mappings` returns early if no local APIC can be found, otherwise save APIC maps.
+
+```init_apic_mappings
+
+void __init init_apic_mappings(void)
+
+  ......
+  
+	/* If no local APIC can be found return early */
+	if (!smp_found_config && detect_init_APIC()) {
+		/* lets NOP'ify apic operations */
+		pr_info("APIC: disable apic facility\n");
+		apic_disable();
+	} else {
+		apic_phys = mp_lapic_addr;
+
+		/*
+		 * acpi lapic path already maps that address in
+		 * acpi_register_lapic_address()
+		 */
+		if (!acpi_lapic)
+			set_fixmap_nocache(FIX_APIC_BASE, apic_phys);
+
+		apic_printk(APIC_VERBOSE, "mapped APIC to %08lx (%08lx)\n",
+					APIC_BASE, apic_phys);
+	}
+
+  ......
+
+```
 
 # Links
 
