@@ -701,7 +701,11 @@ acpi_lapic = 1, acpi_ioapic = 1
 
 ## set cpu possible bits
 
+  Multiple CPUs are managed through the use of the "cpumask".
   
+  Get number of cpu no matter enabled or disabled, set all cpus in possible bit map with `set_cpu_possible` and save possible cpu number.
+
+## 
 
 # Links
 
