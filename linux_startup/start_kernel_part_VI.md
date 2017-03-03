@@ -707,7 +707,21 @@ acpi_lapic = 1, acpi_ioapic = 1
 
 ## initialize APIC mappings
 
- 
+  The xAPIC architecture provided a key mechanism for interrupt delivery in many generations of Intel processors and platforms across different market segments. This document describes the x2APIC architecture which is extended from the xAPIC architecture (the latter was first implemented on Intel® Pentium® 4 Processors, and extended the APIC architecture implemented on Pentium and P6 processors). Extensions to the xAPIC architecture are intended primarily to increase processor addressability.
+  The x2APIC architecture provides backward compatibility to the xAPIC architecture and forward extendability for future Intel platform innovations. Specifically, x2APIC
+  • Retains all key elements of compatibility to the xAPIC architecture:
+  — delivery modes,
+  — interrupt and processor priorities,
+  — interrupt sources,
+  — interrupt destination types;
+  • Provides extensions to scale processor addressability for both the logical and
+  physical destination modes;
+  • Adds new features to enhance performance of interrupt delivery;
+  • Reduces complexity of logical destination mode interrupt delivery on link based
+  architectures. 
+
+  A processor’s support to operate its local APIC in the x2APIC mode can be detected by querying the extended feature flag information reported by CPUID. When CPUID is executed with EAX = 1, the returned value in ECX[Bit 21] indicates processor’s
+support for the x2APIC mode. If CPUID.(EAX=01H):ECX[Bit 21] is set, then the local APIC in the processor supports the x2APIC capability and can be placed into the x2APIC mode. This bit is set only when the x2APIC hardware is present.
 
 # Links
 
@@ -722,4 +736,5 @@ acpi_lapic = 1, acpi_ioapic = 1
   * [System Management BIOS](https://en.wikipedia.org/wiki/System_Management_BIOS)
   * [Simple Firmware Interface](https://en.wikipedia.org/wiki/Simple_Firmware_Interface)
   * [Cpumask](http://www.crashcourse.ca/wiki/index.php/Cpumask)
+  * [Intel® 64 Architecture x2APIC Specification](http://www.intel.com/content/www/us/en/architecture-and-technology/64-architecture-x2apic-specification.html)
   
