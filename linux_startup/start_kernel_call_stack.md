@@ -250,6 +250,8 @@
             |--get_smp_config                                            # arch/x86/include/asm/mpspec.h:60
                 |--default_get_smp_config                                # arch/x86/kernel/mpparse.c:606
             |--prefill_possible_map                                      # arch/x86/kernel/smpboot.c:1202
+                |--set_cpu_possible                                      # kernel/cpu.c:591
+                    |--cpumask_set_cpu                                   # include/linux/cpumask.h:240
             
             
                 

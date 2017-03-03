@@ -699,7 +699,9 @@ acpi_lapic = 1, acpi_ioapic = 1
 }
 ```
 
+## set cpu possible bits
 
+  
 
 # Links
 
@@ -713,4 +715,5 @@ acpi_lapic = 1, acpi_ioapic = 1
   * [Desktop Management Interface](https://en.wikipedia.org/wiki/Desktop_Management_Interface)
   * [System Management BIOS](https://en.wikipedia.org/wiki/System_Management_BIOS)
   * [Simple Firmware Interface](https://en.wikipedia.org/wiki/Simple_Firmware_Interface)
+  * [Cpumask](http://www.crashcourse.ca/wiki/index.php/Cpumask)
   
