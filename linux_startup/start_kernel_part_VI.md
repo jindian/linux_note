@@ -735,7 +735,7 @@ $7 = 0
   A processor’s support to operate its local APIC in the x2APIC mode can be detected by querying the extended feature flag information reported by CPUID. When CPUID is executed with EAX = 1, the returned value in ECX[Bit 21] indicates processor’s
 support for the x2APIC mode. If CPUID.(EAX=01H):ECX[Bit 21] is set, then the local APIC in the processor supports the x2APIC capability and can be placed into the x2APIC mode. This bit is set only when the x2APIC hardware is present.
 
-  `init_apic_mappings` returns early if no local APIC can be found, otherwise save APIC maps.
+  `init_apic_mappings` returns early if no local APIC can be found, otherwise save APIC maps. Next read APIC ID with `read_apic_id` and update boot CPU APIC ID.
 
 ```init_apic_mappings
 
@@ -766,11 +766,29 @@ $8 = 1
 $12 = 0xfee00000
 	}
 
-  ......
+	/*
+	 * Fetch the APIC ID of the BSP in case we have a
+	 * default configuration (or the MP table is broken).
+	 */
+	new_apicid = read_apic_id();
+	if (boot_cpu_physical_apicid != new_apicid) {
+(gdb) p new_apicid 
+$15 = 0
+(gdb) p boot_cpu_physical_apicid 
+$16 = 0
+		boot_cpu_physical_apicid = new_apicid;
+		/*
+		 * yeah -- we lie about apic_version
+		 * in case if apic was disabled via boot option
+		 * but it's not a problem for SMP compiled kernel
+		 * since smp_sanity_check is prepared for such a case
+		 * and disable smp mode
+		 */
+		apic_version[new_apicid] =
+			 GET_APIC_VERSION(apic_read(APIC_LVR));
+	}
 
 ```
-
-  Next `init_apic_mappings` read APIC ID with `read_apic_id`
 
 # Links
 
