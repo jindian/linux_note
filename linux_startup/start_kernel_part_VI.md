@@ -707,6 +707,19 @@ acpi_lapic = 1, acpi_ioapic = 1
 
 ## initialize APIC mappings
 
+  `init_apic_mappings` checks `x2apic_mode` enabled or not, read acpi id with `read_apic_id` if enabled. Abviously in our environment `x2apic_mode` is disabled.
+
+```
+
+1033		init_apic_mappings();
+(gdb) s
+init_apic_mappings () at arch/x86/kernel/apic/apic.c:1626
+1626		if (x2apic_mode) {
+(gdb) p x2apic_mode 
+$7 = 0
+
+```
+
   The xAPIC architecture provided a key mechanism for interrupt delivery in many generations of Intel processors and platforms across different market segments. This document describes the x2APIC architecture which is extended from the xAPIC architecture (the latter was first implemented on Intel® Pentium® 4 Processors, and extended the APIC architecture implemented on Pentium and P6 processors). Extensions to the xAPIC architecture are intended primarily to increase processor addressability.
   The x2APIC architecture provides backward compatibility to the xAPIC architecture and forward extendability for future Intel platform innovations. Specifically, x2APIC
   • Retains all key elements of compatibility to the xAPIC architecture:
