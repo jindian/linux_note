@@ -253,6 +253,10 @@
                 |--set_cpu_possible                                      # kernel/cpu.c:591
                     |--cpumask_set_cpu                                   # include/linux/cpumask.h:240
             |--init_apic_mappings                                        # arch/x86/kernel/apic/apic.c:1622
+                |--read_apic_id                                          # arch/x86/include/asm/apic.h:480
+                    |--apic_read                                         # arch/x86/include/asm/apic.h:376
+                        |--native_apic_mem_read                          # arch/x86/include/asm/apic.h:110
+                        |--default_get_apic_id                           # arch/x86/include/asm/apic.h:420
             
             
                 

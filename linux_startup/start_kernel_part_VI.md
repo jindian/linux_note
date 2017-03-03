@@ -745,6 +745,8 @@ void __init init_apic_mappings(void)
   
 	/* If no local APIC can be found return early */
 	if (!smp_found_config && detect_init_APIC()) {
+(gdb) p smp_found_config 
+$8 = 1
 		/* lets NOP'ify apic operations */
 		pr_info("APIC: disable apic facility\n");
 		apic_disable();
@@ -760,11 +762,15 @@ void __init init_apic_mappings(void)
 
 		apic_printk(APIC_VERBOSE, "mapped APIC to %08lx (%08lx)\n",
 					APIC_BASE, apic_phys);
+(gdb) p /x apic_phys 
+$12 = 0xfee00000
 	}
 
   ......
 
 ```
+
+  Next `init_apic_mappings` read APIC ID with `read_apic_id`
 
 # Links
 
