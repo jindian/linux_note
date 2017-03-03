@@ -252,6 +252,7 @@
             |--prefill_possible_map                                      # arch/x86/kernel/smpboot.c:1202
                 |--set_cpu_possible                                      # kernel/cpu.c:591
                     |--cpumask_set_cpu                                   # include/linux/cpumask.h:240
+            |--init_apic_mappings                                        # arch/x86/kernel/apic/apic.c:1622
             
             
                 

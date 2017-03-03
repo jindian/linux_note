@@ -705,7 +705,9 @@ acpi_lapic = 1, acpi_ioapic = 1
   
   Get number of cpu no matter enabled or disabled, set all cpus in possible bit map with `set_cpu_possible` and save possible cpu number.
 
-## 
+## initialize APIC mappings
+
+ 
 
 # Links
 
