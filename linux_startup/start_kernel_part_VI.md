@@ -631,7 +631,11 @@ static inline void get_smp_config(void)
 }
 ```
 
-  `default_get_smp_config` scans the memory blocks for an SMP configuration block
+  `default_get_smp_config` scans the memory blocks for an SMP configuration block.
+  
+  `mpf_found` was set when finding SMP configuration in `default_find_smp_config`, `acpi_lapic` was set as 1 when parsing MDAT LAPIC entries without error and `acpi_ioapic` was set as 1 when paring MDAT IO-APIC entries without any error.
+  
+  Check the value of `acpi_lapic` and `acpi_ioapic`, continue routine process if failed.
 
 ```default_get_smp_config
 
