@@ -1,6 +1,6 @@
 # start\_kernel part I
 
-start\_kernel routine is the most important routine of linux startup, it includes many subroutine of the initialization, it's devided into several parts to study.
+'start_kernel' is the most important routine of linux startup, it includes subroutines of linux initialization, it will be devided into several parts to study.
 
 ```start_kernel
 init/main.c:520

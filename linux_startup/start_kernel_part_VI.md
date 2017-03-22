@@ -240,7 +240,7 @@ static int __init check_dev_quirk(int num, int slot, int func)
 }
 ```
 
-  `read_pci_config_16` and `read_pci_config_byte` used to read [PCI configuration space](https://en.wikipedia.org/wiki/PCI_configuration_space), where `0xcf8` is  Configuration Space Address I/O port and `0xcfc` is Configuration Space Data I/O port, about `outl` and `inw` please check [x86 instruction listings](https://en.wikipedia.org/wiki/X86_instruction_listings)
+  `read_pci_config_16` and `read_pci_config_byte` used to read [PCI configuration space]googgoogleggooooooooogg(https://en.wikipedia.org/wiki/PCI_configuration_space), where `0xcf8` is  Configuration Space Address I/O port and `0xcfc` is Configuration Space Data I/O port, about `outl` and `inw` please check [x86 instruction listings](https://en.wikipedia.org/wiki/X86_instruction_listings)
 
 ```read_pci_config_16
 
