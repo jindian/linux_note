@@ -264,6 +264,7 @@
             |--e820_reserve_resources                                    # arch/x86/kernel/e820.c:1334
                 |--firmware_map_add_early                                # arch/x86/kernel/e820.c:163
                     |--firmware_map_add_entry                            # drivers/firmware/memmap.c:108
+            |--e820_mark_nosave_regions                                  # arch/x86/kernel/e820.c:681
             
             
                 

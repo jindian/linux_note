@@ -158,5 +158,7 @@ e820_reserve_resources () at arch/x86/kernel/e820.c:1366
 1366		for (i = 0; i < e820_saved.nr_map; i++) {
 ```
 
+## 
+
 # Links
   * [82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC)](http://download.intel.com/design/chipsets/datashts/29056601.pdf)
