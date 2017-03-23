@@ -60,7 +60,6 @@ ioapic_init_mappings () at arch/x86/kernel/apic/io_apic.c:4170
 4200			ioapic_res++;
 (gdb) 
 4202	}
-
 ```
 
 
