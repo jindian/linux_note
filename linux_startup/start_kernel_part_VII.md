@@ -68,6 +68,9 @@ ioapic_init_mappings () at arch/x86/kernel/apic/io_apic.c:4170
   
   `probe_nr_irqs_gsi` involve `acpi_probe_gsi` to get number of gsi and update `nr_irqs_gsi` if the result is bigger than it.
 
+## mark e820 reserved area as busy
+
+
 
 # Links
   * [82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC)](http://download.intel.com/design/chipsets/datashts/29056601.pdf)
