@@ -36,7 +36,32 @@ ioapic_setup_resources (nr_ioapics=1) at arch/x86/kernel/apic/io_apic.c:4140
 4158		ioapic_resources = res;
 ```
 
+  After completed resource setup, mapping response routine for each resource.
+  
+```ioapic_init_mappings
 
+ioapic_init_mappings () at arch/x86/kernel/apic/io_apic.c:4170
+4170		for (i = 0; i < nr_ioapics; i++) {
+(gdb)
+4171			if (smp_found_config) {
+(gdb) 
+4172				ioapic_phys = mp_ioapics[i].apicaddr;
+(gdb) 
+4174				if (!ioapic_phys) {
+(gdb) 
+4192			set_fixmap_nocache(idx, ioapic_phys);
+(gdb) 
+4193			apic_printk(APIC_VERBOSE,
+(gdb) 
+4198			ioapic_res->start = ioapic_phys;
+(gdb) 
+4199			ioapic_res->end = ioapic_phys + (4 * 1024) - 1;
+(gdb) 
+4200			ioapic_res++;
+(gdb) 
+4202	}
+
+```
 
 
 
