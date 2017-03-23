@@ -259,6 +259,8 @@
                         |--default_get_apic_id                           # arch/x86/include/asm/apic.h:420
             |--ioapic_init_mappings                                      # arch/x86/kernel/apic/io_apic.c:4163
                 |--ioapic_setup_resources                                # arch/x86/kernel/apic/io_apic.c:4133
+            |--probe_nr_irqs_gsi                                         # arch/x86/kernel/apic/io_apic.c:3841
+                |--acpi_probe_gsi                                        # arch/x86/kernel/acpi/boot.c:849
             
             
                 
