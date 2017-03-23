@@ -261,6 +261,7 @@
                 |--ioapic_setup_resources                                # arch/x86/kernel/apic/io_apic.c:4133
             |--probe_nr_irqs_gsi                                         # arch/x86/kernel/apic/io_apic.c:3841
                 |--acpi_probe_gsi                                        # arch/x86/kernel/acpi/boot.c:849
+            |--e820_reserve_resources                                    # arch/x86/kernel/e820.c:1334
             
             
                 
