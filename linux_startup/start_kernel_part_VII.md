@@ -343,7 +343,7 @@ static void __init setup_command_line(char *command_line)
   `setup_command_line` allocates memory for boot command line and static command line and stores command line to allocated 
 memory.
 
-## _set nr_cu_ids_
+## _set number of cpu id_
 
 # Links
   * [82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC)](http://download.intel.com/design/chipsets/datashts/29056601.pdf)
