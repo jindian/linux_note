@@ -158,7 +158,11 @@ e820_reserve_resources () at arch/x86/kernel/e820.c:1366
 1366		for (i = 0; i < e820_saved.nr_map; i++) {
 ```
 
-## 
+## mark pages don't correcspond to e820 RAM areas as nosave
+
+  `e820_mark_nosave_regions` requires the e820 map to be sorted and without any overlapping entries and assumes the first area to be RAM.
+  
+  `e820_mark_nosave_regions` involves `register_nosave_region` to add memory region to nosave list.
 
 # Links
   * [82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC)](http://download.intel.com/design/chipsets/datashts/29056601.pdf)
