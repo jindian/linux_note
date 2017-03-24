@@ -270,7 +270,7 @@
             |--i386_reserve_resources                                    # arch/x86/kernel/setup.c:1070
                 |--request_resource                                      # kernel/resource.c:198
                     |--__request_resource                                # kernel/resource.c:144
-                |--reserve_standard_io_resources
+                |--reserve_standard_io_resources                         # arch/x86/kernel/setup.c:601
             
             
                 
