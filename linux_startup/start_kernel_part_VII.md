@@ -190,6 +190,8 @@ int request_resource(struct resource *root, struct resource *new)
 	return conflict ? -EBUSY : 0;
 }
 ```
+  
+  `request_resource` involves `__request_resource`, the entire debug information as follow:
 
 ```__request_resource
 
@@ -233,8 +235,6 @@ $6 = {start = 0x0, end = 0xffffffffffffffff, name = 0xc15d46e7, flags = 0x200,
 (gdb) p tmp
 $7 = (struct resource *) 0xc2126980
 (gdb) n
-166			if (tmp->end < start)
-(gdb) 
 165			p = &tmp->sibling;
 (gdb) 
 166			if (tmp->end < start)
@@ -245,7 +245,13 @@ $7 = (struct resource *) 0xc2126980
 (gdb) p tmp
 $8 = (struct resource *) 0xc21269a4
 (gdb) n
+165			p = &tmp->sibling;
+(gdb) 
 166			if (tmp->end < start)
+(gdb) 
+158			tmp = *p;
+(gdb) 
+159			if (!tmp || tmp->start > end) {
 (gdb) 
 165			p = &tmp->sibling;
 (gdb) 
@@ -255,8 +261,6 @@ $8 = (struct resource *) 0xc21269a4
 (gdb) 
 159			if (!tmp || tmp->start > end) {
 (gdb) 
-166			if (tmp->end < start)
-(gdb) 
 165			p = &tmp->sibling;
 (gdb) 
 166			if (tmp->end < start)
@@ -264,18 +268,6 @@ $8 = (struct resource *) 0xc21269a4
 158			tmp = *p;
 (gdb) 
 159			if (!tmp || tmp->start > end) {
-(gdb) 
-166			if (tmp->end < start)
-(gdb) 
-165			p = &tmp->sibling;
-(gdb) 
-166			if (tmp->end < start)
-(gdb) 
-158			tmp = *p;
-(gdb) 
-159			if (!tmp || tmp->start > end) {
-(gdb) 
-161				*p = new;
 (gdb) 
 160				new->sibling = tmp;
 (gdb) 
@@ -290,7 +282,6 @@ $9 = (struct resource *) 0xc1694900 <video_rom_resource>
 $10 = {start = 786432, end = 822783, name = 0xc15cfa8e "Video ROM", 
   flags = 2147492352, parent = 0xc16997c0 <iomem_resource>, 
   sibling = 0xc1694940 <adapter_rom_resources>, child = 0x0}
-
 ```
 
 # Links
