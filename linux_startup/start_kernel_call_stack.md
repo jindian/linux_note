@@ -271,6 +271,7 @@
                 |--request_resource                                      # kernel/resource.c:198
                     |--__request_resource                                # kernel/resource.c:144
                 |--reserve_standard_io_resources                         # arch/x86/kernel/setup.c:601
+            |--e820_setup_gap                                            # arch/x86/kernel/e820.c:618
             
             
                 
