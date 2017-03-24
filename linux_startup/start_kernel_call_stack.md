@@ -273,6 +273,8 @@
                 |--reserve_standard_io_resources                         # arch/x86/kernel/setup.c:601
             |--e820_setup_gap                                            # arch/x86/kernel/e820.c:618
                 |--e820_search_gap                                       # arch/x86/kernel/e820.c:577
+            |--x86_init.oem.banner -> x86_init_noop                      # arch/x86/kernel/x86_init.c:18
+            |--mcheck_intel_therm_init                                   # arch/x86/kernel/cpu/mcheck/therm_throt.c:259
             
             
                 
