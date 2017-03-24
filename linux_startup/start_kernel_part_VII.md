@@ -164,5 +164,11 @@ e820_reserve_resources () at arch/x86/kernel/e820.c:1366
   
   `e820_mark_nosave_regions` involves `register_nosave_region` to add memory region to nosave list.
 
+## reserve resources
+
+  32bit specific setup function initialized in `i386_default_early_setup`
+  
+  ``
+
 # Links
   * [82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC)](http://download.intel.com/design/chipsets/datashts/29056601.pdf)
