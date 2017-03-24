@@ -265,6 +265,8 @@
                 |--firmware_map_add_early                                # arch/x86/kernel/e820.c:163
                     |--firmware_map_add_entry                            # drivers/firmware/memmap.c:108
             |--e820_mark_nosave_regions                                  # arch/x86/kernel/e820.c:681
+                |--register_nosave_region                                # include/linux/suspend.h:233
+                    |--__register_nosave_region                          # kernel/power/snapshot.c:599
             
             
                 
