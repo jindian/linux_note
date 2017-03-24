@@ -319,5 +319,31 @@ mcheck_intel_therm_init () at arch/x86/kernel/cpu/mcheck/therm_throt.c:260
 269	}
 ```
 
+  ## `setup_arch` routine ended here, let's continue start_kernel.
+
+## store untouched and touched command line
+
+```setup_command_line
+
+/*
+ * We need to store the untouched command line for future reference.
+ * We also need to store the touched command line since the parameter
+ * parsing is performed in place, and we should allow a component to
+ * store reference of name/value for future reference.
+ */
+static void __init setup_command_line(char *command_line)
+{
+	saved_command_line = alloc_bootmem(strlen (boot_command_line)+1);
+	static_command_line = alloc_bootmem(strlen (command_line)+1);
+	strcpy (saved_command_line, boot_command_line);
+	strcpy (static_command_line, command_line);
+}
+```
+
+  `setup_command_line` allocates memory for boot command line and static command line and stores command line to allocated 
+memory.
+
+
+
 # Links
   * [82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC)](http://download.intel.com/design/chipsets/datashts/29056601.pdf)

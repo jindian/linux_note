@@ -275,6 +275,8 @@
                 |--e820_search_gap                                       # arch/x86/kernel/e820.c:577
             |--x86_init.oem.banner -> x86_init_noop                      # arch/x86/kernel/x86_init.c:18
             |--mcheck_intel_therm_init                                   # arch/x86/kernel/cpu/mcheck/therm_throt.c:259
+        |--mm_init_owner                                                 # include/linux/sched.h:2603
+        |--setup_command_line                                            # init/main.c:393
             
             
                 
