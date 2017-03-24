@@ -303,6 +303,21 @@ $22 = 0xf7fc0000
   
   Finally saves the start address of gap to `pci_mem_start`
 
+## save the init thermal LVT value
+
+  `mcheck_intel_therm_init` checks if cpu has feature ACPI and ACC, saves LVT value if cpu has above features.
+
+```mcheck_intel_therm_init
+
+1058		mcheck_intel_therm_init();
+(gdb) s
+mcheck_intel_therm_init () at arch/x86/kernel/cpu/mcheck/therm_throt.c:260
+260	{
+(gdb) n
+266		if (cpu_has(&boot_cpu_data, X86_FEATURE_ACPI) &&
+(gdb) 
+269	}
+```
 
 # Links
   * [82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC)](http://download.intel.com/design/chipsets/datashts/29056601.pdf)
