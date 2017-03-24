@@ -166,9 +166,132 @@ e820_reserve_resources () at arch/x86/kernel/e820.c:1366
 
 ## reserve resources
 
-  32bit specific setup function initialized in `i386_default_early_setup`
+  32bit specific setup functions are initialized in `i386_default_early_setup`.
   
-  ``
+  `i386_reserve_resources` is the reserve resource function in `x86_init`. In `i386_reserve_resources` it reserves video 
+ram resouce with function `request_resource`.
+
+```request_resource
+
+/**
+ * request_resource - request and reserve an I/O or memory resource
+ * @root: root resource descriptor
+ * @new: resource descriptor desired by caller
+ *
+ * Returns 0 for success, negative error code on error.
+ */
+int request_resource(struct resource *root, struct resource *new)
+{
+	struct resource *conflict;
+
+	write_lock(&resource_lock);
+	conflict = __request_resource(root, new);
+	write_unlock(&resource_lock);
+	return conflict ? -EBUSY : 0;
+}
+```
+
+```__request_resource
+
+203		conflict = __request_resource(root, new);
+(gdb) s
+__request_resource (root=root@entry=0xc16997c0 <iomem_resource>, 
+    new=new@entry=0xc16944e0 <video_ram_resource>) at kernel/resource.c:147
+147		resource_size_t end = new->end;
+(gdb) p new
+$1 = (struct resource *) 0xc16944e0 <video_ram_resource>
+(gdb) p *new
+$2 = {start = 655360, end = 786431, name = 0xc15cf9eb "Video RAM area", 
+  flags = 2147484160, parent = 0x0, sibling = 0x0, child = 0x0}
+(gdb) p /x *new
+$3 = {start = 0xa0000, end = 0xbffff, name = 0xc15cf9eb, flags = 0x80000200, 
+  parent = 0x0, sibling = 0x0, child = 0x0}
+(gdb) p root
+$4 = (struct resource *) 0xc16997c0 <iomem_resource>
+(gdb) p *root
+$5 = {start = 0, end = 18446744073709551615, name = 0xc15d46e7 "PCI mem", 
+  flags = 512, parent = 0x0, sibling = 0x0, child = 0xc2126980}
+(gdb) p /x *root
+$6 = {start = 0x0, end = 0xffffffffffffffff, name = 0xc15d46e7, flags = 0x200, 
+  parent = 0x0, sibling = 0x0, child = 0xc2126980}
+(gdb) n
+146		resource_size_t start = new->start;
+(gdb) 
+147		resource_size_t end = new->end;
+(gdb) 
+150		if (end < start)
+(gdb) 
+152		if (start < root->start)
+(gdb) 
+154		if (end > root->end)
+(gdb) 
+156		p = &root->child;
+(gdb) 
+158			tmp = *p;
+(gdb) 
+159			if (!tmp || tmp->start > end) {
+(gdb) p tmp
+$7 = (struct resource *) 0xc2126980
+(gdb) n
+166			if (tmp->end < start)
+(gdb) 
+165			p = &tmp->sibling;
+(gdb) 
+166			if (tmp->end < start)
+(gdb) 
+158			tmp = *p;
+(gdb) 
+159			if (!tmp || tmp->start > end) {
+(gdb) p tmp
+$8 = (struct resource *) 0xc21269a4
+(gdb) n
+166			if (tmp->end < start)
+(gdb) 
+165			p = &tmp->sibling;
+(gdb) 
+166			if (tmp->end < start)
+(gdb) 
+158			tmp = *p;
+(gdb) 
+159			if (!tmp || tmp->start > end) {
+(gdb) 
+166			if (tmp->end < start)
+(gdb) 
+165			p = &tmp->sibling;
+(gdb) 
+166			if (tmp->end < start)
+(gdb) 
+158			tmp = *p;
+(gdb) 
+159			if (!tmp || tmp->start > end) {
+(gdb) 
+166			if (tmp->end < start)
+(gdb) 
+165			p = &tmp->sibling;
+(gdb) 
+166			if (tmp->end < start)
+(gdb) 
+158			tmp = *p;
+(gdb) 
+159			if (!tmp || tmp->start > end) {
+(gdb) 
+161				*p = new;
+(gdb) 
+160				new->sibling = tmp;
+(gdb) 
+161				*p = new;
+(gdb) 
+162				new->parent = root;
+(gdb) 
+163				return NULL;
+(gdb) p tmp
+$9 = (struct resource *) 0xc1694900 <video_rom_resource>
+(gdb) p *tmp
+$10 = {start = 786432, end = 822783, name = 0xc15cfa8e "Video ROM", 
+  flags = 2147492352, parent = 0xc16997c0 <iomem_resource>, 
+  sibling = 0xc1694940 <adapter_rom_resources>, child = 0x0}
+
+```
 
 # Links
   * [82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC)](http://download.intel.com/design/chipsets/datashts/29056601.pdf)
