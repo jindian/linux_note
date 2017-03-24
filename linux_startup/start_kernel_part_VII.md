@@ -1,6 +1,6 @@
 # start kernel part VII
 
-## I/O APIC mapping initialize
+## _I/O APIC mapping initialize_
 
   The IOAPIC provides multi-processor interrupt management and incorporates both static and dynamic symmetric interrupt distribution across all processors. In systems with multiple I/O subsystems, each subsystem can have its own set of interrupts.
 
@@ -62,13 +62,13 @@ ioapic_init_mappings () at arch/x86/kernel/apic/io_apic.c:4170
 4202	}
 ```
 
-## probe number of gsi
+## _probe number of gsi_
 
   ACPI uses a cookie system to “name” in-terrupts known as Global System Interrupts. Each interrupt controller input pin is assigned a GSI using a fairly simple scheme. For the 8259A case, the GSIs map directly to ISA IRQs. Thus, IRQ 0 is GSI 0, etc. The APIC case is slightly more complicated, but still simple. Each I/O APIC is assigned a base GSI by the BIOS. Each input pin on the I/O APIC is mapped to a GSI number by adding the pin number (zero-based) to the base GSI. Thus, if an I/O APIC has a base GSI of N, pin 0 on that I/O APIC has a GSI of N, pin 1 has a GSI of N + 1, etc. The I/O APIC with a base GSI of 0 maps the ISA IRQs onto its first 16 input pins. Thus, the ISA IRQs are ef-fectively always mapped 1:1 onto GSIs. More details about GSIs can be found in Section 5.2.11 of the ACPI 2.0c spec.
   
   `probe_nr_irqs_gsi` involve `acpi_probe_gsi` to get number of gsi and update `nr_irqs_gsi` if the result is bigger than it.
 
-## mark e820 reserved area as busy
+## _mark e820 reserved area as busy_
 
   `e820_reserve_resources` allocate memory for `e820_res` and initialize every memory resource, insert resource to resource tree if the memory are isn't reserved or memory below 1M.
   
@@ -158,13 +158,13 @@ e820_reserve_resources () at arch/x86/kernel/e820.c:1366
 1366		for (i = 0; i < e820_saved.nr_map; i++) {
 ```
 
-## mark pages don't correcspond to e820 RAM areas as nosave
+## _mark pages don't correcspond to e820 RAM areas as nosave_
 
   `e820_mark_nosave_regions` requires the e820 map to be sorted and without any overlapping entries and assumes the first area to be RAM.
   
   `e820_mark_nosave_regions` involves `register_nosave_region` to add memory region to nosave list.
 
-## reserve resources
+## _reserve resources_
 
   32bit specific setup functions are initialized in `i386_default_early_setup`.
   
@@ -287,7 +287,7 @@ $10 = {start = 786432, end = 822783, name = 0xc15cfa8e "Video ROM",
   After reserving video ram resource completed, continue resource standard I/O resources with function `reserve_standard_io_resources`.
   
 
-## search biggest gap in e820 memory space and pass the result to PCI to assign MIMO resources
+## _search biggest gap in e820 memory space and pass the result to PCI to assign MIMO resources_
 
   `e820_setup_gap` involves `e820_search_gap` to search grap from address `0x10000000` size `0x400000`.
 
@@ -303,7 +303,7 @@ $22 = 0xf7fc0000
   
   Finally saves the start address of gap to `pci_mem_start`
 
-## save the init thermal LVT value
+## _save the init thermal LVT value_
 
   `mcheck_intel_therm_init` checks if cpu has feature ACPI and ACC, saves LVT value if cpu has above features.
 
@@ -321,7 +321,7 @@ mcheck_intel_therm_init () at arch/x86/kernel/cpu/mcheck/therm_throt.c:260
 
   ## `setup_arch` routine ended here, let's continue start_kernel.
 
-## store untouched and touched command line
+## _store untouched and touched command line_
 
 ```setup_command_line
 
