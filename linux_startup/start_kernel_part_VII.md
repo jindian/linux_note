@@ -287,7 +287,7 @@ $10 = {start = 786432, end = 822783, name = 0xc15cfa8e "Video ROM",
   After reserving video ram resource completed, continue resource standard I/O resources with function `reserve_standard_io_resources`.
   
 
-##
+## search biggest gap for 
 
 # Links
   * [82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC)](http://download.intel.com/design/chipsets/datashts/29056601.pdf)
