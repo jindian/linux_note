@@ -287,7 +287,22 @@ $10 = {start = 786432, end = 822783, name = 0xc15cfa8e "Video ROM",
   After reserving video ram resource completed, continue resource standard I/O resources with function `reserve_standard_io_resources`.
   
 
-## search biggest gap for 
+## search biggest gap in e820 memory space and pass the result to PCI to assign MIMO resources
+
+  `e820_setup_gap` involves `e820_search_gap` to search grap from address `0x10000000` size `0x400000`.
+
+  The result of searching gap as follow:
+
+```
+
+(gdb) p /x *gapstart
+$21 = 0x8000000
+(gdb) p /x *gapsize
+$22 = 0xf7fc0000
+```
+  
+  Finally saves the start address of gap to `pci_mem_start`
+
 
 # Links
   * [82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC)](http://download.intel.com/design/chipsets/datashts/29056601.pdf)
