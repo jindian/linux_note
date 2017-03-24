@@ -345,5 +345,20 @@ memory.
 
 ## _set number of cpu id_
 
+```setup_nr_cpu_ids
+
+/* An arch may set nr_cpu_ids earlier if needed, so this would be redundant */
+static void __init setup_nr_cpu_ids(void)
+{
+	nr_cpu_ids = find_last_bit(cpumask_bits(cpu_possible_mask),NR_CPUS) + 1;
+}
+```
+
+  `setup_nr_cpu_ids` gets number of cpus from cpu mask.
+
+## setup per cpu areas
+
+  
+
 # Links
   * [82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC)](http://download.intel.com/design/chipsets/datashts/29056601.pdf)
