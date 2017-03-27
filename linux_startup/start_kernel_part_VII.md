@@ -358,7 +358,78 @@ static void __init setup_nr_cpu_ids(void)
 
 ## setup per cpu areas
 
+  Per cpu variable is a feature in linux kernel, every cpu has its own variable which stored in data section belong to it.
   
+  To understand per cpu varaibe let's check declaration/defination for per cpu variable macro:
+  
+  per cpu variable declared/defined in `include/linux/percpu_defs.h:78`
+
+```per_cpu_variables
+
+/*
+ * Variant on the per-CPU variable declaration/definition theme used for
+ * ordinary per-CPU variables.
+ */
+#define DECLARE_PER_CPU(type, name)					\
+	DECLARE_PER_CPU_SECTION(type, name, "")
+
+#define DEFINE_PER_CPU(type, name)					\
+	DEFINE_PER_CPU_SECTION(type, name, "")
+```
+  
+  `DEFINE_PER_CPU_SECTION(type, name, "")` declared/defined in `include/linux/percpu_defs.h:67`
+
+```per_cpu_seciton
+
+/*
+ * Normal declaration and definition macros.
+ */
+#define DECLARE_PER_CPU_SECTION(type, name, sec)			\
+	extern __PCPU_ATTRS(sec) __typeof__(type) per_cpu__##name
+
+#define DEFINE_PER_CPU_SECTION(type, name, sec)				\
+	__PCPU_ATTRS(sec) PER_CPU_DEF_ATTRIBUTES			\
+	__typeof__(type) per_cpu__##name
+```
+
+  `__PCPU_ATTRS(sec)` declared/defined in `include/linux/percpu_defs.h:10`
+
+```per_cpu_attribute
+
+/*
+ * Base implementations of per-CPU variable declarations and definitions, where
+ * the section in which the variable is to be placed is provided by the
+ * 'sec' argument.  This may be used to affect the parameters governing the
+ * variable's storage.
+ *
+ * NOTE!  The sections for the DECLARE and for the DEFINE must match, lest
+ * linkage errors occur due the compiler generating the wrong code to access
+ * that section.
+ */
+#define __PCPU_ATTRS(sec)						\
+	__attribute__((section(PER_CPU_BASE_SECTION sec)))		\
+	PER_CPU_ATTRIBUTES
+```
+
+  `PER_CPU_BASE_SECTION` declared/defined in `include/asm-generic/percpu.h:73`, here we suppose smp configured.
+  
+```PER_CPU_BASE_SECTION
+
+#ifdef CONFIG_SMP
+#define PER_CPU_BASE_SECTION ".data.percpu"
+#else
+#define PER_CPU_BASE_SECTION ".data"
+#endif
+```
+  
+  `PER_CPU_ATTRIBUTES` declared/defined in `include/asm-generic/percpu.h:99`
+
+```PER_CPU_ATTRIBUTES
+
+#ifndef PER_CPU_ATTRIBUTES
+#define PER_CPU_ATTRIBUTES
+#endif
+```
 
 # Links
   * [82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC)](http://download.intel.com/design/chipsets/datashts/29056601.pdf)

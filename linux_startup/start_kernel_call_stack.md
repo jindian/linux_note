@@ -280,6 +280,7 @@
         |--setup_nr_cpu_ids                                              # init/main.c:362
         |--setup_per_cpu_areas                                           # arch/x86/kernel/setup_percpu.c:171
             |--pcpu_embed_first_chunk                                    # mm/percpu.c:1862
+                |--pcpu_build_alloc_info                                 # mm/percpu.c:1395
             
             
                 
