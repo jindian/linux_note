@@ -435,6 +435,10 @@ static void __init setup_nr_cpu_ids(void)
   
   `extern __attribute__((section(".data.percpu" ""))) int per_cpu_x`
 
+  `setup_per_cpu_areas` is used to setup per cpu variable areas, default function for allocating per cpu area is `pcpu_embed_first_chunk` if `percpu_alloc` doesn't exist in startup command line. `pcpu_embed_first_chunk` allocates memory for all cpus' allocation information and setup first chunk.
+  
+  After `pcpu_embed_first_chunk` completed, setup offset and segment for every cpu, initialize per cpu variable `x86_cpu_to_apicid`, `irq_stack_ptr` ...
+
 
 
 # Links
