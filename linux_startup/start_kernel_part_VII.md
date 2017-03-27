@@ -500,7 +500,24 @@ pcpu_embed_first_chunk (reserved_size=reserved_size@entry=0,
 
   There will be N `.data.percpu` after `pcpu_embed_first_chunk` completes, here N is the number of cpus in system.
 
-## 
+## prepare for boot cpu
+
+  Do some preparation for boot cpu.
+
+```native_smp_prepare_boot_cpu
+
+void __init native_smp_prepare_boot_cpu(void)
+{
+	int me = smp_processor_id();
+	switch_to_new_gdt(me);
+	/* already set me in cpu_online_mask in boot_cpu_init() */
+	cpumask_set_cpu(me, cpu_callout_mask);
+	per_cpu(cpu_state, me) = CPU_ONLINE;
+}
+```
+  
+  Inside `native_smp_prepare_boot_cpu`, get id of boot cpu with `smp_processor_id`, with `switch_to_new_gdt` loading gdt and data sections, set cpu mask to indicate boot cpu is online.
 
 # Links
   * [82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC)](http://download.intel.com/design/chipsets/datashts/29056601.pdf)
+  * [Symmetric multiprocessing](https://en.wikipedia.org/wiki/Symmetric_multiprocessing)
