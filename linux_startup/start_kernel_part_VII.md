@@ -440,6 +440,67 @@ static void __init setup_nr_cpu_ids(void)
   After `pcpu_embed_first_chunk` completed, setup offset and segment for every cpu, initialize per cpu variable `x86_cpu_to_apicid`, `irq_stack_ptr` ...
 
 
+  Here is the debug information after `pcpu_build_alloc_info` completd in function `pcpu_embed_first_chunk` when I configure cpu number 2.
+
+```pcpu_build_alloc_info
+
+(gdb) p ai
+$11 = (struct pcpu_alloc_info *) 0xc2126ce0
+(gdb) p *ai
+$12 = {static_size = 1353816, reserved_size = 0, dyn_size = 22440, 
+  unit_size = 2097152, atom_size = 2097152, alloc_size = 2097152, 
+  __ai_size = 4096, nr_groups = 1, groups = 0xc2126d00}
+(gdb) p ai->groups 
+$13 = 0xc2126d00
+(gdb) p *ai->groups 
+$14 = {nr_units = 2, base_offset = 0, cpu_map = 0xc2126d0c}
+```
+
+  After allocation information allocated successfully, further allocates memory for group and cpus, copy content in `.data.percpu` to per cpu segments.
+    
+```
+
+(gdb) n
+pcpu_embed_first_chunk (reserved_size=reserved_size@entry=0, 
+    dyn_size=dyn_size@entry=20480, atom_size=2097152, 
+    cpu_distance_fn=cpu_distance_fn@entry=0xc1705aa1 <pcpu_cpu_distance>, 
+    alloc_fn=alloc_fn@entry=0xc1705aca <pcpu_fc_alloc>, 
+    free_fn=free_fn@entry=0xc1705ab5 <pcpu_fc_free>) at mm/percpu.c:1876
+1876		if (IS_ERR(ai))
+(gdb) 
+1879		size_sum = ai->static_size + ai->reserved_size + ai->dyn_size;
+(gdb) 
+1880		areas_size = PFN_ALIGN(ai->nr_groups * sizeof(void *));
+(gdb) 
+1882		areas = alloc_bootmem_nopanic(areas_size);
+(gdb) 
+1883		if (!areas) {
+(gdb) 
+1891			unsigned int cpu = NR_CPUS;
+(gdb) 
+1894			for (i = 0; i < gi->nr_units && cpu == NR_CPUS; i++)
+(gdb) 
+1895				cpu = gi->cpu_map[i];
+(gdb) 
+1899			ptr = alloc_fn(cpu, gi->nr_units * ai->unit_size, atom_size);
+(gdb) 
+1900			if (!ptr) {
+(gdb) 
+1904			areas[group] = ptr;
+(gdb) 
+1906			base = min(ptr, base);
+(gdb) 
+1908			for (i = 0; i < gi->nr_units; i++, ptr += ai->unit_size) {
+(gdb) 
+1909				if (gi->cpu_map[i] == NR_CPUS) {
+(gdb) 
+1915				memcpy(ptr, __per_cpu_load, ai->static_size);
+(gdb) 
+```
+
+  There will be N `.data.percpu` after `pcpu_embed_first_chunk` completes, here N is the number of cpus in system.
+
+
 
 # Links
   * [82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC)](http://download.intel.com/design/chipsets/datashts/29056601.pdf)
