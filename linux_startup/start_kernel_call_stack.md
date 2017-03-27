@@ -281,6 +281,8 @@
         |--setup_per_cpu_areas                                           # arch/x86/kernel/setup_percpu.c:171
             |--pcpu_embed_first_chunk                                    # mm/percpu.c:1862
                 |--pcpu_build_alloc_info                                 # mm/percpu.c:1395
+        |--smp_prepare_boot_cpu                                          # arch/x86/include/asm/smp.h:84
+            |--native_smp_prepare_boot_cpu                               # arch/x86/kernel/smpboot.c:1155
             
             
                 

@@ -440,7 +440,7 @@ static void __init setup_nr_cpu_ids(void)
   After `pcpu_embed_first_chunk` completed, setup offset and segment for every cpu, initialize per cpu variable `x86_cpu_to_apicid`, `irq_stack_ptr` ...
 
 
-  Here is the debug information after `pcpu_build_alloc_info` completd in function `pcpu_embed_first_chunk` when I configure cpu number 2.
+  Here is the debug information after `pcpu_build_alloc_info` completd in function `pcpu_embed_first_chunk` when I configure cpu number 2 (qemu-system-i386 -s -S -smp 2 disk.img).
 
 ```pcpu_build_alloc_info
 
@@ -500,7 +500,7 @@ pcpu_embed_first_chunk (reserved_size=reserved_size@entry=0,
 
   There will be N `.data.percpu` after `pcpu_embed_first_chunk` completes, here N is the number of cpus in system.
 
-
+## 
 
 # Links
   * [82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC)](http://download.intel.com/design/chipsets/datashts/29056601.pdf)
