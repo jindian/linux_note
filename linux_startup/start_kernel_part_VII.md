@@ -356,7 +356,7 @@ static void __init setup_nr_cpu_ids(void)
 
   `setup_nr_cpu_ids` gets number of cpus from cpu mask.
 
-## setup per cpu areas
+## _setup per cpu areas_
 
   Per cpu variable is a feature in linux kernel, every cpu has its own variable which stored in data section belong to it.
   
