@@ -435,7 +435,7 @@ static void __init setup_nr_cpu_ids(void)
   
   `extern __attribute__((section(".data.percpu" ""))) int per_cpu_x`
 
-  
+
 
 # Links
   * [82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC)](http://download.intel.com/design/chipsets/datashts/29056601.pdf)
