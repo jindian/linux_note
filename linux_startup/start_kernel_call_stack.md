@@ -283,7 +283,9 @@
                 |--pcpu_build_alloc_info                                 # mm/percpu.c:1395
         |--smp_prepare_boot_cpu                                          # arch/x86/include/asm/smp.h:84
             |--native_smp_prepare_boot_cpu                               # arch/x86/kernel/smpboot.c:1155
-                |--switch_to_new_gdt                                     # arch/x86/kernel/cpu/common.c:
+                |--switch_to_new_gdt                                     # arch/x86/kernel/cpu/common.c:344
+        |--build_all_zonelists                                           # mm/page_alloc.c:2768
+            |--
             
             
                 
