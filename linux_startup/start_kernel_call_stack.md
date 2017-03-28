@@ -299,6 +299,7 @@
                 |--raw_notifier_chain_register                           # kernel/notifier.c:344
                     |--notifier_chain_register                           # kernel/notifier.c:21
                 |--cpu_maps_update_done                                  # kernel/cpu.c:81
+        |--parse_early_param                                             # init/main.c:468
 
             
                 
