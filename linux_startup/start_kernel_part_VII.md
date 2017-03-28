@@ -554,100 +554,8 @@ void __init native_smp_prepare_boot_cpu(void)
 }
 ```
 
-  Inside `register_cpu_notifier`, it locks mutex `cpu_add_remove_lock` to protect data `cpu_chain`. `cpu_maps_update_begin` involves `mutex_lock` with reference of `cpu_add_remove_lock` as its input parameter.
-
-```cpu_maps_update_begin
-
-void cpu_maps_update_begin(void)
-{
-	mutex_lock(&cpu_add_remove_lock);
-}
-```
-
-  Here is the declaration of function `mutex_lock`, it changes count from 1 to a 0 value with `__mutex_fastpath_lock` and set current task as the owner of the lock with `mutex_set_owner`.
-
-```mutex_lock
-
-/***
- * mutex_lock - acquire the mutex
- * @lock: the mutex to be acquired
- *
- * Lock the mutex exclusively for this task. If the mutex is not
- * available right now, it will sleep until it can get it.
- *
- * The mutex must later on be released by the same task that
- * acquired it. Recursive locking is not allowed. The task
- * may not exit without first unlocking the mutex. Also, kernel
- * memory where the mutex resides mutex must not be freed with
- * the mutex still locked. The mutex must first be initialized
- * (or statically defined) before it can be locked. memset()-ing
- * the mutex to 0 is not allowed.
- *
- * ( The CONFIG_DEBUG_MUTEXES .config option turns on debugging
- *   checks that will enforce the restrictions and will also do
- *   deadlock debugging. )
- *
- * This function is similar to (but not equivalent to) down().
- */
-void __sched mutex_lock(struct mutex *lock)
-{
-	might_sleep();
-	/*
-	 * The locking fastpath is the 1->0 transition from
-	 * 'unlocked' into 'locked' state.
-	 */
-	__mutex_fastpath_lock(&lock->count, __mutex_lock_slowpath);
-	mutex_set_owner(lock);
-}
-```
-
-
-  
   In linux to define a new lock, it uses macro `DEFINE_MUTEX`, from comment of mutex struct, the principle of it is clear. Mutex is used to protect critical region.
 
-```
-
-  After register completed, unlock lock with `cpu_maps_update_done` which involves `mutex_unlock` to release the mutex.
-
-```cpu_maps_update_done
-
-void cpu_maps_update_done(void)
-{
-	mutex_unlock(&cpu_add_remove_lock);
-}
-```
-
-  `mutex_unlock` changes count from 0 to 1 with `__mutex_fastpath_unlock`.
-
-```
-
-/***
- * mutex_unlock - release the mutex
- * @lock: the mutex to be released
- *
- * Unlock a mutex that has been locked by this task previously.
- *
- * This function must not be used in interrupt context. Unlocking
- * of a not locked mutex is not allowed.
- *
- * This function is similar to (but not equivalent to) up().
- */
-void __sched mutex_unlock(struct mutex *lock)
-{
-	/*
-	 * The unlocking fastpath is the 0->1 transition from 'locked'
-	 * into 'unlocked' state:
-	 */
-#ifndef CONFIG_DEBUG_MUTEXES
-	/*
-	 * When debugging is enabled we must not clear the owner before time,
-	 * the slow path will always be taken, and that clears the owner field
-	 * after verifying that it was indeed current.
-	 */
-	mutex_clear_owner(lock);
-#endif
-	__mutex_fastpath_unlock(&lock->count, __mutex_unlock_slowpath);
-}
 ```
 
 include/linux/mutex.h:97
@@ -701,6 +609,97 @@ struct mutex {
 	...
 };
 ```
+
+  Inside `register_cpu_notifier`, it locks mutex `cpu_add_remove_lock` to protect data `cpu_chain`. `cpu_maps_update_begin` involves `mutex_lock` with reference of `cpu_add_remove_lock` as its input parameter.
+
+```cpu_maps_update_begin
+
+void cpu_maps_update_begin(void)
+{
+	mutex_lock(&cpu_add_remove_lock);
+}
+```
+
+  Here is the declaration of function `mutex_lock`, it changes count from 1 to a 0 value with `__mutex_fastpath_lock` and set current task as the owner of the lock with `mutex_set_owner`.
+
+```mutex_lock
+
+/***
+ * mutex_lock - acquire the mutex
+ * @lock: the mutex to be acquired
+ *
+ * Lock the mutex exclusively for this task. If the mutex is not
+ * available right now, it will sleep until it can get it.
+ *
+ * The mutex must later on be released by the same task that
+ * acquired it. Recursive locking is not allowed. The task
+ * may not exit without first unlocking the mutex. Also, kernel
+ * memory where the mutex resides mutex must not be freed with
+ * the mutex still locked. The mutex must first be initialized
+ * (or statically defined) before it can be locked. memset()-ing
+ * the mutex to 0 is not allowed.
+ *
+ * ( The CONFIG_DEBUG_MUTEXES .config option turns on debugging
+ *   checks that will enforce the restrictions and will also do
+ *   deadlock debugging. )
+ *
+ * This function is similar to (but not equivalent to) down().
+ */
+void __sched mutex_lock(struct mutex *lock)
+{
+	might_sleep();
+	/*
+	 * The locking fastpath is the 1->0 transition from
+	 * 'unlocked' into 'locked' state.
+	 */
+	__mutex_fastpath_lock(&lock->count, __mutex_lock_slowpath);
+	mutex_set_owner(lock);
+}
+```
+  
+  After register completed, unlock lock with `cpu_maps_update_done` which involves `mutex_unlock` to release the mutex.
+
+```cpu_maps_update_done
+
+void cpu_maps_update_done(void)
+{
+	mutex_unlock(&cpu_add_remove_lock);
+}
+```
+
+  `mutex_unlock` changes count from 0 to 1 with `__mutex_fastpath_unlock`.
+
+```mutex_unlock
+
+/***
+ * mutex_unlock - release the mutex
+ * @lock: the mutex to be released
+ *
+ * Unlock a mutex that has been locked by this task previously.
+ *
+ * This function must not be used in interrupt context. Unlocking
+ * of a not locked mutex is not allowed.
+ *
+ * This function is similar to (but not equivalent to) up().
+ */
+void __sched mutex_unlock(struct mutex *lock)
+{
+	/*
+	 * The unlocking fastpath is the 0->1 transition from 'locked'
+	 * into 'unlocked' state:
+	 */
+#ifndef CONFIG_DEBUG_MUTEXES
+	/*
+	 * When debugging is enabled we must not clear the owner before time,
+	 * the slow path will always be taken, and that clears the owner field
+	 * after verifying that it was indeed current.
+	 */
+	mutex_clear_owner(lock);
+#endif
+	__mutex_fastpath_unlock(&lock->count, __mutex_unlock_slowpath);
+}
+```
+
 
 # Links
   * [82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC)](http://download.intel.com/design/chipsets/datashts/29056601.pdf)
