@@ -700,6 +700,9 @@ void __sched mutex_unlock(struct mutex *lock)
 }
 ```
 
+  `register_cpu_notifier` involves `raw_notifier_chain_register` with reference of `cpu_chain` and callback function as input parameter, `raw_notifier_chain_register` further involves `notifier_chain_register` to complete the register.
+  
+  `notifier_chain_register` loop notifier chain to find proper place to add the new notify callback function.
 
 # Links
   * [82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC)](http://download.intel.com/design/chipsets/datashts/29056601.pdf)

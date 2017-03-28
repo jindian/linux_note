@@ -296,7 +296,10 @@
         |--page_alloc_init                                               # mm/page_alloc.c:4511
             |--hotcpu_notifier -> cpu_notifier -> register_cpu_notifier  # kernel/cpu.c:128
                 |--cpu_maps_update_begin                                 # kernel/cpu.c:76
-                |--raw_notifier_chain_register
+                |--raw_notifier_chain_register                           # kernel/notifier.c:344
+                    |--notifier_chain_register                           # kernel/notifier.c:21
+                |--cpu_maps_update_done                                  # kernel/cpu.c:81
+
             
                 
             
