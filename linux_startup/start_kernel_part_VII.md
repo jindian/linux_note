@@ -532,6 +532,8 @@ void __init native_smp_prepare_boot_cpu(void)
   
   `build_all_zonelists` updates varaible of total number of pages `vm_total_pages` after accounting free RAM allocatable within all zones.
 
+## 
+
 # Links
   * [82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC)](http://download.intel.com/design/chipsets/datashts/29056601.pdf)
   * [Symmetric multiprocessing](https://en.wikipedia.org/wiki/Symmetric_multiprocessing)
