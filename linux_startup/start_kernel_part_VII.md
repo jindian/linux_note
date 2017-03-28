@@ -518,7 +518,7 @@ void __init native_smp_prepare_boot_cpu(void)
   
   Inside `native_smp_prepare_boot_cpu`, get id of boot cpu with `smp_processor_id`, with `switch_to_new_gdt` loading gdt and data sections, set cpu mask to indicate boot cpu is online.
 
-## create node and zone for memory management
+## _create node and zone for memory management_
 
   Linux has a structure describing memory which is used to keep account of memory banks, pages and the flags that affect VM behaviour.
 
@@ -532,7 +532,42 @@ void __init native_smp_prepare_boot_cpu(void)
   
   `build_all_zonelists` updates varaible of total number of pages `vm_total_pages` after accounting free RAM allocatable within all zones.
 
-## 
+## _register callback function for CPU up/down_
+
+  `page_alloc_init` involves `hotcpu_notifier` to register callback function `page_alloc_cpu_notify` to know CPUs going up/down when HOTPLUG supported.
+  
+  `hotcpu_notifier` is a MACRO, its defination can be found in include/linux/cpu.h:113
+
+```
+
+#define hotcpu_notifier(fn, pri)	cpu_notifier(fn, pri)
+```
+
+  `cpu_notifier` can be found in include/linux/cpu.h:52
+
+```
+
+#define cpu_notifier(fn, pri) {					\
+	static struct notifier_block fn##_nb __cpuinitdata =	\
+		{ .notifier_call = fn, .priority = pri };	\
+	register_cpu_notifier(&fn##_nb);			\
+}
+```
+
+  
+
+```register_cpu_notifier
+
+/* Need to know about CPUs going up/down? */
+int __ref register_cpu_notifier(struct notifier_block *nb)
+{
+	int ret;
+	cpu_maps_update_begin();
+	ret = raw_notifier_chain_register(&cpu_chain, nb);
+	cpu_maps_update_done();
+	return ret;
+}
+```
 
 # Links
   * [82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC)](http://download.intel.com/design/chipsets/datashts/29056601.pdf)

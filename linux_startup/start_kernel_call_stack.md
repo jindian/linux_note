@@ -293,6 +293,10 @@
             |--mminit_verify_zonelist                                    # mm/mm_init.c:22
             |--cpuset_init_current_mems_allowed                          # kernel/cpuset.c:2199
                 |--__nodes_setall                                        # include/linux/nodemask.h:114
+        |--page_alloc_init                                               # mm/page_alloc.c:4511
+            |--hotcpu_notifier -> cpu_notifier -> register_cpu_notifier  # kernel/cpu.c:128
+                |--cpu_maps_update_begin                                 # kernel/cpu.c:76
+                |--raw_notifier_chain_register
             
                 
             
