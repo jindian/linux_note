@@ -356,7 +356,7 @@ static void __init setup_nr_cpu_ids(void)
 
   `setup_nr_cpu_ids` gets number of cpus from cpu mask.
 
-## _setup per cpu areas_
+## _setup per cpu variables_
 
   Per cpu variable is a feature in linux kernel, every cpu has its own variable which stored in data section belong to it.
   
@@ -500,7 +500,7 @@ pcpu_embed_first_chunk (reserved_size=reserved_size@entry=0,
 
   There will be N `.data.percpu` after `pcpu_embed_first_chunk` completes, here N is the number of cpus in system.
 
-## prepare for boot cpu
+## _prepare for boot cpu_
 
   Do some preparation for boot cpu.
 
@@ -518,6 +518,26 @@ void __init native_smp_prepare_boot_cpu(void)
   
   Inside `native_smp_prepare_boot_cpu`, get id of boot cpu with `smp_processor_id`, with `switch_to_new_gdt` loading gdt and data sections, set cpu mask to indicate boot cpu is online.
 
+## create node and zone for memory management
+
+  Linux has a structure describing memory which is used to keep account of memory banks, pages and the flags that affect VM behaviour.
+
+  The first principal concept prevalent in the VM is Non-Uniform Memory Access (NUMA). With large scale machines, memory may be arranged into banks that incur a different cost to access depending on the “distance” from the processor. For example, there might be a bank of memory assigned to each CPU or a bank of memory very suitable for DMA near device cards.
+
+  Each bank is called a node and the concept is represented under Linux by a struct pglist_data even if the architecture is UMA. This struct is always referenced to by it's typedef pg_data_t. Every node in the system is kept on a NULL terminated list called pgdat_list and each node is linked to the next with the field pg_data_t→node_next. For UMA architectures like PC desktops, only one static pg_data_t structure called contig_page_data is used.
+
+  Each node is divided up into a number of blocks called zones which represent ranges within memory. Zones should not be confused with zone based allocators as they are unrelated. A zone is described by a struct zone_struct, typedeffed to zone_t and each one is of type ZONE_DMA, ZONE_NORMAL or ZONE_HIGHMEM. Each zone type suitable a different type of usage. ZONE_DMA is memory in the lower physical memory ranges which certain ISA devices require. Memory within ZONE_NORMAL is directly mapped by the kernel into the upper region of the linear address space. ZONE_HIGHMEM is the remaining available memory in the system and is not directly mapped by the kernel.
+
+  `build_all_zonelists` checks system state, if in system booting, build all zonelist with `__build_all_zonelists` which involves `build_zonelists_node` to add page presented zone to zone list.
+  
+  `build_all_zonelists` updates varaible of total number of pages `vm_total_pages` after accounting free RAM allocatable within all zones.
+
 # Links
   * [82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC)](http://download.intel.com/design/chipsets/datashts/29056601.pdf)
   * [Symmetric multiprocessing](https://en.wikipedia.org/wiki/Symmetric_multiprocessing)
+  * [Describing Physical Memory](https://www.kernel.org/doc/gorman/html/understand/understand005.html)
+  
+  
+  
+  
+  

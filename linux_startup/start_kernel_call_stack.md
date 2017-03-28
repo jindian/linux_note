@@ -285,7 +285,17 @@
             |--native_smp_prepare_boot_cpu                               # arch/x86/kernel/smpboot.c:1155
                 |--switch_to_new_gdt                                     # arch/x86/kernel/cpu/common.c:344
         |--build_all_zonelists                                           # mm/page_alloc.c:2768
-            |--
+            |--set_zonelist_order                                        # mm/page_alloc.c:2702
+            |--__build_all_zonelists                                     # mm/page_alloc.c:2752
+                |--build_zonelists                                       # mm/page_alloc.c:2707
+                    |--build_zonelists_node                              # mm/page_alloc.c:2321
+                |--build_zonelist_cache                                  # mm/page_alloc.c:2744
+            |--mminit_verify_zonelist                                    # mm/mm_init.c:22
+            |--cpuset_init_current_mems_allowed                          # kernel/cpuset.c:2199
+                |--__nodes_setall                                        # include/linux/nodemask.h:114
+            
+                
+            
             
             
                 
