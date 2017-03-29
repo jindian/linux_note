@@ -301,6 +301,12 @@
                 |--cpu_maps_update_done                                  # kernel/cpu.c:81
         |--parse_early_param                                             # init/main.c:468
         |--parse_args                                                    # kernel/params.c:131
+        |--pidhash_init                                                  # kernel/pid.c:502
+            |--alloc_large_system_hash                                   # mm/page_alloc.c:4844
+                |--alloc_bootmem_nopanic -> __alloc_bootmem_nopanic      # mm/bootmem.c:607
+                    |--___alloc_bootmem_nopanic                          # mm/bootmem.c:562
+                        |--alloc_arch_preferred_bootmem                  # mm/bootmem.c:541
+                        |--alloc_bootmem_core                            # mm/bootmem.c:434
 
             
                 
