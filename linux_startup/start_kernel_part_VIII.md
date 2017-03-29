@@ -257,6 +257,47 @@ alloc_large_system_hash (tablename=tablename@entry=0xc15d6031 "PID",
 
   The concept of exception table, take reference in [Kernel level exception handling in Linux](https://www.kernel.org/doc/Documentation/x86/exception-tables.txt)
 
+```sort_main_extable
+
+575		sort_main_extable();
+(gdb) s
+sort_main_extable () at kernel/extable.c:41
+41		sort_extable(__start___ex_table, __stop___ex_table);
+(gdb) s
+sort_extable (start=0xc148fb90, finish=0xc1490ad0) at lib/extable.c:38
+38	{
+(gdb) n
+39		sort(start, finish - start, sizeof(struct exception_table_entry),
+(gdb) s
+sort (base=0xc148fb90, num=488, size=size@entry=8, 
+    cmp_func=cmp_func@entry=0xc1237870 <cmp_ex>, swap_func=swap_func@entry=0x0)
+    at lib/sort.c:50
+50	{
+```
+
+  `cmp_ex` as the input parameter of `sort` routine, in which compares index of the input `exception_table_entry`
+
+```cmp_ex
+
+/*
+ * The exception table needs to be sorted so that the binary
+ * search that we use to find entries in it works properly.
+ * This is used both for the kernel exception table and for
+ * the exception tables of modules that get loaded.
+ */
+static int cmp_ex(const void *a, const void *b)
+{
+	const struct exception_table_entry *x = a, *y = b;
+
+	/* avoid overflow */
+	if (x->insn > y->insn)
+		return 1;
+	if (x->insn < y->insn)
+		return -1;
+	return 0;
+}
+```
+
 # Links
 
   * [A tour of the Linux VFS](http://www.tldp.org/LDP/khg/HyperNews/get/fs/vfstour.html)
