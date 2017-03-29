@@ -239,7 +239,26 @@ alloc_large_system_hash (tablename=tablename@entry=0xc15d6031 "PID",
 
 ## sort the kernel's built-in exception table
 
+  The section of exception table defined as follow, which could be found in include/asm-generic/vmlinux.ls.h
+
+```defination_of_exception_table
+
+/*
+ * Exception table
+ */
+#define EXCEPTION_TABLE(align)						\
+	. = ALIGN(align);						\
+	__ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {		\
+		VMLINUX_SYMBOL(__start___ex_table) = .;			\
+		*(__ex_table)						\
+		VMLINUX_SYMBOL(__stop___ex_table) = .;			\
+	}
+```
+
+  The concept of exception table, take reference in [Kernel level exception handling in Linux](https://www.kernel.org/doc/Documentation/x86/exception-tables.txt)
+
 # Links
 
   * [A tour of the Linux VFS](http://www.tldp.org/LDP/khg/HyperNews/get/fs/vfstour.html)
   * [Overview of the Linux Virtual File System](https://www.kernel.org/doc/Documentation/filesystems/vfs.txt)
+  * [Kernel level exception handling in Linux](https://www.kernel.org/doc/Documentation/x86/exception-tables.txt)
