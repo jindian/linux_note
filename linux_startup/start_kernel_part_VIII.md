@@ -298,6 +298,8 @@ static int cmp_ex(const void *a, const void *b)
 }
 ```
 
+## initialize interruption
+
 # Links
 
   * [A tour of the Linux VFS](http://www.tldp.org/LDP/khg/HyperNews/get/fs/vfstour.html)
