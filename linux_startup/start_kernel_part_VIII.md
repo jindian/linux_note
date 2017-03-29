@@ -237,6 +237,8 @@ alloc_large_system_hash (tablename=tablename@entry=0xc15d6031 "PID",
 
   `vfs_caches_init_early` involves `dcache_init_early` and `inode_init_early` to allocate memory for hash tables `dentry_hashtable` and `inode_hashtable`
 
+## sort the kernel's built-in exception table
+
 # Links
 
   * [A tour of the Linux VFS](http://www.tldp.org/LDP/khg/HyperNews/get/fs/vfstour.html)

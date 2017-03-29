@@ -310,6 +310,9 @@
         |--vfs_caches_init_early                                         # fs/dcache.c:2314
             |--dcache_init_early                                         # fs/dcache.c:2253
             |--inode_init_early                                          # fs/inode.c:1561
+        |--sort_main_extable                                             # kernel/extable.c:39
+            |--sort_extable                                              # lib/extable.c:36
+                |--sort                                                  # lib/sort.c:47
 
             
                 
