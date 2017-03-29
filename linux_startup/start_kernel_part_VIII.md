@@ -32,3 +32,5 @@ parse_early_param () at init/main.c:473
 $13 = 1
 ```
 
+## parse kernel boot arguments
+
