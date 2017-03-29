@@ -2,8 +2,6 @@
 
 ## parse early command line parameter
 
-  This function already involved in `setup_arch`, when checks value `done` we can find it was set as 1.
-
 ```parse_early_param
 
 /* Arch code calls this early on, or if not, just before other parsing. */
@@ -22,6 +20,8 @@ void __init parse_early_param(void)
 }
 ```
 
+  This function already involved in `setup_arch`, when checking value `done` we can find it was set as 1.
+  
 ```parse_early_param_done
 
 565		parse_early_param();
@@ -30,5 +30,5 @@ parse_early_param () at init/main.c:473
 473		if (done)
 (gdb) p done
 $13 = 1
-
 ```
+
