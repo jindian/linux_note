@@ -71,7 +71,7 @@ void __init pidhash_init(void)
 }
 ```
 
-  `pidhash_init` is simple, just allocates memory and initialize pid hash table. Let's step into `alloc_large_system_hash` to check how memory allocated in kernel initialization.
+  `pidhash_init` is simple, just allocates memory from boot memory and initialize pid hash table. Let's step into `alloc_large_system_hash` to check how memory allocated in kernel initialization.
 
 ```alloc_large_system_hash
 
@@ -162,8 +162,68 @@ ___alloc_bootmem_nopanic (size=size@entry=2048, align=align@entry=32,
 (gdb) n
 575		list_for_each_entry(bdata, &bdata_list, list) {
 (gdb) 
+(gdb) n
+576			if (goal && bdata->node_low_pfn <= PFN_DOWN(goal))
+(gdb) 
+575		list_for_each_entry(bdata, &bdata_list, list) {
+(gdb) 
+576			if (goal && bdata->node_low_pfn <= PFN_DOWN(goal))
+(gdb) 
+578			if (limit && bdata->node_min_pfn >= PFN_DOWN(limit))
+(gdb) 
+581			region = alloc_bootmem_core(bdata, size, align, goal, limit);
+(gdb) p bdata
+$25 = (bootmem_data_t *) 0xc173e788 <bootmem_node_data>
+(gdb) p *bdata
+$26 = {node_min_pfn = 0, node_low_pfn = 32766, node_bootmem_map = 0xc0035000, 
+  last_end_off = 37028264, hint_idx = 8487, list = {
+    next = 0xc173e780 <bdata_list>, prev = 0xc173e780 <bdata_list>}}
+(gdb) s
+alloc_bootmem_core (bdata=bdata@entry=0xc173e788 <bootmem_node_data>, 
+    size=size@entry=2048, align=align@entry=32, goal=goal@entry=16777216, 
+    limit=limit@entry=0) at mm/bootmem.c:437
+437	{
 
+    .......
+    # find memory area not allocated from node_bootmem_map#
+
+(gdb) 
+539	}
+(gdb) 
+___alloc_bootmem_nopanic (size=size@entry=2048, align=align@entry=32, 
+    goal=16777216, limit=limit@entry=0) at mm/bootmem.c:582
+582			if (region)
+(gdb) p region
+$27 = (void *) 0xc2129000
+(gdb) n
+592	}
+(gdb) 
+__alloc_bootmem_nopanic (size=size@entry=2048, align=align@entry=32, 
+    goal=<optimized out>) at mm/bootmem.c:611
+611	}
+(gdb) n
+alloc_large_system_hash (tablename=tablename@entry=0xc15d6031 "PID", 
+    bucketsize=bucketsize@entry=4, numentries=<optimized out>, 
+    numentries@entry=0, scale=scale@entry=18, flags=flags@entry=3, 
+    _hash_shift=_hash_shift@entry=0xc169dc0c <pidhash_shift>, 
+    _hash_mask=_hash_mask@entry=0x0, limit=limit@entry=4096)
+    at mm/page_alloc.c:4912
+4912		} while (!table && size > PAGE_SIZE && --log2qty);
+(gdb) n
+4914		if (!table)
+(gdb) 
+4917		printk(KERN_INFO "%s hash table entries: %d (order: %d, %lu bytes)\n",
+(gdb) 
+4923		if (_hash_shift)
+(gdb) 
+4924			*_hash_shift = log2qty;
+(gdb) 
+4925		if (_hash_mask)
+(gdb) 
+4929	}
 ```
+
+  Because memory management is not ready, `alloc_arch_preferred_bootmem` returned NULL, later allocated memory from boot memory.
 
 # Links
 
