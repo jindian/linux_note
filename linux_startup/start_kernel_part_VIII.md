@@ -1,6 +1,6 @@
 # start kernel part VIII
 
-## parse early command line parameter
+## _parse early command line parameter_
 
 ```parse_early_param
 
@@ -32,7 +32,7 @@ parse_early_param () at init/main.c:473
 $13 = 1
 ```
 
-## parse kernel boot arguments
+## _parse kernel boot arguments_
 
 ```parse_args
 
@@ -48,7 +48,7 @@ parse_args (name=name@entry=0xc15c5350 "Booting kernel",
 
   Parse kernel boot parameter, same with it did in `parse_early_param` when it involved in `setup_arch`
 
-## allocate memory for pid hash
+## _allocate memory for pid hash_
 
 ```pidhash_init
 
@@ -185,7 +185,7 @@ alloc_bootmem_core (bdata=bdata@entry=0xc173e788 <bootmem_node_data>,
 437	{
 
     .......
-    # find memory area not allocated from node_bootmem_map#
+    # find memory area not allocated from node_bootmem_map #
 
 (gdb) 
 539	}
@@ -225,6 +225,19 @@ alloc_large_system_hash (tablename=tablename@entry=0xc15d6031 "PID",
 
   Because memory management is not ready, `alloc_arch_preferred_bootmem` returned NULL, later allocated memory from boot memory.
 
+## _early initialization of virtual file system_
+
+  The Virtual File System (also known as the Virtual Filesystem Switch) is the software layer in the kernel that provides the filesystem interface to userspace programs. It also provides an abstraction within the kernel which allows different filesystem implementations to coexist.
+  
+  Directory Entry Cache (dcache) is meant to be a view into your entire filespace. As most computers cannot fit all dentries in the RAM at the same time, some bits of the cache are missing. In order to resolve your pathname into a dentry, the VFS may have to resort to creating dentries along the way, and then loading the inode. This is done by looking up the inode.
+
+  An individual dentry usually has a pointer to an inode. Inodes are filesystem objects such as regular files, directories, FIFOs and other beasts.  They live either on the disc (for block device filesystems) or in the memory (for pseudo filesystems). Inodes that live on the disc are copied into the memory when required and changes to the inode are written back to disc. A single inode can be pointed to by multiple dentries (hard links, for example, do this).
+
+  Opening a file requires another operation: allocation of a file structure (this is the kernel-side implementation of file descriptors). The freshly allocated file structure is initialized with a pointer to the dentry and a set of file operation member functions. These are taken from the inode data.
+
+  `vfs_caches_init_early` involves `dcache_init_early` and `inode_init_early` to allocate memory for hash tables `dentry_hashtable` and `inode_hashtable`
+
 # Links
 
-  * []()
+  * [A tour of the Linux VFS](http://www.tldp.org/LDP/khg/HyperNews/get/fs/vfstour.html)
+  * [Overview of the Linux Virtual File System](https://www.kernel.org/doc/Documentation/filesystems/vfs.txt)

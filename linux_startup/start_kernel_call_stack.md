@@ -307,6 +307,9 @@
                     |--___alloc_bootmem_nopanic                          # mm/bootmem.c:562
                         |--alloc_arch_preferred_bootmem                  # mm/bootmem.c:541
                         |--alloc_bootmem_core                            # mm/bootmem.c:434
+        |--vfs_caches_init_early                                         # fs/dcache.c:2314
+            |--dcache_init_early                                         # fs/dcache.c:2253
+            |--inode_init_early                                          # fs/inode.c:1561
 
             
                 
