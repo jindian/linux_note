@@ -339,6 +339,7 @@
                 |--xsave_init                                            # arch/x86/kernel/xsave.c:289
             |--x86_init.irqs.trap_init -> x86_init_noop                  # arch/x86/kernel/x86_init.c:18
         |--mm_init                                                       # init/main.c:507
+            |--mem_init                                                  # arch/x86/mm/init_32.c:860
                 
 
             

@@ -525,7 +525,7 @@ static void __init mm_init(void)
 	kmem_cache_init();
 	pgtable_cache_init();
 	vmalloc_init();
-
+}
 ```
 
   Because `CONFIG_CGROUP_MEM_RES_CTLR` doesn't enabled, declaration of routine `page_cgroup_init_flatmem` is empty.
