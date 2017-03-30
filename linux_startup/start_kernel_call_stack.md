@@ -314,7 +314,31 @@
             |--sort_extable                                              # lib/extable.c:36
                 |--sort                                                  # lib/sort.c:47
         |--trap_init                                                     # arch/x86/kernel/traps.c:941
-            |--
+            |--set_intr_gate                                             # arch/x86/include/asm/desc.h:338
+                |--_set_gate                                             # arch/x86/include/asm/desc.h:320
+                    |--pack_gate                                         # arch/x86/include/asm/desc.h:64
+                    |--write_idt_entry -> native_write_idt_entry         # arch/x86/include/asm/desc.h:115
+            |--cpu_init                                                  # arch/x86/kernel/cpu/common.c:1200
+                |--load_idt -> native_load_idt                           # arch/x86/include/asm/desc.h:222
+                |--switch_to_new_gdt                                     # arch/x86/kernel/cpu/common.c:344
+                    |--load_gdt -> native_load_gdt                       # arch/x86/include/asm/desc.h:217
+                    |--load_percpu_segment                               # arch/x86/kernel/cpu/common.c:329
+                |--enter_lazy_tlb                                        # arch/x86/include/asm/mmu_context.h
+                |--load_sp0 -> native_load_sp0                           # arch/x86/include/asm/processor.h:555
+                |--set_tss_desc -> __set_tss_desc                        # arch/x86/include/asm/desc.h:176
+                    |--set_tssldt_descriptor                             # arch/x86/include/asm/desc.h:157
+                    |--write_gdt_entry -> native_write_gdt_entry         # arch/x86/include/asm/desc.h:127
+                |--load_TR_desc -> native_load_tr_desc                   # arch/x86/include/asm/desc.h:212
+                |--load_LDT                                              # arch/x86/include/asm/desc.h:290
+                    |--load_LDT_nolock                                   # arch/x86/include/asm/desc.h:285
+                |--__set_tss_desc
+                |--clear_all_debug_regs                                  # arch/x86/kernel/cpu/common.c:1074
+                |--clear_used_math
+                |--mxcsr_feature_mask_init                               # arch/x86/kernel/i387.c:45
+                |--init_thread_xstate                                    # arch/x86/kernel/i387.c:61
+                |--xsave_init                                            # arch/x86/kernel/xsave.c:289
+                
+                
 
             
                 

@@ -308,7 +308,7 @@ static int cmp_ex(const void *a, const void *b)
 
   The IDT entries are called gates. It can contain Interrupt Gates, Task Gates and Trap Gates.
 
-  `trap_init` sets 20 reserved interrupt with `set_intr_gate`, here is the function declaration of `set_intr_gate`, with interrupt number and address of interrupt handler function as its input parameters.
+  `trap_init` sets 20 reserved interrupt with `set_intr_gate`, here is the function declaration of `set_intr_gate`, with interrupt number and address of interrupt handler function as its input parameters. `set_intr_gate` involves `_set_gate` which initializes a gate_desc struction and write to specified interrupt in `idt_table`.
 
 ```set_intr_gate
 
@@ -323,7 +323,189 @@ static inline void set_intr_gate(unsigned int n, void *addr)
 	BUG_ON((unsigned)n > 0xFF);
 	_set_gate(n, GATE_INTERRUPT, addr, 0, 0, __KERNEL_CS);
 }
+
+arch/x86/include/asm/desc.h:320
+
+static inline void _set_gate(int gate, unsigned type, void *addr,
+			     unsigned dpl, unsigned ist, unsigned seg)
+{
+	gate_desc s;
+	pack_gate(&s, type, (unsigned long)addr, dpl, ist, seg);
+	/*
+	 * does not need to be atomic because it is only done once at
+	 * setup time
+	 */
+	write_idt_entry(idt_table, gate, &s);
+}
 ```
+
+  `trap_init` reserves all the builtin and syscall vector, checks if [control register CR4](https://en.wikipedia.org/wiki/Control_register#CR4) has fxsr and xmm, set specified bit of the control register, sets system call interrput.
+  
+  `trap_init` initialize cpu with `cpu_init`, in `cpu_init` initialize resources for current cpu.
+
+```cpu_init
+
+1011		cpu_init();
+(gdb) s
+cpu_init () at arch/x86/kernel/cpu/common.c:1201
+1201	{
+(gdb) n
+1202		int cpu = smp_processor_id();
+(gdb) 
+1203		struct task_struct *curr = current;
+(gdb) 
+1204		struct tss_struct *t = &per_cpu(init_tss, cpu);
+(gdb) 
+1207		if (cpumask_test_and_set_cpu(cpu, cpu_initialized_mask)) {
+(gdb) p cpu
+$6 = 0
+(gdb) p cpu_initialized_mask 
+$7 = {{bits = {0}}}
+(gdb) n
+1208			printk(KERN_WARNING "CPU#%d already initialized!\n", cpu);
+(gdb) 
+1213		printk(KERN_INFO "Initializing CPU#%d\n", cpu);
+(gdb) 
+1215		if (cpu_has_vme || cpu_has_tsc || cpu_has_de)
+(gdb) 
+1216			clear_in_cr4(X86_CR4_VME|X86_CR4_PVI|X86_CR4_TSD|X86_CR4_DE);
+(gdb) 
+1218		load_idt(&idt_descr);
+(gdb) s
+native_load_idt (dtr=<optimized out>)
+    at /home/start-kernel/work_space/github/linux_startup/linux-2.6.32.69/arch/x86/include/asm/desc.h:224
+224		asm volatile("lidt %0"::"m" (*dtr));
+(gdb) n
+cpu_init () at arch/x86/kernel/cpu/common.c:1219
+1219		switch_to_new_gdt(cpu);
+(gdb) s
+switch_to_new_gdt (cpu=cpu@entry=0) at arch/x86/kernel/cpu/common.c:348
+348		gdt_descr.address = (long)get_cpu_gdt_table(cpu);
+(gdb) n
+349		gdt_descr.size = GDT_SIZE - 1;
+(gdb) 
+350		load_gdt(&gdt_descr);
+(gdb) n
+353		load_percpu_segment(cpu);
+(gdb) s
+load_percpu_segment (cpu=0) at arch/x86/kernel/cpu/common.c:332
+332		loadsegment(fs, __KERNEL_PERCPU);
+(gdb) n
+337		load_stack_canary_segment();
+(gdb) s
+load_stack_canary_segment ()
+    at /home/start-kernel/work_space/github/linux_startup/linux-2.6.32.69/arch/x86/include/asm/stackprotector.h:101
+101		asm("mov %0, %%gs" : : "r" (__KERNEL_STACK_CANARY) : "memory");
+(gdb) n
+switch_to_new_gdt (cpu=cpu@entry=0) at arch/x86/kernel/cpu/common.c:354
+354	}
+(gdb) 
+cpu_init () at arch/x86/kernel/cpu/common.c:1224
+1224		atomic_inc(&init_mm.mm_count);
+(gdb) p init_mm.mm_count 
+$8 = {counter = 1}
+(gdb) p init_mm.mm_count 
+$9 = {counter = 2}
+(gdb) n
+1225		curr->active_mm = &init_mm;
+(gdb) 
+1226		BUG_ON(curr->mm);
+(gdb) 
+1227		enter_lazy_tlb(&init_mm, curr);
+(gdb) 
+1229		load_sp0(t, thread);
+(gdb) s
+load_sp0 (thread=0xc1692794 <init_task+852>, tss=<optimized out>)
+    at arch/x86/kernel/cpu/common.c:1229
+1229		load_sp0(t, thread);
+(gdb) s
+native_load_sp0 (tss=<optimized out>, tss=<optimized out>, 
+    thread=<optimized out>, thread=<optimized out>)
+    at /home/start-kernel/work_space/github/linux_startup/linux-2.6.32.69/arch/x86/include/asm/processor.h:557
+557		tss->x86_tss.sp0 = thread->sp0;
+(gdb) n
+560		if (unlikely(tss->x86_tss.ss1 != thread->sysenter_cs)) {
+(gdb) 
+cpu_init () at arch/x86/kernel/cpu/common.c:1230
+1230		set_tss_desc(cpu, t);
+cpu_init () at arch/x86/kernel/cpu/common.c:1231
+1231		load_TR_desc();
+(gdb) s
+native_load_tr_desc ()
+    at /home/start-kernel/work_space/github/linux_startup/linux-2.6.32.69/arch/x86/include/asm/desc.h:214
+214		asm volatile("ltr %w0"::"q" (GDT_ENTRY_TSS*8));
+(gdb) n
+1231		load_TR_desc();
+(gdb) 
+1232		load_LDT(&init_mm.context);
+(gdb) s
+load_LDT_nolock (pc=<optimized out>)
+    at /home/start-kernel/work_space/github/linux_startup/linux-2.6.32.69/arch/x86/include/asm/desc.h:287
+287		set_ldt(pc->ldt, pc->size);
+(gdb) n
+cpu_init () at arch/x86/kernel/cpu/common.c:1234
+1234		t->x86_tss.io_bitmap_base = offsetof(struct tss_struct, io_bitmap);
+(gdb) 
+1238		__set_tss_desc(cpu, GDT_ENTRY_DOUBLEFAULT_TSS, &doublefault_tss);
+(gdb) 
+1241		clear_all_debug_regs();
+1246		if (cpu_has_xsave)
+(gdb) 
+1249			current_thread_info()->status = 0;
+(gdb) 
+1250		clear_used_math();
+(gdb) 
+1251		mxcsr_feature_mask_init();
+(gdb) s
+mxcsr_feature_mask_init () at arch/x86/kernel/i387.c:49
+49		clts();
+(gdb) n
+47		unsigned long mask = 0;
+(gdb) 
+50		if (cpu_has_fxsr) {
+(gdb) 
+51			memset(&fx_scratch, 0, sizeof(struct i387_fxsave_struct));
+(gdb) 
+52			asm volatile("fxsave %0" : : "m" (fx_scratch));
+(gdb) 
+53			mask = fx_scratch.mxcsr_mask;
+(gdb) 
+55				mask = 0x0000ffbf;
+(gdb) 
+57		mxcsr_feature_mask &= mask;
+(gdb) 
+58		stts();
+(gdb) 
+59	}
+(gdb) n
+cpu_init () at arch/x86/kernel/cpu/common.c:1256
+1256		if (smp_processor_id() == boot_cpu_id)
+(gdb) 
+1257			init_thread_xstate();
+(gdb) s
+init_thread_xstate () at arch/x86/kernel/i387.c:68
+68		if (cpu_has_xsave) {
+(gdb) n
+73		if (cpu_has_fxsr)
+(gdb) 
+74			xstate_size = sizeof(struct i387_fxsave_struct);
+(gdb) 
+79	}
+(gdb) p xstate_size 
+$10 = 512
+(gdb) n
+cpu_init () at arch/x86/kernel/cpu/common.c:1259
+1259		xsave_init();
+(gdb) s
+xsave_init () at arch/x86/kernel/xsave.c:291
+291		if (!cpu_has_xsave)
+(gdb) n
+301	}
+cpu_init () at arch/x86/kernel/cpu/common.c:1260
+1260	}
+```
+
+  
 
 # Links
 
@@ -333,4 +515,5 @@ static inline void set_intr_gate(unsigned int n, void *addr)
   * [Interrupt descriptor table](https://en.wikipedia.org/wiki/Interrupt_descriptor_table)
   * [Interrupt Descriptor Table](http://wiki.osdev.org/Interrupt_Descriptor_Table)
   * [EISA bus support](https://www.kernel.org/doc/Documentation/eisa.txt)
+  * [CR4](https://en.wikipedia.org/wiki/Control_register#CR4)
   
