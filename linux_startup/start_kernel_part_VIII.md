@@ -298,10 +298,17 @@ static int cmp_ex(const void *a, const void *b)
 }
 ```
 
-## initialize interruption
+## initialize interrupt
+
+  The Interrupt Descriptor Table (IDT) is a data structure used by the x86 architecture to implement an interrupt vector table. The IDT is used by the processor to determine the correct response to interrupts and exceptions.
+  
+  
 
 # Links
 
   * [A tour of the Linux VFS](http://www.tldp.org/LDP/khg/HyperNews/get/fs/vfstour.html)
   * [Overview of the Linux Virtual File System](https://www.kernel.org/doc/Documentation/filesystems/vfs.txt)
   * [Kernel level exception handling in Linux](https://www.kernel.org/doc/Documentation/x86/exception-tables.txt)
+  * [Interrupt descriptor table](https://en.wikipedia.org/wiki/Interrupt_descriptor_table)
+  * [EISA bus support](https://www.kernel.org/doc/Documentation/eisa.txt)
+  
