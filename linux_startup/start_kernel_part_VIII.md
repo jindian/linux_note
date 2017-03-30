@@ -507,6 +507,31 @@ cpu_init () at arch/x86/kernel/cpu/common.c:1260
 
 ## initialize memory management
 
+  Declaration of routine `mm_init` could be found in file init/main.c:507
+
+```mm_init
+
+/*
+ * Set up kernel memory allocators
+ */
+static void __init mm_init(void)
+{
+	/*
+	 * page_cgroup requires countinous pages as memmap
+	 * and it's bigger than MAX_ORDER unless SPARSEMEM.
+	 */
+	page_cgroup_init_flatmem();
+	mem_init();
+	kmem_cache_init();
+	pgtable_cache_init();
+	vmalloc_init();
+
+```
+
+  Because `CONFIG_CGROUP_MEM_RES_CTLR` doesn't enabled, declaration of routine `page_cgroup_init_flatmem` is empty.
+  
+  
+
 # Links
 
   * [A tour of the Linux VFS](http://www.tldp.org/LDP/khg/HyperNews/get/fs/vfstour.html)
