@@ -530,7 +530,29 @@ static void __init mm_init(void)
 
   Because `CONFIG_CGROUP_MEM_RES_CTLR` doesn't enabled, declaration of routine `page_cgroup_init_flatmem` is empty.
   
+  Next involved routine in `mm_init` is `mem_init`:
   
+  In computing, an input–output memory management unit (IOMMU) is a memory management unit (MMU) that connects a direct-memory-access–capable (DMA-capable) I/O bus to the main memory. Like a traditional MMU, which translates CPU-visible virtual addresses to physical addresses, the IOMMU maps device-visible virtual addresses (also called device addresses or I/O addresses in this context) to physical addresses. Some units also provide memory protection from faulty or malicious devices.
+  
+  * `mem_init` involves `pci_iommu_alloc` to allocates IOMMU resource, actually because all configurations using IOMMU are disabled, soon returned from `pci_iommu_alloc` after stepped into it.
+  
+  * Put all low memory onto freelist with `free_all_bootmem`
+
+```totalram_pages
+
+(gdb) p totalram_pages 
+$1 = 27200
+```
+  
+  * Count reserved RAM pages
+
+```reservedpages
+
+881		set_highmem_pages_init();
+(gdb) p reservedpages 
+$4 = 5464
+```
+
 
 # Links
 
@@ -541,4 +563,5 @@ static void __init mm_init(void)
   * [Interrupt Descriptor Table](http://wiki.osdev.org/Interrupt_Descriptor_Table)
   * [EISA bus support](https://www.kernel.org/doc/Documentation/eisa.txt)
   * [CR4](https://en.wikipedia.org/wiki/Control_register#CR4)
+  * [Input–output memory management unit](https://en.wikipedia.org/wiki/Input%E2%80%93output_memory_management_unit)
   

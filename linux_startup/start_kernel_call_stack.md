@@ -340,6 +340,13 @@
             |--x86_init.irqs.trap_init -> x86_init_noop                  # arch/x86/kernel/x86_init.c:18
         |--mm_init                                                       # init/main.c:507
             |--mem_init                                                  # arch/x86/mm/init_32.c:860
+                |--pci_iommu_alloc                                       # arch/x86/kernel/pci-dma.c:123
+                |--free_all_bootmem                                      # mm/bootmem.c:224
+                    |--free_all_bootmem_core                             # mm/bootmem.c:146
+                |--page_is_ram                                           # arch/x86/mm/ioremap.c:27
+                |--PageReserved ?
+                |--set_highmem_pages_init                                # arch/x86/mm/highmem_32.c:109
+                
                 
 
             
