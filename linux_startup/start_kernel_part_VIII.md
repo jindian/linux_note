@@ -505,7 +505,7 @@ cpu_init () at arch/x86/kernel/cpu/common.c:1260
 1260	}
 ```
 
-  
+## initialize memory management
 
 # Links
 

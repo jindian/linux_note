@@ -337,7 +337,8 @@
                 |--mxcsr_feature_mask_init                               # arch/x86/kernel/i387.c:45
                 |--init_thread_xstate                                    # arch/x86/kernel/i387.c:61
                 |--xsave_init                                            # arch/x86/kernel/xsave.c:289
-                
+            |--x86_init.irqs.trap_init -> x86_init_noop                  # arch/x86/kernel/x86_init.c:18
+        |--mm_init                                                       # init/main.c:507
                 
 
             
