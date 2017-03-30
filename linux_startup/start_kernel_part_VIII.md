@@ -237,7 +237,7 @@ alloc_large_system_hash (tablename=tablename@entry=0xc15d6031 "PID",
 
   `vfs_caches_init_early` involves `dcache_init_early` and `inode_init_early` to allocate memory for hash tables `dentry_hashtable` and `inode_hashtable`
 
-## sort the kernel's built-in exception table
+## _sort the kernel's built-in exception table_
 
   The section of exception table defined as follow, which could be found in include/asm-generic/vmlinux.ls.h
 
@@ -298,7 +298,7 @@ static int cmp_ex(const void *a, const void *b)
 }
 ```
 
-## initialize interrupt
+## _initialize interrupt_
 
   In `trap_init`, if EISA configured, unmap memory region of EISA, here `0x0FFFD9` is the start address of EISA area.
 
@@ -505,7 +505,7 @@ cpu_init () at arch/x86/kernel/cpu/common.c:1260
 1260	}
 ```
 
-## initialize memory management
+## _initialize memory management_
 
   Declaration of routine `mm_init` could be found in file init/main.c:507
 
@@ -561,7 +561,6 @@ $8 = 0
 (gdb) p totalram_pages 
 $10 = 27200
 (gdb) n
-
 ```
 
 # Links
