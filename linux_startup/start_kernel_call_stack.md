@@ -314,6 +314,7 @@
             |--sort_extable                                              # lib/extable.c:36
                 |--sort                                                  # lib/sort.c:47
         |--trap_init                                                     # arch/x86/kernel/traps.c:941
+            |--
 
             
                 

@@ -300,9 +300,30 @@ static int cmp_ex(const void *a, const void *b)
 
 ## initialize interrupt
 
+  In `trap_init`, if EISA configured, unmap memory region of EISA, here `0x0FFFD9` is the start address of EISA area.
+
   The Interrupt Descriptor Table (IDT) is a data structure used by the x86 architecture to implement an interrupt vector table. The IDT is used by the processor to determine the correct response to interrupts and exceptions.
   
-  
+  The Interrupt Descriptor Table (IDT) is specific to the IA-32 architecture. It is the Protected mode counterpart to the Real Mode Interrupt Vector Table (IVT) telling where the Interrupt Service Routines (ISR) are located (one per interrupt vector). It is similar to the Global Descriptor Table in structure.
+
+  The IDT entries are called gates. It can contain Interrupt Gates, Task Gates and Trap Gates.
+
+  `trap_init` sets 20 reserved interrupt with `set_intr_gate`, here is the function declaration of `set_intr_gate`, with interrupt number and address of interrupt handler function as its input parameters.
+
+```set_intr_gate
+
+/*
+ * This needs to use 'idt_table' rather than 'idt', and
+ * thus use the _nonmapped_ version of the IDT, as the
+ * Pentium F0 0F bugfix can have resulted in the mapped
+ * IDT being write-protected.
+ */
+static inline void set_intr_gate(unsigned int n, void *addr)
+{
+	BUG_ON((unsigned)n > 0xFF);
+	_set_gate(n, GATE_INTERRUPT, addr, 0, 0, __KERNEL_CS);
+}
+```
 
 # Links
 
@@ -310,5 +331,6 @@ static int cmp_ex(const void *a, const void *b)
   * [Overview of the Linux Virtual File System](https://www.kernel.org/doc/Documentation/filesystems/vfs.txt)
   * [Kernel level exception handling in Linux](https://www.kernel.org/doc/Documentation/x86/exception-tables.txt)
   * [Interrupt descriptor table](https://en.wikipedia.org/wiki/Interrupt_descriptor_table)
+  * [Interrupt Descriptor Table](http://wiki.osdev.org/Interrupt_Descriptor_Table)
   * [EISA bus support](https://www.kernel.org/doc/Documentation/eisa.txt)
   
