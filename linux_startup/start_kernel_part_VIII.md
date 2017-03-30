@@ -536,12 +536,14 @@ static void __init mm_init(void)
   
   * `mem_init` involves `pci_iommu_alloc` to allocates IOMMU resource, actually because all configurations using IOMMU are disabled, soon returned from `pci_iommu_alloc` after stepped into it.
   * Put all low memory onto freelist with `free_all_bootmem`
+
 ```totalram_pages
 
 (gdb) p totalram_pages 
 $1 = 27200
 ```
   * Count reserved RAM pages
+
 ```reservedpages
 
 881		set_highmem_pages_init();
@@ -549,6 +551,7 @@ $1 = 27200
 $4 = 5464
 ```
   * Loop all memory zones add active high memory regions to total RAM page with `set_highmem_pages_init`
+
 ```totalhigh_pages
 130		totalram_pages += totalhigh_pages;
 (gdb) p totalhigh_pages 
