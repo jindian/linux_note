@@ -346,6 +346,12 @@
                 |--page_is_ram                                           # arch/x86/mm/ioremap.c:27
                 |--PageReserved ?
                 |--set_highmem_pages_init                                # arch/x86/mm/highmem_32.c:109
+                    |--is_highmem                                        # include/linux/mmzone.h:734
+                    |--add_highpages_with_active_regions                 # arch/x86/mm/init_32.c:455
+                        |--work_with_active_regions                      # mm/page_alloc.c:3441
+                            |--work_fn -> add_highpages_work_fn          # arch/x86/mm/init_32.c:428
+                                |--add_one_highpage_init                 # arch/x86/mm/init_32.c:415
+                    
                 
                 
 

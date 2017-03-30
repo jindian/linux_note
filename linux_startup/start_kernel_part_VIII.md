@@ -535,24 +535,31 @@ static void __init mm_init(void)
   In computing, an input–output memory management unit (IOMMU) is a memory management unit (MMU) that connects a direct-memory-access–capable (DMA-capable) I/O bus to the main memory. Like a traditional MMU, which translates CPU-visible virtual addresses to physical addresses, the IOMMU maps device-visible virtual addresses (also called device addresses or I/O addresses in this context) to physical addresses. Some units also provide memory protection from faulty or malicious devices.
   
   * `mem_init` involves `pci_iommu_alloc` to allocates IOMMU resource, actually because all configurations using IOMMU are disabled, soon returned from `pci_iommu_alloc` after stepped into it.
-  
   * Put all low memory onto freelist with `free_all_bootmem`
-
 ```totalram_pages
 
 (gdb) p totalram_pages 
 $1 = 27200
 ```
-  
   * Count reserved RAM pages
-
 ```reservedpages
 
 881		set_highmem_pages_init();
 (gdb) p reservedpages 
 $4 = 5464
 ```
+  * Loop all memory zones add active high memory regions to total RAM page with `set_highmem_pages_init`
+```totalhigh_pages
+130		totalram_pages += totalhigh_pages;
+(gdb) p totalhigh_pages 
+$8 = 0
+(gdb) n
+131	}
+(gdb) p totalram_pages 
+$10 = 27200
+(gdb) n
 
+```
 
 # Links
 
