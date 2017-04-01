@@ -564,6 +564,26 @@ $10 = 27200
 (gdb) 
 ```
 
+  `kmem_cache_init` is used to basic setup of slabs.
+  
+  [Slab allocation](https://en.wikipedia.org/wiki/Slab_allocation) is a memory management mechanism intended for the efficient memory allocation of kernel objects. It eliminates fragmentation caused by allocations and deallocations. The technique is used to retain allocated memory that contains a data object of a certain type for reuse upon subsequent allocations of objects of the same type. It is analogous to an object pool, but only applies to memory, not other resources.
+  
+  * `init_alloc_cpu` initializes per cpu array kmem cache.
+  * `create_kmalloc_cache` creates cache for kernel memory allocation.
+
+```create_kmalloc_cache
+
+3200			create_kmalloc_cache(&kmalloc_caches[1],
+(gdb) s
+create_kmalloc_cache (s=s@entry=0xc1691664 <kmalloc_caches+196>, 
+    name=name@entry=0xc15edb6c "kmalloc-96", size=size@entry=96, 
+    gfp_flags=0) at mm/slub.c:2705
+2705		if (!kmem_cache_open(s, gfp_flags, name, size, ARCH_KMALLOC_MINALIGN,
+
+```
+  
+  
+
 # Links
 
   * [A tour of the Linux VFS](http://www.tldp.org/LDP/khg/HyperNews/get/fs/vfstour.html)
@@ -574,4 +594,5 @@ $10 = 27200
   * [EISA bus support](https://www.kernel.org/doc/Documentation/eisa.txt)
   * [CR4](https://en.wikipedia.org/wiki/Control_register#CR4)
   * [Input–output memory management unit](https://en.wikipedia.org/wiki/Input%E2%80%93output_memory_management_unit)
+  * [Slab allocation](https://en.wikipedia.org/wiki/Slab_allocation)
   

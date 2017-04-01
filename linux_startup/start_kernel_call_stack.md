@@ -355,6 +355,10 @@
                 |--zap_low_mappings                                      # arch/x86/mm/init_32.c:567
                     |--set_pgd
                     |--__native_flush_tlb
+            |--kmem_cache_init                                           # mm/slub.c:3174
+                |--init_alloc_cpu                                        # mm/slub.c:2204
+                    |--init_alloc_cpu_cpu                                # mm/slub.c:2191
+                |--create_kmalloc_cache                                  # 
                 
 
                     
