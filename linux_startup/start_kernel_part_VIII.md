@@ -377,7 +377,7 @@ native_load_idt (dtr=<optimized out>)
 224		asm volatile("lidt %0"::"m" (*dtr));
 (gdb) n
 cpu_init () at arch/x86/kernel/cpu/common.c:1219
-1219		switch_to_new_gdt(cpu);
+1219		switch_to_new_gdt(cpu);c
 (gdb) s
 switch_to_new_gdt (cpu=cpu@entry=0) at arch/x86/kernel/cpu/common.c:348
 348		gdt_descr.address = (long)get_cpu_gdt_table(cpu);
@@ -505,7 +505,7 @@ cpu_init () at arch/x86/kernel/cpu/common.c:1260
 1260	}
 ```
 
-## _initialize memory management_
+## _initialize memory management_c
 
   Declaration of routine `mm_init` could be found in file init/main.c:507
 
@@ -536,6 +536,7 @@ static void __init mm_init(void)
   
   * `mem_init` involves `pci_iommu_alloc` to allocates IOMMU resource, actually because all configurations using IOMMU are disabled, soon returned from `pci_iommu_alloc` after stepped into it.
   * Put all low memory onto freelist with `free_all_bootmem`
+  * save level 4 page data and zap initialize low memory mapping
 
 ```totalram_pages
 
@@ -560,7 +561,7 @@ $8 = 0
 131	}
 (gdb) p totalram_pages 
 $10 = 27200
-(gdb) n
+(gdb) 
 ```
 
 # Links

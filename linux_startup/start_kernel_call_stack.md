@@ -351,6 +351,12 @@
                         |--work_with_active_regions                      # mm/page_alloc.c:3441
                             |--work_fn -> add_highpages_work_fn          # arch/x86/mm/init_32.c:428
                                 |--add_one_highpage_init                 # arch/x86/mm/init_32.c:415
+                |--save_pg_dir                                           # arch/x86/mm/init_32.c:557
+                |--zap_low_mappings                                      # arch/x86/mm/init_32.c:567
+                    |--set_pgd
+                    |--__native_flush_tlb
+                
+
                     
                 
                 
