@@ -569,19 +569,96 @@ $10 = 27200
   [Slab allocation](https://en.wikipedia.org/wiki/Slab_allocation) is a memory management mechanism intended for the efficient memory allocation of kernel objects. It eliminates fragmentation caused by allocations and deallocations. The technique is used to retain allocated memory that contains a data object of a certain type for reuse upon subsequent allocations of objects of the same type. It is analogous to an object pool, but only applies to memory, not other resources.
   
   * `init_alloc_cpu` initializes per cpu array kmem cache.
-  * `create_kmalloc_cache` creates cache for kernel memory allocation.
+  * `create_kmalloc_cache` creates several type of caches for kernel memory allocation, let's deep into `create_kmalloc_cache`
 
 ```create_kmalloc_cache
 
-3200			create_kmalloc_cache(&kmalloc_caches[1],
-(gdb) s
-create_kmalloc_cache (s=s@entry=0xc1691664 <kmalloc_caches+196>, 
-    name=name@entry=0xc15edb6c "kmalloc-96", size=size@entry=96, 
-    gfp_flags=0) at mm/slub.c:2705
-2705		if (!kmem_cache_open(s, gfp_flags, name, size, ARCH_KMALLOC_MINALIGN,
+mm/slub.c:2693
+
+static struct kmem_cache *create_kmalloc_cache(struct kmem_cache *s,
+		const char *name, int size, gfp_t gfp_flags)
+{
+	unsigned int flags = 0;
+
+	if (gfp_flags & SLUB_DMA)
+		flags = SLAB_CACHE_DMA;
+
+	/*
+	 * This function is called with IRQs disabled during early-boot on
+	 * single CPU so there's no need to take slub_lock here.
+	 */
+	if (!kmem_cache_open(s, gfp_flags, name, size, ARCH_KMALLOC_MINALIGN,
+								flags, NULL))
+		goto panic;
+
+	list_add(&s->list, &slab_caches);
+
+	if (sysfs_slab_add(s))
+		goto panic;
+	return s;
+
+panic:
+	panic("Creation of kmalloc slab %s size=%d failed.\n", name, size);
+}
+
+mm/slub.c:2464
+
+static int kmem_cache_open(struct kmem_cache *s, gfp_t gfpflags,
+		const char *name, size_t size,
+		size_t align, unsigned long flags,
+		void (*ctor)(void *))
+{
+	memset(s, 0, kmem_size);
+	s->name = name;
+	s->ctor = ctor;
+	s->objsize = size;
+	s->align = align;
+	s->flags = kmem_cache_flags(size, flags, name, ctor);
+
+	if (!calculate_sizes(s, -1))
+		goto error;
+	if (disable_higher_order_debug) {
+		/*
+		 * Disable debugging flags that store metadata if the min slab
+		 * order increased.
+		 */
+		if (get_order(s->size) > get_order(s->objsize)) {
+			s->flags &= ~DEBUG_METADATA_FLAGS;
+			s->offset = 0;
+			if (!calculate_sizes(s, -1))
+				goto error;
+		}
+	}
+
+	/*
+	 * The larger the object size is, the more pages we want on the partial
+	 * list to avoid pounding the page allocator excessively.
+	 */
+	set_min_partial(s, ilog2(s->size));
+	s->refcount = 1;
+#ifdef CONFIG_NUMA
+	s->remote_node_defrag_ratio = 1000;
+#endif
+	if (!init_kmem_cache_nodes(s, gfpflags & ~SLUB_DMA))
+		goto error;
+
+	if (alloc_kmem_cache_cpus(s, gfpflags & ~SLUB_DMA))
+		return 1;
+	free_kmem_cache_nodes(s);
+error:
+	if (flags & SLAB_PANIC)
+		panic("Cannot create slab %s size=%lu realsize=%u "
+			"order=%u offset=%u flags=%lx\n",
+			s->name, (unsigned long)size, s->size, oo_order(s->oo),
+			s->offset, flags);
+	return 0;
+}
 
 ```
   
+  `create_kmalloc_cache` checks GFP bitmap if memory allocated in zone DMA, after that involves `kmem_cache_open` to allocate wanted kmem_cache. `kmem_cache_open` firstly initializes kmem_cache structure, then determines the order and the distribution of data within a slab object with `calculate_sizes`, sets min partial with `set_min_partial` because the larger the object size is, the more pages we want on the partial list to avoid pounding the page allocator excessively, 
+ 
+
   
 
 # Links

@@ -358,7 +358,15 @@
             |--kmem_cache_init                                           # mm/slub.c:3174
                 |--init_alloc_cpu                                        # mm/slub.c:2204
                     |--init_alloc_cpu_cpu                                # mm/slub.c:2191
-                |--create_kmalloc_cache                                  # 
+                |--create_kmalloc_cache                                  # mm/slub.c:2693
+                    |--kmem_cache_open                                   # mm/slub.c:2464
+                        |--kmem_cache_flags                              # mm/slub.c:1038
+                        |--calculate_sizes                               # mm/slub.c:2344
+                        |--set_min_partial                               # mm/slub.c:2331
+                        |--init_kmem_cache_nodes                         # mm/slub.c:2324
+                            |--init_kmem_cache_node                      # mm/slub.c:2086
+                        
+                        
                 
 
                     
