@@ -668,7 +668,7 @@ error:
  
 ## _initialize scheduler_
 
-
+  
 
  
 
@@ -686,4 +686,5 @@ error:
   * [Input–output memory management unit](https://en.wikipedia.org/wiki/Input%E2%80%93output_memory_management_unit)
   * [Slab allocation](https://en.wikipedia.org/wiki/Slab_allocation)
   * [vmalloc VS kmalloc](http://naveengopala-embeddedlinux.blogspot.fi/2012/01/linux-kernel-programmingmemory.html)
+  * [Multiprocessing with the Completely Fair Scheduler](http://homepage.smc.edu/morgan_david/cs40/multimedia/cfs_scheduler_ibm1.pdf)
   
