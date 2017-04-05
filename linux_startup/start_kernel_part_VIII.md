@@ -656,7 +656,20 @@ error:
 
 ```
   
-  `create_kmalloc_cache` checks GFP bitmap if memory allocated in zone DMA, after that involves `kmem_cache_open` to allocate wanted kmem_cache. `kmem_cache_open` firstly initializes kmem_cache structure, then determines the order and the distribution of data within a slab object with `calculate_sizes`, sets min partial with `set_min_partial` because the larger the object size is, the more pages we want on the partial list to avoid pounding the page allocator excessively, 
+  `create_kmalloc_cache` checks GFP bitmap if memory allocated in zone DMA, after that it involves `kmem_cache_open` to allocate needed kmem_cache. `kmem_cache_open` firstly initializes kmem_cache structure, then determines the order and the distribution of data within a slab object with `calculate_sizes`, sets min partial with `set_min_partial` because the larger the object size is, the more pages we want on the partial list to avoid pounding the page allocator excessively, initializes nodes of the kmem_cache with `init_kmem_cache_nodes` which initialzes partial list of node in kmem_cache, initializes kmem_cache_cpu data of per cpu data with `alloc_kmem_cache_cpus`. After `kmem_cache_open` executing completed, add new kmem_cache to `slab_cache` list. Finally `create_kmalloc_cache` add sysfs slab if `slab_state` is `SYSFS`.
+  
+  * After needed kmem_cache created, updates `slab_state` to `UP`
+  * Updates kmalloc name
+  * Registers notifier to allocate new kmem_cache for new up cpu
+  * Updates kmem_size
+
+ Go back to `mm_init`, it involves `vmalloc_init` to initialize vmalloc, understanding the difference between kmalloc and vmalloc [here](http://naveengopala-embeddedlinux.blogspot.fi/2012/01/linux-kernel-programmingmemory.html), `vmalloc_init` gets `vmap_block_queue` from per cpu data area and initializes it's spin lock and free list, loops `vmlist` and allocates vmap_area for all entres, inserts allocated vmap_area.
+ 
+ 
+## _initialize scheduler_
+
+
+
  
 
   
@@ -672,4 +685,5 @@ error:
   * [CR4](https://en.wikipedia.org/wiki/Control_register#CR4)
   * [Input–output memory management unit](https://en.wikipedia.org/wiki/Input%E2%80%93output_memory_management_unit)
   * [Slab allocation](https://en.wikipedia.org/wiki/Slab_allocation)
+  * [vmalloc VS kmalloc](http://naveengopala-embeddedlinux.blogspot.fi/2012/01/linux-kernel-programmingmemory.html)
   

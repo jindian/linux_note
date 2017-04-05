@@ -365,6 +365,14 @@
                         |--set_min_partial                               # mm/slub.c:2331
                         |--init_kmem_cache_nodes                         # mm/slub.c:2324
                             |--init_kmem_cache_node                      # mm/slub.c:2086
+                        |--alloc_kmem_cache_cpus                         # mm/slub.c:2168
+                            |--get_cpu_slab                              # mm/slub.c:245
+                            |--alloc_kmem_cache_cpu                      # mm/slub.c:2122
+                            |--init_kmem_cache_cpu                       # mm/slub.c:2072
+                    |--sysfs_slab_add                                    # mm/slub.c:4567
+            |--vmalloc_init                                              # mm/vmalloc.c:1097
+        |--sched_init                                                    # kernel/sched.c:9657
+                            
                         
                         
                 
