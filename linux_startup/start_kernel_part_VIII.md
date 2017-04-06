@@ -687,4 +687,7 @@ error:
   * [Slab allocation](https://en.wikipedia.org/wiki/Slab_allocation)
   * [vmalloc VS kmalloc](http://naveengopala-embeddedlinux.blogspot.fi/2012/01/linux-kernel-programmingmemory.html)
   * [Multiprocessing with the Completely Fair Scheduler](http://homepage.smc.edu/morgan_david/cs40/multimedia/cfs_scheduler_ibm1.pdf)
+  * [Linux Scheduler](https://www.cs.columbia.edu/~smb/classes/s06-4118/l13.pdf)
+  * [Completely Fair Scheduler](https://en.wikipedia.org/wiki/Completely_Fair_Scheduler)
+  
   
