@@ -668,7 +668,18 @@ error:
  
 ## _initialize scheduler_
 
-  
+
+```sched_init
+
+Breakpoint 2, sched_init () at kernel/sched.c:9658
+9658	{
+(gdb) n
+9703		init_defrootdomain();
+(gdb) p alloc_size 
+$1 = 0
+(gdb) 
+
+```
 
  
 
@@ -689,5 +700,6 @@ error:
   * [Multiprocessing with the Completely Fair Scheduler](http://homepage.smc.edu/morgan_david/cs40/multimedia/cfs_scheduler_ibm1.pdf)
   * [Linux Scheduler](https://www.cs.columbia.edu/~smb/classes/s06-4118/l13.pdf)
   * [Completely Fair Scheduler](https://en.wikipedia.org/wiki/Completely_Fair_Scheduler)
+  * [Scheduling](https://en.wikipedia.org/wiki/Scheduling_(computing))
   
   
