@@ -674,7 +674,7 @@ error:
 
   A scheduler may aim at one of many goals, for example, maximizing throughput (the total amount of work completed per time unit), minimizing response time (time from work becoming enabled until the first point it begins execution on resources), or minimizing latency (the time between work becoming enabled and its subsequent completion),[1] maximizing fairness (equal CPU time to each process, or more generally appropriate times according to the priority and workload of each process). In practice, these goals often conflict (e.g. throughput versus latency), thus a scheduler will implement a suitable compromise. Preference is given to any one of the concerns mentioned above, depending upon the user's needs and objectives.
 
-  `sched_init` allocates memory from boot memory block if `CONFIG_FAIR_GROUP_SCHED`, `CONFIG_RT_GROUP_SCHED`, `CONFIG_CPUMASK_OFFSTACK` configured and initializes specified area of global variable `init_task_group` and per cpu variable separately. In our environment, above configurations are not enabled.
+  `sched_init` allocates memory from boot memory block if `CONFIG_FAIR_GROUP_SCHED`, `CONFIG_RT_GROUP_SCHED`, `CONFIG_CPUMASK_OFFSTACK` configured and initializes specified area of global variable `init_task_group` and per cpu variable separately. In our environment, above configurations are not enabled, `alloc_size` is zero.
 
 ```alloc_size
 
@@ -685,6 +685,42 @@ Breakpoint 2, sched_init () at kernel/sched.c:9658
 (gdb) p alloc_size 
 $1 = 0
 ```
+
+  `sched_init` initializes default root domain including specific cpu mask and cpu priority for each cpu set. Defination of root domain as follow.
+
+```
+
+/*
+ * We add the notion of a root-domain which will be used to define per-domain
+ * variables. Each exclusive cpuset essentially defines an island domain by
+ * fully partitioning the member cpus from any other cpuset. Whenever a new
+ * exclusive cpuset is created, we also create and attach a new root-domain
+ * object.
+ *
+ */
+struct root_domain {
+	atomic_t refcount;
+	cpumask_var_t span;
+	cpumask_var_t online;
+
+	/*
+	 * The "RT overload" flag: it gets set if a CPU has more than
+	 * one runnable RT task.
+	 */
+	cpumask_var_t rto_mask;
+	atomic_t rto_count;
+#ifdef CONFIG_SMP
+	struct cpupri cpupri;
+#endif
+};
+
+/*
+ * By default the system creates a single root-domain with all cpus as
+ * members (mimicking the global state we have today).
+ */
+static struct root_domain def_root_domain;
+```
+  
 
  
 
