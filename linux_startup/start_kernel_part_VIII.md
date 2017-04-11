@@ -674,7 +674,9 @@ error:
 
   A scheduler may aim at one of many goals, for example, maximizing throughput (the total amount of work completed per time unit), minimizing response time (time from work becoming enabled until the first point it begins execution on resources), or minimizing latency (the time between work becoming enabled and its subsequent completion),[1] maximizing fairness (equal CPU time to each process, or more generally appropriate times according to the priority and workload of each process). In practice, these goals often conflict (e.g. throughput versus latency), thus a scheduler will implement a suitable compromise. Preference is given to any one of the concerns mentioned above, depending upon the user's needs and objectives.
 
-```sched_init
+  `sched_init` allocates memory from boot memory block if `CONFIG_FAIR_GROUP_SCHED`, `CONFIG_RT_GROUP_SCHED`, `CONFIG_CPUMASK_OFFSTACK` configured and initializes specified area of global variable `init_task_group` and per cpu variable separately. In our environment, above configurations are not enabled.
+
+```alloc_size
 
 Breakpoint 2, sched_init () at kernel/sched.c:9658
 9658	{
@@ -682,7 +684,6 @@ Breakpoint 2, sched_init () at kernel/sched.c:9658
 9703		init_defrootdomain();
 (gdb) p alloc_size 
 $1 = 0
-(gdb) 
 ```
 
  
