@@ -374,6 +374,7 @@
         |--sched_init                                                    # kernel/sched.c:9657
             |--init_defrootdomain                                        # kernel/sched.c:8282
             |--init_rt_bandwidth                                         # kernel/sched.c:176
+            |--set_load_weight                                           # kernel/sched.c:1919
                             
                         
                         
