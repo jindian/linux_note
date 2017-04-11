@@ -372,6 +372,8 @@
                     |--sysfs_slab_add                                    # mm/slub.c:4567
             |--vmalloc_init                                              # mm/vmalloc.c:1097
         |--sched_init                                                    # kernel/sched.c:9657
+            |--init_defrootdomain                                        # kernel/sched.c:8282
+            |--init_rt_bandwidth                                         # kernel/sched.c:176
                             
                         
                         

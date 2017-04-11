@@ -721,9 +721,21 @@ struct root_domain {
 static struct root_domain def_root_domain;
 ```
   
+  `sched_init` initializes default real time bandwidth, about `rt_bandwidth`, it can be found [here](https://lwn.net/Articles/296419/).
+  rt_bandwith consists of a pair of values: a CPU time accounting period, and the amount of CPU that the group is allowed to use - at realtime priority - during that period. Once a SCHED_FIFO task causes a group to exceed its rt_bandwidth, it will be pushed out of the processor whether it wants to go or not.
 
- 
+  Context of `init_rt_bandwidth` when initializing default real time bandwidth.
 
+```init_rt_bandwidth
+
+9706		init_rt_bandwidth(&def_rt_bandwidth,
+(gdb) s
+init_rt_bandwidth (rt_b=0xc18ec340 <def_rt_bandwidth>, runtime=950000000, 
+    period=1000000000) at kernel/sched.c:181
+181		spin_lock_init(&rt_b->rt_runtime_lock);
+```
+
+  Next `sched_init` intial
   
 
 # Links
@@ -742,5 +754,6 @@ static struct root_domain def_root_domain;
   * [Linux Scheduler](https://www.cs.columbia.edu/~smb/classes/s06-4118/l13.pdf)
   * [Completely Fair Scheduler](https://en.wikipedia.org/wiki/Completely_Fair_Scheduler)
   * [Scheduling](https://en.wikipedia.org/wiki/Scheduling_(computing))
+  * [SCHED_FIFO and realtime throttling](https://lwn.net/Articles/296419/)
   
   
