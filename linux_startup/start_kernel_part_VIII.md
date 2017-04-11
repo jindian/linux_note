@@ -778,12 +778,14 @@ rt_policy (policy=0) at kernel/sched.c:124
   
   `set_load_weight` then checks if init task has idle schedule policy, if yes, initialize load weight base on idle policy and returns.
   
-  finally initialzes load weight base on priority of init task. The static priority of init task is
+  finally initialzes load weight base on priority of init task. The static priority of init task and the result of load weight:
 
 ```static_priority_of_init_task
 
 (gdb) p p->static_prio 
 $7 = 120
+(gdb) p p->se.load 
+$8 = {weight = 1024, inv_weight = 4194304}
 ```
 
   The mapping of priority to weight and weight multiplications could be found in kernel/sched.c:1345
