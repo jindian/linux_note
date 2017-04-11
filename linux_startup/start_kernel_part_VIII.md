@@ -735,7 +735,15 @@ init_rt_bandwidth (rt_b=0xc18ec340 <def_rt_bandwidth>, runtime=950000000,
 181		spin_lock_init(&rt_b->rt_runtime_lock);
 ```
 
-  Next `sched_init` intial
+  Next `sched_init` intializes per cpu run queue structure.
+  
+  In modern computers many processes run at once. Active processes are placed in an array called a run queue, or runqueue. The run queue may contain priority values for each process, which will be used by the scheduler to determine which process to run next. To ensure each program has a fair share of resources, each one is run for some time period (quantum) before it is paused and placed back into the run queue. When a program is stopped to let another run, the program with the highest priority in the run queue is then allowed to execute.
+
+  Processes are also removed from the run queue when they ask to sleep, are waiting on a resource to become available, or have been terminated.
+
+  In the Linux operating system (prior to kernel 2.6.23), each CPU in the system is given a run queue, which maintains both an active and expired array of processes. Each array contains 140 (one for each priority level) pointers to doubly linked lists, which in turn reference all processes with the given priority. The scheduler selects the next process from the active array with highest priority. When a process' quantum expires, it is placed into the expired array with some priority. When the active array contains no more processes, the scheduler swaps the active and expired arrays, hence the name O(1) scheduler.
+  
+  
   
 
 # Links
@@ -755,5 +763,6 @@ init_rt_bandwidth (rt_b=0xc18ec340 <def_rt_bandwidth>, runtime=950000000,
   * [Completely Fair Scheduler](https://en.wikipedia.org/wiki/Completely_Fair_Scheduler)
   * [Scheduling](https://en.wikipedia.org/wiki/Scheduling_(computing))
   * [SCHED_FIFO and realtime throttling](https://lwn.net/Articles/296419/)
+  * [Run queue](https://en.wikipedia.org/wiki/Run_queue)
   
   
