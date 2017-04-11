@@ -735,7 +735,7 @@ init_rt_bandwidth (rt_b=0xc18ec340 <def_rt_bandwidth>, runtime=950000000,
 181		spin_lock_init(&rt_b->rt_runtime_lock);
 ```
 
-  Next `sched_init` intializes per cpu run queue structure.
+  `sched_init` intializes per cpu run queue structure.
   
   In modern computers many processes run at once. Active processes are placed in an array called a run queue, or runqueue. The run queue may contain priority values for each process, which will be used by the scheduler to determine which process to run next. To ensure each program has a fair share of resources, each one is run for some time period (quantum) before it is paused and placed back into the run queue. When a program is stopped to let another run, the program with the highest priority in the run queue is then allowed to execute.
 
@@ -743,8 +743,44 @@ init_rt_bandwidth (rt_b=0xc18ec340 <def_rt_bandwidth>, runtime=950000000,
 
   In the Linux operating system (prior to kernel 2.6.23), each CPU in the system is given a run queue, which maintains both an active and expired array of processes. Each array contains 140 (one for each priority level) pointers to doubly linked lists, which in turn reference all processes with the given priority. The scheduler selects the next process from the active array with highest priority. When a process' quantum expires, it is placed into the expired array with some priority. When the active array contains no more processes, the scheduler swaps the active and expired arrays, hence the name O(1) scheduler.
   
+  `sched_init` sets load weight for `init_task`, the defination of `init_task` could be found in arch/x86/kernel/init_task.c:31
+
+```init_task
+
+/*
+ * Initial task structure.
+ *
+ * All other task structs will be allocated on slabs in fork.c
+ */
+struct task_struct init_task = INIT_TASK(init_task);
+```
+
+  `set_load_weight` checks if init task has real time schedule policy, if yes, initialzes load weight base on real time policy and returns.
+
+```policy_init_task
+
+(gdb) where
+#0  set_load_weight (p=0xc1692440 <init_task>) at kernel/sched.c:1921
+#1  0xc170dada in sched_init () at kernel/sched.c:9797
+#2  0xc16fa624 in start_kernel () at init/main.c:583
+#3  0xc16fa0a1 in i386_start_kernel () at arch/x86/kernel/head32.c:62
+#4  0x00000000 in ?? ()
+(gdb) s
+task_has_rt_policy (p=0xc1692440 <init_task>) at kernel/sched.c:1920
+1920	{
+(gdb) n
+131		return rt_policy(p->policy);
+(gdb) s
+rt_policy (policy=0) at kernel/sched.c:124
+124		if (unlikely(policy == SCHED_FIFO || policy == SCHED_RR))
+(gdb) 
+```
   
+  `set_load_weight` then checks if init task has idle schedule policy, if yes, initialize load weight base on idle policy and returns.
   
+  finally initialzes load weight base on priority of init task.
+
+
 
 # Links
 
