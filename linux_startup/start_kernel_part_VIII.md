@@ -505,7 +505,7 @@ cpu_init () at arch/x86/kernel/cpu/common.c:1260
 1260	}
 ```
 
-## _initialize memory management_c
+## _initialize memory management_
 
   Declaration of routine `mm_init` could be found in file init/main.c:507
 
