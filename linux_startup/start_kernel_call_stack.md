@@ -375,6 +375,10 @@
             |--init_defrootdomain                                        # kernel/sched.c:8282
             |--init_rt_bandwidth                                         # kernel/sched.c:176
             |--set_load_weight                                           # kernel/sched.c:1919
+            |--open_softirq                                              # kernel/softirq.c:374
+            |--enter_lazy_tlb                                            # arch/x86/include/asm/mmu_context.h:25
+            |--init_idle                                                 # kernel/sched.c:7252
+            
                             
                         
                         

@@ -844,7 +844,11 @@ static const u32 prio_to_wmult[40] = {
   
   The mm_users field of mm_struct is the number of processes using this address space. For example, if two threads share this address space, mm_users is equal to two. The mm_count field is the primary reference count for the mm_struct. All mm_users equate to one increment of mm_count. Only when mm_users reaches zero (when both threads exit) is mm_count decremented. When mm_count finally reaches zero, there are no remaining references to this mm_struct and it is freed. Having two counters enables the kernel to differentiate between the main usage counter (mm_count) and the number of processes using the address space (mm_users).
   
-  All of the mm_struct structures are strung together in a doubly linked list via the mmlist field. The initial element in the list is the init_mm memory descriptor, which describes the address space of the init process.
+  All of the mm_struct structures are strung together in a doubly linked list via the mmlist field. The initial element in the list is the init_mm memory descriptor, which describes the address space of kernel, all kernel threads use kernel space and have the same access permission as kernel.
+  
+  `sched_init` increases mm_count of `init_mm` and updates per cpu variable `cpu_tlbstate.state` as `TLBSTATE_LAZY` if current state is `TLBSTATE_OK`.
+  
+  
 
 # Links
 
