@@ -840,7 +840,7 @@ static const u32 prio_to_wmult[40] = {
   
   `sched_init` initializes priority and node list of PI waiters blocked on a rt_mutex held by init task.
   
-  The kernel represents a process's address space with a data structure called the memory descriptor. This structure contains all the information related to the process address space. The memory descriptor is represented by struct mm_struct and defined in <include/linux/mm_type.h>
+  The kernel represents a process's address space with a data structure called the memory descriptor. This structure contains all the information related to the process address space. The memory descriptor is represented by struct mm_struct and defined in include/linux/mm_type.h
 
 # Links
 
