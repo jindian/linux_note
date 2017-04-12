@@ -37,3 +37,15 @@ static inline unsigned long native_save_fl(void)
   `raw_irqs_disabled_flags` checks if raw interrupt is disabled and returns the result.
   
   If interrupt is enabled, disable it with `local_irq_disable`.
+
+## _initialize read-copy-update_
+
+In computer science, [read-copy-update (RCU)](https://en.wikipedia.org/wiki/Read-copy-update) is a synchronization mechanism based on mutual exclusion.[note 1] It is used when performance of reads are crucial and is an example of space-time tradeoff, enabling fast operations at the cost of more space.
+
+Read-copy-update allows multiple threads to efficiently read from shared memory by deferring updates after pre-existing reads to a later time while simultaneously marking the data, ensuring new readers will read the updated data. This makes all readers proceed as if there were no synchronization involved, hence they will be fast, but also making updates more difficult.
+
+`rcu_init` involves `__rcu_init` which initializes rcu_state structure of `rcu_sched_state` and `rcu_bh_state`, as well as per cpu rcu date, after initialization completed, `__rcu_init` registers response routine for `RCU_SOFTIRQ`.
+
+`rcu_init` register `rcu_barrier_cpu_hotplug` as the response routine when cpu up/down to create/delete rcu data.
+
+`rcu_init` initialzes per cpu rcu data for current up CPU.
