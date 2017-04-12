@@ -862,7 +862,7 @@ $4 = 0
 
   `sched_init` assigns `fair_sched_class` to schedule class of idle process, sets the idle as a normal process during system booting.
   
-  
+  `sched_init` initializes performance event related variable and updates state of scheduler `scheduler_running` as 1 and completes the scheduler initialization.
 
 # Links
 
