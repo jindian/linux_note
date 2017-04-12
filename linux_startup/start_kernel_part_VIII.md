@@ -848,7 +848,7 @@ static const u32 prio_to_wmult[40] = {
   
   `sched_init` increases mm_count of `init_mm` and updates per cpu variable `cpu_tlbstate.state` as `TLBSTATE_LAZY` if current state is `TLBSTATE_OK`.
   
-  
+  `sched_init` makes idle thread for cpu 0, the context of `init_idle` is `Breakpoint 3, init_idle (idle=idle@entry=0xc1692440 <init_task>, cpu=0)`.
 
 # Links
 

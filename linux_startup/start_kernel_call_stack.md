@@ -378,6 +378,9 @@
             |--open_softirq                                              # kernel/softirq.c:374
             |--enter_lazy_tlb                                            # arch/x86/include/asm/mmu_context.h:25
             |--init_idle                                                 # kernel/sched.c:7252
+                |--__sched_fork                                          # kernel/sched.c:2637
+                |--__set_task_cpu                                        # kernel/sched.c:1795
+                |--ftrace_graph_init_idle_task                           # kernel/trace/ftrace.c:3283
             
                             
                         
