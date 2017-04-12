@@ -849,6 +849,16 @@ static const u32 prio_to_wmult[40] = {
   `sched_init` increases mm_count of `init_mm` and updates per cpu variable `cpu_tlbstate.state` as `TLBSTATE_LAZY` if current state is `TLBSTATE_OK`.
   
   `sched_init` makes idle thread for cpu 0, the context of `init_idle` is `Breakpoint 3, init_idle (idle=idle@entry=0xc1692440 <init_task>, cpu=0)`.
+  
+  In Unix-based computer operating systems, init (short for initialization) is the first process started during booting of the computer system. Init is a daemon process that continues running until the system is shut down. It is the direct or indirect ancestor of all other processes and automatically adopts all orphaned processes. Init is started by the kernel using a hard-coded filename; a kernel panic will occur if the kernel is unable to start it. Init is typically assigned process identifier 1.
+  
+  Idle process is the first process from the beginning of boot process. It's process identifier is 0.
+
+```idle_process
+
+(gdb) p init_task->pid
+$4 = 0
+```
 
 # Links
 
@@ -868,5 +878,7 @@ static const u32 prio_to_wmult[40] = {
   * [Scheduling](https://en.wikipedia.org/wiki/Scheduling_(computing))
   * [SCHED_FIFO and realtime throttling](https://lwn.net/Articles/296419/)
   * [Run queue](https://en.wikipedia.org/wiki/Run_queue)
+  * [init](https://en.wikipedia.org/wiki/Init)
+  
   
   
