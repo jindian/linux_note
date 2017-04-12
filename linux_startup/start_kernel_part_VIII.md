@@ -834,7 +834,13 @@ static const u32 prio_to_wmult[40] = {
 };
 ```
 
+  After set load weight for init task, `sched_init` initializes preempt notifiers list of init task.
   
+  `sched_init` registers for `SCHED_SOFTIRQ` with  function `run_rebalance_domains` which is triggered when needed from the scheduler tick. In CONFIG_NO_HZ case, the idle load balance owner will do the rebalancing for all the cpus for whom scheduler ticks are stopped.
+  
+  `sched_init` initializes priority and node list of PI waiters blocked on a rt_mutex held by init task.
+  
+   
 
 # Links
 
