@@ -840,7 +840,7 @@ static const u32 prio_to_wmult[40] = {
   
   `sched_init` initializes priority and node list of PI waiters blocked on a rt_mutex held by init task.
   
-  The kernel represents a process's address space with a data structure called the memory descriptor. This structure contains all the information related to the process address space. The memory descriptor is represented by struct mm_struct and defined in <include/linux/mm_type.h>
+  The kernel represents a process's address space with a data structure called the memory descriptor. This structure contains all the information related to the process address space. The memory descriptor is represented by struct mm_struct and defined in \<include/linux/mm_type.h\>
   
   The mm_users field of mm_struct is the number of processes using this address space. For example, if two threads share this address space, mm_users is equal to two. The mm_count field is the primary reference count for the mm_struct. All mm_users equate to one increment of mm_count. Only when mm_users reaches zero (when both threads exit) is mm_count decremented. When mm_count finally reaches zero, there are no remaining references to this mm_struct and it is freed. Having two counters enables the kernel to differentiate between the main usage counter (mm_count) and the number of processes using the address space (mm_users).
   
