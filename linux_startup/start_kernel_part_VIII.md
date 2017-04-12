@@ -860,6 +860,10 @@ static const u32 prio_to_wmult[40] = {
 $4 = 0
 ```
 
+  `sched_init` assigns `fair_sched_class` to schedule class of idle process, sets the idle as a normal process during system booting.
+  
+  
+
 # Links
 
   * [A tour of the Linux VFS](http://www.tldp.org/LDP/khg/HyperNews/get/fs/vfstour.html)

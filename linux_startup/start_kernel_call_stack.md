@@ -381,6 +381,7 @@
                 |--__sched_fork                                          # kernel/sched.c:2637
                 |--__set_task_cpu                                        # kernel/sched.c:1795
                 |--ftrace_graph_init_idle_task                           # kernel/trace/ftrace.c:3283
+            |--perf_event_init                                           # kernel/perf_event.c:5069
             
                             
                         
