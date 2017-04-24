@@ -84,6 +84,12 @@ $6 = 256
   
 ## initialize interrupt call gate of interrupt description table
 
+  `native_init_IRQ`:
+  * initialize ISA interrupt call gates and register function to handle level interrupts.
+  
+  
+  
+
 
   
   

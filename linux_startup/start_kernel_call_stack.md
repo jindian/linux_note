@@ -389,7 +389,7 @@
         |--init_IRQ                                                      # arch/x86/kernel/irqinit.c:143
             |--native_init_IRQ                                           # arch/x86/kernel/irqinit.c:218
                 |--init_ISA_irqs                                         # arch/x86/kernel/irqinit.c:119
-            
+            |--apic_intr_init                                            # arch/x86/kernel/irqinit.c:185
                             
                         
                         
