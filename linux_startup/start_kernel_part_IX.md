@@ -50,7 +50,7 @@ static inline unsigned long native_save_fl(void)
 
   `rcu_init` initialzes per cpu rcu data for current up CPU.
 
-## initialize hardware interrupt
+## _initialize hardware interrupt_
 
   There are two types of interaction between the CPU and the rest of the computer's hardware. The first type is when the CPU gives orders to the hardware, the other is when the hardware needs to tell the CPU something. The second, called interrupts, is much harder to implement because it has to be dealt with when convenient for the hardware, not the CPU. Hardware devices typically have a very small amount of RAM, and if you don't read their information when available, it is lost.
 
@@ -82,7 +82,9 @@ $6 = 256
   * allocates memory for array `kstat_irqs_legacy` based on `nr_cpu_ids`.
   * initializes array `irq_desc_ptrs`
   
-  
+## initialize interrupt call gate of interrupt description table
+
+
   
   
 
