@@ -92,3 +92,5 @@ $6 = 256
   * [x86 Registers](http://www.eecg.toronto.edu/~amza/www.mindsec.com/files/x86regs.html)
   * [read-copy-update (RCU)](https://en.wikipedia.org/wiki/Read-copy-update)
   * [Interrupt Handlers](http://www.tldp.org/LDP/lkmpg/2.4/html/x1210.html)
+  * [ISA interrupts versus PCI interrupts](https://www.safaribooksonline.com/library/view/pc-hardware-in/059600513X/ch01s03s01s01.html)
+  * [Interrupts](http://wiki.osdev.org/Interrupts)
