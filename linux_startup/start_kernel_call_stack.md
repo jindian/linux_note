@@ -387,9 +387,8 @@
             |--arch_probe_nr_irqs                                        # arch/x86/kernel/apic/io_apic.c:3864
             |--arch_early_irq_init                                       # arch/x86/kernel/apic/io_apic.c:187
         |--init_IRQ                                                      # arch/x86/kernel/irqinit.c:143
-            |--native_init_IRQ                                           # arch/x86/kernel/irqinit.c:218
-                |--init_ISA_irqs                                         # arch/x86/kernel/irqinit.c:119
-            |--apic_intr_init                                            # arch/x86/kernel/irqinit.c:185
+        |--prio_tree_init                                                # lib/prio_tree.c:71c
+        
                             
                         
                         

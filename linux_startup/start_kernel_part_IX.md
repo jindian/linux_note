@@ -85,7 +85,12 @@ $6 = 256
 ## initialize interrupt call gate of interrupt description table
 
   `native_init_IRQ` initialize interrupt call gates and register function of interrupts.
+
+## initialize data used for priority search tree
+
+  `prio_tree_init` initializes array `index_bits_to_maxindex` which is used to quickly find node in priority search tree. About priority search tree, we can find many references by google.
   
+
   
   
   
@@ -99,4 +104,5 @@ $6 = 256
   * [read-copy-update (RCU)](https://en.wikipedia.org/wiki/Read-copy-update)
   * [Interrupt Handlers](http://www.tldp.org/LDP/lkmpg/2.4/html/x1210.html)
   * [ISA interrupts versus PCI interrupts](https://www.safaribooksonline.com/library/view/pc-hardware-in/059600513X/ch01s03s01s01.html)
-  * [Interrupts](http://wiki.osdev.org/Interrupts)
+  * [Interrupts](http://wiki.osdev.org/Interrupts)c
+  * 
