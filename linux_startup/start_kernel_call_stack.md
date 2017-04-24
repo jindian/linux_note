@@ -382,6 +382,7 @@
                 |--__set_task_cpu                                        # kernel/sched.c:1795
                 |--ftrace_graph_init_idle_task                           # kernel/trace/ftrace.c:3283
             |--perf_event_init                                           # kernel/perf_event.c:5069
+        |--early_irq_init                                                # kernel/irq/handle.c:150
             
                             
                         
