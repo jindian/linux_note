@@ -58,6 +58,28 @@ static inline unsigned long native_save_fl(void)
 
   When the CPU receives an interrupt, it stops whatever it's doing (unless it's processing a more important interrupt, in which case it will deal with this one only when the more important one is done), saves certain parameters on the stack and calls the interrupt handler. This means that certain things are not allowed in the interrupt handler itself, because the system is in an unknown state. The solution to this problem is for the interrupt handler to do what needs to be done immediately, usually read something from the hardware or send something to the hardware, and then schedule the handling of the new information at a later time (this is called the "bottom half") and return. The kernel is then guaranteed to call the bottom half as soon as possible -- and when it does, everything allowed in kernel modules will be allowed.
   
+  `early_irq_init`:
+  
+  * allocates cpu variables for all possible cpus and set all cpus in the allocated cpumask.
+  * initialize nr_irqs based on nr_cpu_ids
+
+```arch_probe_nr_irqs
+
+arch_probe_nr_irqs () at arch/x86/kernel/apic/io_apic.c:3868
+3868		if (nr_irqs > (NR_VECTORS * nr_cpu_ids))
+(gdb) p nr_irqs
+$1 = 2304
+
+......
+
+3882	}
+(gdb) p nr_irqs
+$6 = 256
+
+```
+  
+  
+  
   
 
 # Links

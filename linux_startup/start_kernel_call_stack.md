@@ -383,6 +383,8 @@
                 |--ftrace_graph_init_idle_task                           # kernel/trace/ftrace.c:3283
             |--perf_event_init                                           # kernel/perf_event.c:5069
         |--early_irq_init                                                # kernel/irq/handle.c:150
+            |--init_irq_default_affinity                                 # kernel/irq/handle.c:47
+            |--arch_probe_nr_irqs                                        # arch/x86/kernel/apic/io_apic.c:3864
             
                             
                         
