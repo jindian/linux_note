@@ -385,6 +385,7 @@
         |--early_irq_init                                                # kernel/irq/handle.c:150
             |--init_irq_default_affinity                                 # kernel/irq/handle.c:47
             |--arch_probe_nr_irqs                                        # arch/x86/kernel/apic/io_apic.c:3864
+            |--arch_early_irq_init                                       # arch/x86/kernel/apic/io_apic.c:187
             
                             
                         

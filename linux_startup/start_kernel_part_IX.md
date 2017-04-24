@@ -61,7 +61,7 @@ static inline unsigned long native_save_fl(void)
   `early_irq_init`:
   
   * allocates cpu variables for all possible cpus and set all cpus in the allocated cpumask.
-  * initialize nr_irqs based on nr_cpu_ids
+  * initialize nr_irqs based on nr_cpu_ids.
 
 ```arch_probe_nr_irqs
 
@@ -77,6 +77,10 @@ $1 = 2304
 $6 = 256
 
 ```
+  
+  * allocates memory for array `irq_desc_ptrs` based on `nr_irqs`.
+  * allocates memory for array `kstat_irqs_legacy` based on `nr_cpu_ids`.
+  * initializes array `irq_desc_ptrs`
   
   
   
