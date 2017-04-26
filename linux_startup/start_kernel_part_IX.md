@@ -119,9 +119,16 @@ $6 = 256
   * Registers notifier for cpu hot plugin
   * Opens soft interrupt for `TASKLET_SOFTIRQ` and `HI_SOFTIRQ`
 
-## _initializes the clocksource and common timekeeping values_
+## _initializes timekeeping_
+
+  To provide timekeeping for your platform, the clock source provides the basic timeline, whereas clock events shoot interrupts on certain points on this timeline, providing facilities such as high-resolution timers. sched_clock() is used for scheduling and timestamping, and delay timers provide an accurate delay source using hardware counters.
+  
+  `timekeeping_init` initilizes clocksource and common timekeeping values.
+
 
   
+  
+
   
   
 
@@ -138,3 +145,4 @@ $6 = 256
   * [A new approach to kernel timers](https://lwn.net/Articles/152436/)
   * [The high-resolution timer API](https://lwn.net/Articles/167897/)
   * [Software interrupts and realtime](https://lwn.net/Articles/520076/)
+  * [timekeeping](https://www.kernel.org/doc/Documentation/timers/timekeeping.txt)

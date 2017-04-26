@@ -398,6 +398,7 @@
         |--softirq_init                                                  # kernel/softirq.c:710
             |--register_hotcpu_notifier
             |--open_softirq
+        |--timekeeping_init                                              # kernel/time/timekeeping.c:566
         
 
         
