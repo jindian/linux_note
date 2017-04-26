@@ -119,6 +119,7 @@ $6 = 256
   * Registers notifier for cpu hot plugin
   * Opens soft interrupt for `TASKLET_SOFTIRQ` and `HI_SOFTIRQ`
 
+## _initializes the clocksource and common timekeeping values_
 
   
   

@@ -396,6 +396,10 @@
             |--open_softirq
         |--hrtimers_init                                                 # kernel/hrtimer.c:1758
         |--softirq_init                                                  # kernel/softirq.c:710
+            |--register_hotcpu_notifier
+            |--open_softirq
+        
+
         
         
                             
