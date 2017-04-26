@@ -165,7 +165,17 @@ asmlinkage void __init start_kernel(void)
     
 ```
 
+  `early_boot_irqs_on` sets flag `early_boot_irqs_enabled`, `local_irq_enable` is a macro, it's defination could be found in include/linux/irqflags.h:59
 
+```local_irq_enable
+
+#define local_irq_enable() \
+	do { trace_hardirqs_on(); raw_local_irq_enable(); } while (0)
+```
+
+  `trace_hardirqs_on` enables hardirqs of current task and `raw_local_irq_enable` set interrupt flag `IF = 1`
+
+## 
   
   
 
