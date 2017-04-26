@@ -415,6 +415,9 @@
            |--con_init                                                   # drivers/char/vt.c:2833
            |--hvc_console_init                                           # drivers/char/hvc_console.c:222
            |--serial8250_console_init                                    # drivers/serial/8250.c:2821
+       |--lockdep_info
+       |--locking_selftest                                               # lib/locking-selftest.c:1113
+       |--page_cgroup_init                                               # include/linux/page_cgroup.h:29
        
         
 
