@@ -91,6 +91,7 @@ $6 = 256
   `prio_tree_init` initializes array `index_bits_to_maxindex` which is used to quickly find node in priority search tree. About priority search tree, we can find many references by google.
   
 ## _initialize timer_
+
   In the Linux kernel, time is measured by a global variable named jiffies, which identifies the number of ticks that have occurred since the system was booted. The manner in which ticks are counted depends, at its lowest level, on the particular hardware platform on which you're running; however, it is typically incremented through an interrupt. The tick rate (jiffies's least significant bit) is configurable, but in a recent 2.6 kernel for x86, a tick equals 4ms (250Hz). The jiffies global variable is used broadly in the kernel for a number of purposes, one of which is the current absolute time to calculate the time-out value for a timer (you'll see examples of this later).
   
   There are few different schemes for timers in recent 2.6 kernels. The simplest and least accurate of all timers (though suitable for most instances) is the timer API. This API permits the construction of timers that operate in the jiffies domain (minimum 4ms time-out). There's also the high-resolution timer API, which permits timer constructions in which time is defined in nanoseconds. Depending upon your processor and the speed at which it operates, your mileage may vary, but the API does offer a way to schedule time-outs below the jiffies tick interval.
@@ -106,7 +107,17 @@ $6 = 256
 
 ## _initialize soft interrupt_
 
+  The softirq mechanism is meant to handle processing that is almost — but not quite — as important as the handling of hardware interrupts. Softirqs run at a high priority (though with an interesting exception, described below), but with hardware interrupts enabled. They thus will normally preempt any work except the response to a "real" hardware interrupt.
+
+  Once upon a time, there were 32 hardwired software interrupt vectors, one assigned to each device driver or related task. Drivers have, for the most part, been detached from software interrupts for a long time — they still use softirqs, but that access has been laundered through intermediate APIs like tasklets and timers. In current kernels there are ten softirq vectors defined; two for tasklet processing, two for networking, two for the block layer, two for timers, and one each for the scheduler and read-copy-update processing. The kernel maintains a per-CPU bitmask indicating which softirqs need processing at any given time. So, for example, when a kernel subsystem calls tasklet_schedule(), the TASKLET_SOFTIRQ bit is set on the corresponding CPU and, when softirqs are processed, the tasklet will be run.
+
+  There are two places where software interrupts can "fire" and preempt the current thread. One of them is at the end of the processing for a hardware interrupt; it is common for interrupt handlers to raise softirqs, so it makes sense (for latency and optimal cache use) to process them as soon as hardware interrupts can be re-enabled. The other possibility is anytime that kernel code re-enables softirq processing (via a call to functions like local_bh_enable() or spin_unlock_bh()). The end result is that the accumulated softirq work (which can be substantial) is executed in the context of whichever process happens to be running at the wrong time; that is the "randomly chosen victim" aspect that Thomas was talking about.
+
+  `softirq_init`:
   
+  * Initializes per cpu variables `tasklet_vec`, `tasklet_hi_vec` and `softirq_work_list` for each cpus
+  * Registers notifier for cpu hot plugin
+  * Opens soft interrupt for `TASKLET_SOFTIRQ` and `HI_SOFTIRQ`
 
 
   
@@ -125,3 +136,4 @@ $6 = 256
   * [Timers and lists in the 2.6 kernel](https://www.ibm.com/developerworks/linux/library/l-timers-list/)
   * [A new approach to kernel timers](https://lwn.net/Articles/152436/)
   * [The high-resolution timer API](https://lwn.net/Articles/167897/)
+  * [Software interrupts and realtime](https://lwn.net/Articles/520076/)
