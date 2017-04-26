@@ -82,15 +82,15 @@ $6 = 256
   * allocates memory for array `kstat_irqs_legacy` based on `nr_cpu_ids`.
   * initializes array `irq_desc_ptrs`
   
-## initialize interrupt call gate of interrupt description table
+## _initialize interrupt call gate of interrupt description table_
 
   `native_init_IRQ` initialize interrupt call gates and register function of interrupts.
 
-## initialize data used for priority search tree
+## _initialize data used for priority search tree_
 
   `prio_tree_init` initializes array `index_bits_to_maxindex` which is used to quickly find node in priority search tree. About priority search tree, we can find many references by google.
   
-## initialize timer
+## _initialize timer_
   
 ```init_timers
 
@@ -114,6 +114,12 @@ void __init init_timers(void)
   * Adds notifier to `cpu_chain`
   * Registers function for running timers and timer-tq in bootom half context for `TIMER_SOFTIRQ`
 
+  The initialization of high resolution timers is similar, ignore it.
+
+## _initialize soft interrupt_
+
+  
+
 
   
   
@@ -127,3 +133,5 @@ void __init init_timers(void)
   * [Interrupts](http://wiki.osdev.org/Interrupts)
   * [Timers](www.cs.columbia.edu/~nahum/w6998/lectures/timers.ppt)
   * [Kernel Timers](http://www.makelinux.net/ldd3/chp-7-sect-4)
+  * [A new approach to kernel timers](https://lwn.net/Articles/152436/)
+  * [The high-resolution timer API](https://lwn.net/Articles/167897/)

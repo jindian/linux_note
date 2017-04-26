@@ -394,6 +394,8 @@
             |--init_timer_stats                                          # kernel/time/timer_stats.c:406
             |--register_cpu_notifier                                     # kernel/cpu.c:128
             |--open_softirq
+        |--hrtimers_init                                                 # kernel/hrtimer.c:1758
+        |--softirq_init                                                  # kernel/softirq.c:710
         
         
                             
