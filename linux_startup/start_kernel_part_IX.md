@@ -107,7 +107,10 @@ void __init init_timers(void)
 }
 ```
 
-
+  `init_timers`:
+  
+  * Initializes per cpu variable `boot_tvec_bases` for cpu 0
+  * 
   
   
 
