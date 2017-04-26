@@ -399,6 +399,8 @@
             |--register_hotcpu_notifier
             |--open_softirq
         |--timekeeping_init                                              # kernel/time/timekeeping.c:566
+        |--time_init                                                     # arch/x86/kernel/time.c:118
+        |--profile_init                                                  # kernel/profile.c:105
         
 
         

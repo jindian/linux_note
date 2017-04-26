@@ -49,6 +49,8 @@ About how to compile grub2 and linux source code, create bootable disk image etc
   * [X86 Opcode and Instruction Reference](http://ref.x86asm.net/coder32.html)
   * [LINUX SYSTEM CALL TABLE FOR X86 64](http://blog.rchapman.org/posts/Linux_System_Call_Table_for_x86_64/)
   * [i386 system calls](http://asm.sourceforge.net/syscall.html#p2)
+  * [Demystifying the Kernel Bootstrap Process](https://www.ibm.com/support/knowledgecenter/linuxonibm/liaav/Demystifying-the-Kernel-Bootstrap-Process.pdf)
+  * [Linux Kernel Debugging And Profiling Tools](https://events.linuxfoundation.org/sites/events/files/slides/kernel_profiling_debugging_tools_0.pdf)
   
   
 

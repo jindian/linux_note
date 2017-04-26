@@ -125,6 +125,8 @@ $6 = 256
   
   `timekeeping_init` initilizes clocksource and common timekeeping values.
 
+## initialize profile
+
 
   
   
@@ -146,3 +148,4 @@ $6 = 256
   * [The high-resolution timer API](https://lwn.net/Articles/167897/)
   * [Software interrupts and realtime](https://lwn.net/Articles/520076/)
   * [timekeeping](https://www.kernel.org/doc/Documentation/timers/timekeeping.txt)
+  * [profiling](http://www.pixelbeat.org/programming/profiling/)
