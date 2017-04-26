@@ -389,6 +389,8 @@
         |--init_IRQ                                                      # arch/x86/kernel/irqinit.c:143
         |--prio_tree_init                                                # lib/prio_tree.c:71
         |--init_timers                                                   # kernel/timer.c:1653
+            |--timer_cpu_notify                                          # kernel/timer.c:1626
+                |--init_timers_cpu                                       # kernel/timer.c:1520
         
                             
                         
