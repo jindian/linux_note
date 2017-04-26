@@ -407,6 +407,15 @@
                    |--trace_hardirqs_on_caller                           # kernel/lockdep.c:2302
                |--raw_local_irq_enable                                   # arch/x86/include/asm/irqflags.h:79
                    |--native_irq_enable                                  # arch/x86/include/asm/irqflags.h:42
+       |--set_gfp_allowed_mask
+       |--kmem_cache_init_late                                           # mm/slub.c:3278
+       |--console_init                                                   # drivers/char/tty_io.c:3091
+           |--tty_ldisc_begin                                            # drivers/char/tty_ldisc.c:918
+               |--tty_register_ldisc                                     # drivers/char/tty_ldisc.c::101
+           |--con_init                                                   # drivers/char/vt.c:2833
+           |--hvc_console_init                                           # drivers/char/hvc_console.c:222
+           |--serial8250_console_init                                    # drivers/serial/8250.c:2821
+       
         
 
         

@@ -175,9 +175,45 @@ asmlinkage void __init start_kernel(void)
 
   `trace_hardirqs_on` enables hardirqs of current task and `raw_local_irq_enable` set interrupt flag `IF = 1`
 
-## 
+## _set GFP mask_
   
+  `gfp_allowed_mask` is set to `GFP_BOOT_MASK` during early boot to restrict what GFP flags are used before interrupts are enabled. Once interrupts are enabled, it is set to __GFP_BITS_MASK while the system is running. During hibernation, it is used by PM to avoid I/O during memory allocation while devices are suspended.
+
+
+## _initialze console device_
+
+  Do some early initialization and do the complex setup later.
+
+  `console_init`:
   
+  * Sets up the default TTY line discipline
+  * Sets up the console device
+  
+```console_init
+
+void __init console_init(void)
+{
+    ......
+    
+	call = __con_initcall_start;
+	while (call < __con_initcall_end) {
+(gdb) p __con_initcall_start
+$17 = 0xc177e008 <__initcall_con_init>
+(gdb) p __con_initcall_end
+$18 = 0xc177e014 <__initcall_selinux_init>
+(gdb) p __con_initcall_start+1
+$19 = (initcall_t *) 0xc177e00c <__initcall_hvc_console_init>
+(gdb) p __con_initcall_start+2
+$20 = (initcall_t *) 0xc177e010 <__initcall_serial8250_console_init>
+(gdb) p __con_initcall_start+3
+$21 = (initcall_t *) 0xc177e014 <__initcall_selinux_init>
+		(*call)();
+		call++;
+	}
+	
+    .......
+}
+```
 
 # Links
   * [x86 Registers](http://www.eecg.toronto.edu/~amza/www.mindsec.com/files/x86regs.html)
