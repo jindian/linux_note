@@ -91,22 +91,10 @@ $6 = 256
   `prio_tree_init` initializes array `index_bits_to_maxindex` which is used to quickly find node in priority search tree. About priority search tree, we can find many references by google.
   
 ## _initialize timer_
+  In the Linux kernel, time is measured by a global variable named jiffies, which identifies the number of ticks that have occurred since the system was booted. The manner in which ticks are counted depends, at its lowest level, on the particular hardware platform on which you're running; however, it is typically incremented through an interrupt. The tick rate (jiffies's least significant bit) is configurable, but in a recent 2.6 kernel for x86, a tick equals 4ms (250Hz). The jiffies global variable is used broadly in the kernel for a number of purposes, one of which is the current absolute time to calculate the time-out value for a timer (you'll see examples of this later).
   
-```init_timers
-
-void __init init_timers(void)
-{
-	int err = timer_cpu_notify(&timers_nb, (unsigned long)CPU_UP_PREPARE,
-				(void *)(long)smp_processor_id());
-
-	init_timer_stats();
-
-	BUG_ON(err == NOTIFY_BAD);
-	register_cpu_notifier(&timers_nb);
-	open_softirq(TIMER_SOFTIRQ, run_timer_softirq);
-}
-```
-
+  There are few different schemes for timers in recent 2.6 kernels. The simplest and least accurate of all timers (though suitable for most instances) is the timer API. This API permits the construction of timers that operate in the jiffies domain (minimum 4ms time-out). There's also the high-resolution timer API, which permits timer constructions in which time is defined in nanoseconds. Depending upon your processor and the speed at which it operates, your mileage may vary, but the API does offer a way to schedule time-outs below the jiffies tick interval.
+  
   `init_timers`:
   
   * Initializes per cpu variable `boot_tvec_bases` for cpu 0
@@ -133,5 +121,7 @@ void __init init_timers(void)
   * [Interrupts](http://wiki.osdev.org/Interrupts)
   * [Timers](www.cs.columbia.edu/~nahum/w6998/lectures/timers.ppt)
   * [Kernel Timers](http://www.makelinux.net/ldd3/chp-7-sect-4)
+  * [Kernel Timer Systems](http://elinux.org/Kernel_Timer_Systems)
+  * [Timers and lists in the 2.6 kernel](https://www.ibm.com/developerworks/linux/library/l-timers-list/)
   * [A new approach to kernel timers](https://lwn.net/Articles/152436/)
   * [The high-resolution timer API](https://lwn.net/Articles/167897/)
