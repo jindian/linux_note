@@ -127,7 +127,26 @@ $6 = 256
 
 ## initialize profile
 
+  There are several facilities to see where the kernel spends its resources. A simple one is the profiling function, that stores the current EIP (instruction pointer) at each clock tick.
 
+Boot the kernel with command line option profile=2 (or some other number instead of 2). This will cause a file /proc/profile to be created. The number given after profile= is the number of positions EIP is shifted right when profiling. So a large number gives a coarse profile. The counters are reset by writing to /proc/profile. The utility readprofile will output statistics for you. It does not sort - you have to invoke sort explicitly. But given a memory map it will translate addresses to kernel symbols.
+
+See kernel/profile.c and fs/proc/proc_misc.c and readprofile(1).
+
+For example:
+
+```
+
+# echo > /proc/profile
+...
+# readprofile -m System.map-2.5.59 | sort -nr | head -2
+510502 total                                      0.1534
+508548 default_idle                           10594.7500
+```
+
+The first column gives the number of timer ticks. The last column gives the number of ticks divided by the size of the function.
+
+The command readprofile -r is equivalent to echo > /proc/profile.
   
   
 
@@ -149,3 +168,4 @@ $6 = 256
   * [Software interrupts and realtime](https://lwn.net/Articles/520076/)
   * [timekeeping](https://www.kernel.org/doc/Documentation/timers/timekeeping.txt)
   * [profiling](http://www.pixelbeat.org/programming/profiling/)
+  * [Profiling the kernel](http://homepages.cwi.nl/~aeb/linux/profile.html)
