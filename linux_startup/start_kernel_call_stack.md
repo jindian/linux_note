@@ -418,6 +418,7 @@
        |--lockdep_info
        |--locking_selftest                                               # lib/locking-selftest.c:1113
        |--page_cgroup_init                                               # include/linux/page_cgroup.h:29
+       |--enable_debug_pagealloc                                         # include/linux/mm.h:1276
        
         
 
