@@ -110,7 +110,12 @@ void __init init_timers(void)
   `init_timers`:
   
   * Initializes per cpu variable `boot_tvec_bases` for cpu 0
-  * 
+  * Initializes per cpu look up lock
+  * Adds notifier to `cpu_chain`
+  * Registers function for running timers and timer-tq in bootom half context for `TIMER_SOFTIRQ`
+
+
+  
   
   
 
