@@ -401,6 +401,12 @@
         |--timekeeping_init                                              # kernel/time/timekeeping.c:566
         |--time_init                                                     # arch/x86/kernel/time.c:118
         |--profile_init                                                  # kernel/profile.c:105
+        |--early_boot_irqs_on                                            # kernel/lockdep.c:2294
+        |--local_irq_enable                                              # include/linux/irgflags.h:59
+            -> |--trace_hardirqs_on                                      # kernel/lockdep.c:2346
+                   |--trace_hardirqs_on_caller                           # kernel/lockdep.c:2302
+               |--raw_local_irq_enable                                   # arch/x86/include/asm/irqflags.h:79
+                   |--native_irq_enable                                  # arch/x86/include/asm/irqflags.h:42
         
 
         

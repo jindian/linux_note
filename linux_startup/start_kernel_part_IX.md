@@ -125,7 +125,7 @@ $6 = 256
   
   `timekeeping_init` initilizes clocksource and common timekeeping values.
 
-## initialize profile
+## _initialize profile_
 
   There are several facilities to see where the kernel spends its resources. A simple one is the profiling function, that stores the current EIP (instruction pointer) at each clock tick.
 
@@ -148,7 +148,23 @@ The first column gives the number of timer ticks. The last column gives the numb
 
 The command readprofile -r is equivalent to echo > /proc/profile.
   
-  `profile_init` initializes profile length(only code is profiled) and allocates buffer of profile
+  `profile_init` initializes profile length(only code is profiled) and allocates buffer of profile if profile feature enabled.
+
+## _enable interrupt_
+
+```
+
+asmlinkage void __init start_kernel(void)
+
+    ......
+    
+    early_boot_irqs_on();
+    local_irq_enable();
+    
+    ......
+    
+```
+
 
   
   
