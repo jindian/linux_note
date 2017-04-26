@@ -90,8 +90,7 @@ $6 = 256
 
   `prio_tree_init` initializes array `index_bits_to_maxindex` which is used to quickly find node in priority search tree. About priority search tree, we can find many references by google.
   
-
-  
+## initialize timer
   
   
 
@@ -104,5 +103,6 @@ $6 = 256
   * [read-copy-update (RCU)](https://en.wikipedia.org/wiki/Read-copy-update)
   * [Interrupt Handlers](http://www.tldp.org/LDP/lkmpg/2.4/html/x1210.html)
   * [ISA interrupts versus PCI interrupts](https://www.safaribooksonline.com/library/view/pc-hardware-in/059600513X/ch01s03s01s01.html)
-  * [Interrupts](http://wiki.osdev.org/Interrupts)c
-  * 
+  * [Interrupts](http://wiki.osdev.org/Interrupts)
+  * [Timers](www.cs.columbia.edu/~nahum/w6998/lectures/timers.ppt)
+  * [Kernel Timers](http://www.makelinux.net/ldd3/chp-7-sect-4)
