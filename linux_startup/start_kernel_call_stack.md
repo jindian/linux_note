@@ -419,6 +419,10 @@
        |--locking_selftest                                               # lib/locking-selftest.c:1113
        |--page_cgroup_init                                               # include/linux/page_cgroup.h:29
        |--enable_debug_pagealloc                                         # include/linux/mm.h:1276
+       |--kmemtrace_init
+       |--kmemleak_init
+       |--debug_objects_mem_init
+       |--idr_init_cache                                                 # lib/idr.c:674
        
         
 
