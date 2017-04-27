@@ -427,11 +427,16 @@
        |--numa_policy_init
        |--late_time_init -> x86_late_time_init                           # arch/x86/kernel/time.c:108
            |--x86_init.timers.timer_init -> hpet_time_init               # arch/x86/kernel/time.c:101
+               |--hpet_enable                                            # arch/x86/kernel/hpet.c:843
+                   |--is_hpet_capable
+                   |--hpet_set_mapping
+                   
+               
        
         
 
         
-        
+         
                             
                         
                         

@@ -223,6 +223,42 @@ $21 = (initcall_t *) 0xc177e014 <__initcall_selinux_init>
 
 ## _late time init_
 
+  `hpet_readl` reads value from specified memory address with `readl`
+
+```hpet_readl
+
+unsigned long hpet_readl(unsigned long a)
+{
+	return readl(hpet_virt_address + a);
+}
+```
+  
+  Defination of routine `readl` shown as follow
+
+```readl
+
+#define build_mmio_read(name, size, type, reg, barrier) \
+static inline type name(const volatile void __iomem *addr) \
+{ type ret; asm volatile("mov" size " %1,%0":reg (ret) \
+:"m" (*(volatile type __force *)addr) barrier); return ret; }
+
+build_mmio_read(readl, "l", unsigned int, "=r", :"memory")
+```
+
+  After macro expanded, `readl` looks as follow, it reads the value from specified address.
+
+```readl
+
+static inline unsigned int readl(const volatile void __iomem *addr)
+{
+    unsigned int ret;
+    asm volatile("movl %1,%0"
+                  :reg(ret)
+                  :"m" (*(volatile type __force *)addr) barrier);
+    return ret;
+}
+```
+
 
 
 # Links
