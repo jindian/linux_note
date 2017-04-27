@@ -215,11 +215,13 @@ $21 = (initcall_t *) 0xc177e014 <__initcall_selinux_init>
 }
 ```
 
-## initialize idr cache
+## _initialize idr cache_
 
   Idr is a set of library functions for the management of small integer ID numbers. In essence, an idr object can be thought of as a sparse array mapping integer IDs onto arbitrary pointers, with a "get me an available entry" function as well. This code was first added in February, 2003 as part of the POSIX clocks patch, and has seen various tweaks since.
   
   `idr_init_cache` allocates cache for `idr_layer_cache`.
+
+## _late time init_
 
 
 

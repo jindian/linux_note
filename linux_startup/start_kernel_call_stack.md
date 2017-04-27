@@ -423,6 +423,10 @@
        |--kmemleak_init
        |--debug_objects_mem_init
        |--idr_init_cache                                                 # lib/idr.c:674
+       |--setup_per_cpu_pageset
+       |--numa_policy_init
+       |--late_time_init -> x86_late_time_init                           # arch/x86/kernel/time.c:108
+           |--x86_init.timers.timer_init -> hpet_time_init               # arch/x86/kernel/time.c:101
        
         
 
