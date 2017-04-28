@@ -429,6 +429,58 @@ $8 = 4096
 
   Creates cache for credential, about linux credential, reference [here](https://www.kernel.org/doc/Documentation/security/credentials.txt)
 
+## _initialize fork_
+
+  The defination for routine `fork_init` attached as follow.
+  `fork_init`:
+  
+  * Creates slab cache for task_struct named `task_struct`
+  * Creates slab cache for thread_xstate named `task_xstate`
+  * Calculates number of max support thread
+  * Initializes signal handlers of `init_task`
+
+```fork_init
+
+668		fork_init(totalram_pages);
+(gdb) s
+fork_init (mempages=27200) at kernel/fork.c:189
+void __init fork_init(unsigned long mempages)
+{
+#ifndef __HAVE_ARCH_TASK_STRUCT_ALLOCATOR
+#ifndef ARCH_MIN_TASKALIGN
+#define ARCH_MIN_TASKALIGN	L1_CACHE_BYTES
+#endif
+	/* create a slab on which task_structs can be allocated */
+	task_struct_cachep =
+		kmem_cache_create("task_struct", sizeof(struct task_struct),
+			ARCH_MIN_TASKALIGN, SLAB_PANIC | SLAB_NOTRACK, NULL);
+#endif
+
+	/* do the arch specific task caches init */
+	arch_task_cache_init();
+
+	/*
+	 * The default maximum number of threads is set to a safe
+	 * value: the thread structures can take up at most half
+	 * of memory.
+	 */
+	max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE);
+(gdb) p max_threads 
+$11 = 1700
+
+	/*
+	 * we need to allow at least 20 threads to boot a system
+	 */
+	if(max_threads < 20)
+		max_threads = 20;
+
+	init_task.signal->rlim[RLIMIT_NPROC].rlim_cur = max_threads/2;
+	init_task.signal->rlim[RLIMIT_NPROC].rlim_max = max_threads/2;
+	init_task.signal->rlim[RLIMIT_SIGPENDING] =
+		init_task.signal->rlim[RLIMIT_NPROC];
+}
+```
+
 # Links
   * [x86 Registers](http://www.eecg.toronto.edu/~amza/www.mindsec.com/files/x86regs.html)
   * [read-copy-update (RCU)](https://en.wikipedia.org/wiki/Read-copy-update)

@@ -442,6 +442,7 @@
        |--anon_vma_init                                                  # mm/rmap.c:189
        |--thread_info_cache_init                                         # init/main.c:500
        |--cred_init                                                      # kernel/cred.c:679
+       |--fork_init                                                      # kernel/fork.c:181
                    
                
        
