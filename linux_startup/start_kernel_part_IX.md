@@ -337,6 +337,16 @@ $3 = 10000000
 
   * Starts HPET counter and verified the counter, after that installs new cloocksources
   * Register clockevent if legacy HPET ID detected
+  
+  After `hpet_enable` complete, setup timter interrupt
+  
+  Next in `x86_late_time_init` is `tsc_init` which initializes variables used by tsc and registers clocksource for tsc.
+  
+  The Time Stamp Counter (TSC) is a 64-bit register present on all x86 processors since the Pentium. It counts the number of cycles since reset. The instruction RDTSC returns the TSC in EDX:EAX. In x86-64 mode, RDTSC also clears the higher 32 bits of RAX and RDX. Its opcode is 0F 31.[1] Pentium competitors such as the Cyrix 6x86 did not always have a TSC and may consider RDTSC an illegal instruction. Cyrix included a Time Stamp Counter in their MII.
+  
+  The Time Stamp Counter was once an excellent high-resolution, low-overhead way for a program to get CPU timing information. With the advent of multi-core/hyper-threaded CPUs, systems with multiple CPUs, and hibernating operating systems, the TSC cannot be relied upon to provide accurate results — unless great care is taken to correct the possible flaws: rate of tick and whether all cores (processors) have identical values in their time-keeping registers. There is no promise that the timestamp counters of multiple CPUs on a single motherboard will be synchronized. Therefore, a program can get reliable results only by limiting itself to run on one specific CPU. Even then, the CPU speed may change because of power-saving measures taken by the OS or BIOS, or the system may be hibernated and later resumed, resetting the TSC. In those latter cases, to stay relevant, the program must re-calibrate the counter periodically.
+
+  Relying on the TSC also reduces portability, as other processors may not have a similar feature. Recent Intel processors include a constant rate TSC (identified by the kern.timecounter.invariant_tsc sysctl on FreeBSD or by the "constant_tsc" flag in Linux's /proc/cpuinfo). With these processors, the TSC ticks at the processor's nominal frequency, regardless of the actual CPU clock frequency due to turbo or power saving states. Hence TSC ticks are counting the passage of time, not the number of CPU clock cycles elapsed.
 
 # Links
   * [x86 Registers](http://www.eecg.toronto.edu/~amza/www.mindsec.com/files/x86regs.html)
@@ -356,3 +366,5 @@ $3 = 10000000
   * [Profiling the kernel](http://homepages.cwi.nl/~aeb/linux/profile.html)
   * [idr - integer ID management](https://lwn.net/Articles/103209/)
   * [A simplified IDR API](https://lwn.net/Articles/536293/)
+  * [Time Stamp Counter](https://en.wikipedia.org/wiki/Time_Stamp_Counter)
+  
