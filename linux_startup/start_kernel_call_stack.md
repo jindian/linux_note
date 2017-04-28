@@ -448,6 +448,7 @@
            |--mmap_init                                                  # mm/mmap.c:2502
                |--percpu_counter_init -> __percpu_counter_init           # lib/percpu_counter.c:69
        |--buffer_init                                                    # fs/buffer.c:3364
+       |--key_init                                                       # security/keys/key.c:1009
   
                    
                

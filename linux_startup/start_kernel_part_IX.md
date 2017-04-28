@@ -551,7 +551,35 @@ $15 = 3218
 (gdb) p max_buffer_heads 
 $16 = 234914
 }
- ```
+```
+
+## _initialise the key management stuff_
+
+  `key_init` creates cache for key named `key_jar`, struct key is used in authentication token/access credential/keyring. Adds key types to list `key_types_list`. Adds root user to rb tree and adjusts the color of the rb tree.
+
+```key_init
+
+void __init key_init(void)
+{
+	/* allocate a slab in which we can store keys */
+	key_jar = kmem_cache_create("key_jar", sizeof(struct key),
+			0, SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
+
+	/* add the special key types */
+	list_add_tail(&key_type_keyring.link, &key_types_list);
+	list_add_tail(&key_type_dead.link, &key_types_list);
+	list_add_tail(&key_type_user.link, &key_types_list);
+
+	/* record the root user tracking */
+	rb_link_node(&root_key_user.node,
+		     NULL,
+		     &key_user_tree.rb_node);
+
+	rb_insert_color(&root_key_user.node,
+			&key_user_tree);
+
+}
+```
 
 # Links
   * [x86 Registers](http://www.eecg.toronto.edu/~amza/www.mindsec.com/files/x86regs.html)
