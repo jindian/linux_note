@@ -437,6 +437,9 @@
                |--setup_default_timer_irq                                # arch/x86/kernel/time.c:95
            |--tsc_init                                                   # arch/x86/kernel/tsc.c:958
        |--sched_clock_init                                               # kernel/sched_clock.c:68
+       |--calibrate_delay                                                # init/calibrate.c:122
+       |--pidmap_init                                                    # kernel/pid.c:515
+       |--anon_vma_init                                                  # mm/rmap.c:189
                    
                
        
