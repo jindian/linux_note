@@ -347,6 +347,31 @@ $3 = 10000000
   The Time Stamp Counter was once an excellent high-resolution, low-overhead way for a program to get CPU timing information. With the advent of multi-core/hyper-threaded CPUs, systems with multiple CPUs, and hibernating operating systems, the TSC cannot be relied upon to provide accurate results — unless great care is taken to correct the possible flaws: rate of tick and whether all cores (processors) have identical values in their time-keeping registers. There is no promise that the timestamp counters of multiple CPUs on a single motherboard will be synchronized. Therefore, a program can get reliable results only by limiting itself to run on one specific CPU. Even then, the CPU speed may change because of power-saving measures taken by the OS or BIOS, or the system may be hibernated and later resumed, resetting the TSC. In those latter cases, to stay relevant, the program must re-calibrate the counter periodically.
 
   Relying on the TSC also reduces portability, as other processors may not have a similar feature. Recent Intel processors include a constant rate TSC (identified by the kern.timecounter.invariant_tsc sysctl on FreeBSD or by the "constant_tsc" flag in Linux's /proc/cpuinfo). With these processors, the TSC ticks at the processor's nominal frequency, regardless of the actual CPU clock frequency due to turbo or power saving states. Hence TSC ticks are counting the passage of time, not the number of CPU clock cycles elapsed.
+  
+## _initialize schedule clock_
+
+```sched_clock_init
+
+void sched_clock_init(void)
+{
+	u64 ktime_now = ktime_to_ns(ktime_get());
+	int cpu;
+
+	for_each_possible_cpu(cpu) {
+		struct sched_clock_data *scd = cpu_sdc(cpu);
+
+		scd->tick_raw = 0;
+		scd->tick_gtod = ktime_now;
+		scd->clock = ktime_now;
+	}
+
+	sched_clock_running = 1;
+}
+```
+
+  `sched_init` gets per cpu schedule clock data variable and initializes the data, set flag `sched_clock_running` indicating schedule clock is running.
+  
+
 
 # Links
   * [x86 Registers](http://www.eecg.toronto.edu/~amza/www.mindsec.com/files/x86regs.html)

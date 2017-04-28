@@ -428,8 +428,15 @@
        |--late_time_init -> x86_late_time_init                           # arch/x86/kernel/time.c:108
            |--x86_init.timers.timer_init -> hpet_time_init               # arch/x86/kernel/time.c:101
                |--hpet_enable                                            # arch/x86/kernel/hpet.c:843
-                   |--is_hpet_capable
-                   |--hpet_set_mapping
+                   |--is_hpet_capable                                    # arch/x86/kernel/hpet.c:111
+                   |--hpet_set_mapping                                   # arch/x86/kernel/hpet.c:69
+                   |--hpet_readl                                         # arch/x86/kernel/hpet.c:55
+                       |--readl                                          # arch/x86/include/asm/io.h:22
+                   |--hpet_clocksource_register                          # arch/x86/kernel/hpet.c:796
+                   |--hpet_legacy_clockevent_register                    # arch/x86/kernel/hpet.c:286
+               |--setup_default_timer_irq                                # arch/x86/kernel/time.c:95
+           |--tsc_init                                                   # arch/x86/kernel/tsc.c:958
+       |--sched_clock_init                                               # kernel/sched_clock.c:68
                    
                
        
