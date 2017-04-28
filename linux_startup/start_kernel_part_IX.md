@@ -371,7 +371,37 @@ void sched_clock_init(void)
 
   `sched_init` gets per cpu schedule clock data variable and initializes the data, set flag `sched_clock_running` indicating schedule clock is running.
   
+## _calculate loop_per_jiffy and print it in BogoMIPS_
 
+  For the boot cpu we can skip the delay calibration and assign `loop_per_jiffy` a value calculated based on the timer frequency.
+
+```calibrate_delay
+
+start_kernel () at init/main.c:655
+655		calibrate_delay();
+(gdb) s
+calibrate_delay () at init/calibrate.c:128
+128		if (preset_lpj) {      
+(gdb) p preset_lpj
+$6 = 0
+(gdb) n
+133		} else if ((!printed) && lpj_fine) {
+(gdb) p lpj_fine 
+$7 = 13568640
+(gdb) p loops_per_jiffy
+$8 = 4096
+134			loops_per_jiffy = lpj_fine;
+(gdb) 
+135			pr_info("Calibrating delay loop (skipped), "
+(gdb) 
+176		if (!printed)
+(gdb) 
+177			pr_cont("%lu.%02lu BogoMIPS (lpj=%lu)\n",
+(gdb) 
+181		printed = true;
+(gdb) 
+182	}
+```
 
 # Links
   * [x86 Registers](http://www.eecg.toronto.edu/~amza/www.mindsec.com/files/x86regs.html)
