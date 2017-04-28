@@ -284,7 +284,7 @@ hpet_set_mapping () at arch/x86/kernel/hpet.c:71
 $2 = 0xfed00000
 ```
 
-  * Reads the HPET period and HPET config, checks the value.
+  * Reads the HPET period, HPET config and HPET ID, checks the value.
 
   `hpet_readl` reads value from specified memory address with `readl`
 
@@ -322,7 +322,21 @@ static inline unsigned int readl(const volatile void __iomem *addr)
 }
 ```
 
+  The result of `hpet_period`:
 
+```hpet_period
+
+856		hpet_period = hpet_readl(HPET_PERIOD);
+(gdb) 
+871		for (i = 0; hpet_readl(HPET_CFG) == 0xFFFFFFFF; i++) {
+(gdb) 
+880		if (hpet_period < HPET_MIN_PERIOD || hpet_period > HPET_MAX_PERIOD)
+(gdb) p hpet_period 
+$3 = 10000000
+```
+
+  * Starts HPET counter and verified the counter, after that installs new cloocksources
+  * Register clockevent if legacy HPET ID detected
 
 # Links
   * [x86 Registers](http://www.eecg.toronto.edu/~amza/www.mindsec.com/files/x86regs.html)
