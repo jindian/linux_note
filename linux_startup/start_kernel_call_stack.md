@@ -443,6 +443,12 @@
        |--thread_info_cache_init                                         # init/main.c:500
        |--cred_init                                                      # kernel/cred.c:679
        |--fork_init                                                      # kernel/fork.c:181
+           |--arch_task_cache_init                                       # arch/x86/kernel/process.c:58
+       |--proc_caches_init                                               # kernel/fork.c:1487
+           |--mmap_init                                                  # mm/mmap.c:2502
+               |--percpu_counter_init -> __percpu_counter_init           # lib/percpu_counter.c:69
+       |--buffer_init                                                    # fs/buffer.c:3364
+  
                    
                
        

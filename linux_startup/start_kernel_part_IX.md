@@ -481,6 +481,78 @@ $11 = 1700
 }
 ```
 
+## _initialize process cache_
+
+  `proc_caches_init` creates caches used when creating new process, initializes the VMA slab.
+
+```proc_caches_init
+
+void __init proc_caches_init(void)
+{
+	sighand_cachep = kmem_cache_create("sighand_cache",
+			sizeof(struct sighand_struct), 0,
+			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_DESTROY_BY_RCU|
+			SLAB_NOTRACK, sighand_ctor);
+	signal_cachep = kmem_cache_create("signal_cache",
+			sizeof(struct signal_struct), 0,
+			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_NOTRACK, NULL);
+	files_cachep = kmem_cache_create("files_cache",
+			sizeof(struct files_struct), 0,
+			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_NOTRACK, NULL);
+	fs_cachep = kmem_cache_create("fs_cache",
+			sizeof(struct fs_struct), 0,
+			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_NOTRACK, NULL);
+	mm_cachep = kmem_cache_create("mm_struct",
+			sizeof(struct mm_struct), ARCH_MIN_MMSTRUCT_ALIGN,
+			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_NOTRACK, NULL);
+	vm_area_cachep = KMEM_CACHE(vm_area_struct, SLAB_PANIC);
+	mmap_init();
+}
+```
+
+  `mmap_init` involves `percpu_counter_init` which is a macro, after macro expanded, `percpu_counter_init` shown as follow, `__percpu_counter_init` per cpu counter.
+  
+```percpu_counter_init
+
+#define percpu_counter_init(fbc, value)					\
+	({								\
+		static struct lock_class_key __key;			\
+									\
+		__percpu_counter_init(fbc, value, &__key);		\
+	})
+```
+
+## _initializes buffer head_
+
+   Historically, a buffer_head was used to map a single block within a page, and of course as the unit of I/O through the filesystem and block layers.  Nowadays the basic I/O unit is the bio, and buffer_heads are used for extracting block mappings (via a get_block_t call), for tracking state within a page (via a page_mapping) and for wrapping bio submission for backward compatibility reasons (e.g. submit_bh).
+   
+   `buffer_init` creates cache for buffer head named `buffer_head`, calculates `max_buffer_heads` and registers function to response cpu hot plugin.
+   
+ ```buffer_init
+ 
+ void __init buffer_init(void)
+{
+	int nrpages;
+
+	bh_cachep = kmem_cache_create("buffer_head",
+			sizeof(struct buffer_head), 0,
+				(SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|
+				SLAB_MEM_SPREAD),
+				init_buffer_head);
+
+	/*
+	 * Limit the bh occupancy to 10% of ZONE_NORMAL
+	 */
+	nrpages = (nr_free_buffer_pages() * 10) / 100;
+	max_buffer_heads = nrpages * (PAGE_SIZE / sizeof(struct buffer_head));
+(gdb) p nrpages 
+$15 = 3218
+	hotcpu_notifier(buffer_cpu_notify, 0);
+(gdb) p max_buffer_heads 
+$16 = 234914
+}
+ ```
+
 # Links
   * [x86 Registers](http://www.eecg.toronto.edu/~amza/www.mindsec.com/files/x86regs.html)
   * [read-copy-update (RCU)](https://en.wikipedia.org/wiki/Read-copy-update)
