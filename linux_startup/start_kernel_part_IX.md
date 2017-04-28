@@ -583,7 +583,39 @@ void __init key_init(void)
 
 ## _initialize the security framework_
 
-  `security_init` fixups all callback function in `default_security_ops` and initializes it to `security_ops`
+  `security_init` fixups all callback function in `default_security_ops` and initializes it to `security_ops`, involves initcall functions in code region of `SECURITY_INIT` which defined in include/asm-generic/vmlinux.lds.h:
+
+```SECURITY_INIT
+
+#define SECURITY_INIT							\
+	.security_initcall.init : AT(ADDR(.security_initcall.init) - LOAD_OFFSET) { \
+		VMLINUX_SYMBOL(__security_initcall_start) = .;		\
+		*(.security_initcall.init) 				\
+		VMLINUX_SYMBOL(__security_initcall_end) = .;		\
+	}
+```
+
+```security_init
+
+start_kernel () at init/main.c:672
+672		security_init();
+(gdb) s
+security_init () at security/security.c:59
+59		do_security_initcalls();
+(gdb) s
+do_security_initcalls () at security/security.c:41
+41		call = __security_initcall_start;
+(gdb) p __security_initcall_start 
+$17 = 0xc177e014 <__initcall_selinux_init>
+(gdb) p __security_initcall_end 
+$18 = 0xc177e020
+(gdb) p __security_initcall_start + 1
+$19 = (initcall_t *) 0xc177e018 <__initcall_smack_init>
+(gdb) p __security_initcall_start + 2
+$20 = (initcall_t *) 0xc177e01c <__initcall_tomoyo_init>
+(gdb) p __security_initcall_start + 3
+$21 = (initcall_t *) 0xc177e020
+```
 
 # Links
   * [x86 Registers](http://www.eecg.toronto.edu/~amza/www.mindsec.com/files/x86regs.html)
