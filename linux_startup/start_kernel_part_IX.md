@@ -1,4 +1,4 @@
-# start kernel part IX
+cccvvcccc# start kernel part IX
 
   `CONFIG_PREEMPT` is not set in our environment, `preempt_disable` do nothing, ignore it.
   
@@ -223,6 +223,69 @@ $21 = (initcall_t *) 0xc177e014 <__initcall_selinux_init>
 
 ## _late time init_
 
+  Global function pointer `late_time_init` is initialized in `time_init`.
+  
+```time_init
+
+/*
+ * Initialize TSC and delay the periodic timer init to
+ * late x86_late_time_init() so ioremap works.
+ */
+void __init time_init(void)
+{
+	late_time_init = x86_late_time_init;
+}
+
+```
+
+  From the defination of routine `x86_late_time_init`, it involves the time initialize function of `x86_init` which initialized in arch/x86/kernel/x86_init.c
+
+```x86_init
+
+/*
+ * The platform setup functions are preset with the default functions
+ * for standard PC hardware.
+ */
+struct x86_init_ops x86_init __initdata = {
+
+        ......
+        
+	.timers = {
+		.setup_percpu_clockev	= setup_boot_APIC_clock,
+		.tsc_pre_init		= x86_init_noop,
+		.timer_init		= hpet_time_init,
+	},
+};
+```
+
+  The defination of `hpet_time_init` shown as follow:
+
+```hpet_time_init
+
+/* Default timer init function */
+void __init hpet_time_init(void)
+{
+	if (!hpet_enable())
+		setup_pit_timer();
+	setup_default_timer_irq();
+}
+```
+
+  `hpet_enable` tries to setup HPET timer.
+  
+  * Checks hpet capability.
+  * Mapps hpet memory region
+
+```hpet_set_mapping
+
+hpet_set_mapping () at arch/x86/kernel/hpet.c:71
+71		hpet_virt_address = ioremap_nocache(hpet_address, HPET_MMAP_SIZE);
+(gdb) p /x hpet_address 
+$2 = 0xfed00000
+```
+
+  * Reads the HPET period and HPET config, checks the value.
+
   `hpet_readl` reads value from specified memory address with `readl`
 
 ```hpet_readl
@@ -232,7 +295,7 @@ unsigned long hpet_readl(unsigned long a)
 	return readl(hpet_virt_address + a);
 }
 ```
-  
+
   Defination of routine `readl` shown as follow
 
 ```readl
