@@ -581,6 +581,10 @@ void __init key_init(void)
 }
 ```
 
+## _initialize the security framework_
+
+  `security_init` fixups all callback function in `default_security_ops` and initializes it to `security_ops`
+
 # Links
   * [x86 Registers](http://www.eecg.toronto.edu/~amza/www.mindsec.com/files/x86regs.html)
   * [read-copy-update (RCU)](https://en.wikipedia.org/wiki/Read-copy-update)
