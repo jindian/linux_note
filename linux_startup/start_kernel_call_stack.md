@@ -450,6 +450,13 @@
        |--buffer_init                                                    # fs/buffer.c:3364
        |--key_init                                                       # security/keys/key.c:1009
        |--security_init                                                  # security/security.c:53
+       |--vfs_caches_init                                                # fs/dcache.c:2320
+           |--dcache_init                                                # fs/dcache.c:2277
+           |--inode_init                                                 # fs/dcache.c:1585
+           |--files_init                                                 # fs/table.c:442
+           |--mnt_init                                                   # fs/namespace.c:2283
+           |--bdev_cache_init                                            # fs/block_dev.c:493
+           |--chrdev_init                                                # fs/char_dev.c:568
   
                    
                

@@ -600,22 +600,36 @@ void __init key_init(void)
 start_kernel () at init/main.c:672
 672		security_init();
 (gdb) s
-security_init () at security/security.c:59
+security_init () at security/security.c:54
+54	{
+(gdb) 
+55		printk(KERN_INFO "Security Framework initialized\n");
+(gdb) 
+57		security_fixup_ops(&default_security_ops);
+(gdb) 
+58		security_ops = &default_security_ops;
+(gdb) 
 59		do_security_initcalls();
 (gdb) s
-do_security_initcalls () at security/security.c:41
-41		call = __security_initcall_start;
+do_security_initcalls () at security/security.c:42
+42		while (call < __security_initcall_end) {
+(gdb) n
+43			(*call) ();
 (gdb) p __security_initcall_start 
-$17 = 0xc177e014 <__initcall_selinux_init>
-(gdb) p __security_initcall_end 
-$18 = 0xc177e020
+$22 = 0xc177e014 <__initcall_selinux_init>
+(gdb) p __security_initcall_end
+$23 = 0xc177e020
 (gdb) p __security_initcall_start + 1
-$19 = (initcall_t *) 0xc177e018 <__initcall_smack_init>
+$24 = (initcall_t *) 0xc177e018 <__initcall_smack_init>
 (gdb) p __security_initcall_start + 2
-$20 = (initcall_t *) 0xc177e01c <__initcall_tomoyo_init>
+$25 = (initcall_t *) 0xc177e01c <__initcall_tomoyo_init>
 (gdb) p __security_initcall_start + 3
-$21 = (initcall_t *) 0xc177e020
+$26 = (initcall_t *) 0xc177e020
 ```
+
+## _initialize virtual file system cache_
+
+  
 
 # Links
   * [x86 Registers](http://www.eecg.toronto.edu/~amza/www.mindsec.com/files/x86regs.html)
