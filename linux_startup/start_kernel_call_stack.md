@@ -440,6 +440,8 @@
        |--calibrate_delay                                                # init/calibrate.c:122
        |--pidmap_init                                                    # kernel/pid.c:515
        |--anon_vma_init                                                  # mm/rmap.c:189
+       |--thread_info_cache_init                                         # init/main.c:500
+       |--cred_init                                                      # kernel/cred.c:679
                    
                
        

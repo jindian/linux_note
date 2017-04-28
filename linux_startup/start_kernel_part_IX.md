@@ -413,17 +413,21 @@ $8 = 4096
 
   Anonymous pages contain the heap information associated with a process. These pages are called anonymous pages because there no associated file pages on-disk i.e. these pages do not map to a file. When the system is low on memory, these pages are removed from memory onto the swap space. Anonymous VMA stands for Anonymous Virtual Memory Address. Each process contains a list of virtual addresses that map to physical anonymous pages. If multiple processes use the same physical anonymous page, they will have different anonymous virtual memory addresses pointing to the same anonymous physical page(s). 
 
-The question is how do these anonymous pages work?
+  The question is how do these anonymous pages work?
 
   When a process is forked, it opens a bunch of files and associated file-backed pages. It may also create new anonymous pages or use existing ones. From within a process, one can get hold of all associated anonymous pages. This means that using the page tables, the kernel can establish the virtual address associated with the process and the real physical pages. In order to swap-in, the kernel needs to establish a reverse link i.e. which physical pages map to which processes. To facilitate, all pages contain a *reverse mapping* mapping physical pages to virtual pages. Hence, when a process is forked these reverse mappings are created. If you want more details about the creation part, you can take a look at the file mm/rmap.c (Linux Cross Reference).  __page_set_anon_rmap and page_add_file_rmap describe the anonymous and file-based page mappings, respectively.
 
-Paging-in is the tricky part with anonymous pages:
+  Paging-in is the tricky part with anonymous pages:
 
-1) For pages backed by files, that need to be swapped back in, it is easy to search what files are opened by which processes/users and page them in/out. This is a very over-simplified explanation, in reality there are lots of details.
+  1) For pages backed by files, that need to be swapped back in, it is easy to search what files are opened by which processes/users and page them in/out. This is a very over-simplified explanation, in reality there are lots of details.
 
-2) For anonymous pages, this is tricky since there are no associated files (or file based mappings)[2]. Hence, the kernel uses a specific mechanism called as object based reverse-mapping. Here, instead of having a list of users or processes, the kernel stores what regions of memory this page was mapped onto, and when bringing them back in during page-in, they are simply restored to exactly those regions. This is a bit hacky but it gives very good performance.
+  2) For anonymous pages, this is tricky since there are no associated files (or file based mappings)[2]. Hence, the kernel uses a specific mechanism called as object based reverse-mapping. Here, instead of having a list of users or processes, the kernel stores what regions of memory this page was mapped onto, and when bringing them back in during page-in, they are simply restored to exactly those regions. This is a bit hacky but it gives very good performance.
 
   `anon_vma_init` creates cache for anonymous virtual memory address.
+
+## _initialize credentials_
+
+  Creates cache for credential, about linux credential, reference [here](https://www.kernel.org/doc/Documentation/security/credentials.txt)
 
 # Links
   * [x86 Registers](http://www.eecg.toronto.edu/~amza/www.mindsec.com/files/x86regs.html)
@@ -447,5 +451,6 @@ Paging-in is the tricky part with anonymous pages:
   * [How do anonymous VMAs work in Linux?](https://www.quora.com/How-do-anonymous-VMAs-work-in-Linux)
   * [The object-based reverse-mapping VM](https://lwn.net/Articles/23732/)
   * [Reverse mapping anonymous pages - again](https://lwn.net/Articles/77106/)
+  * [CREDENTIALS IN LINUX](https://www.kernel.org/doc/Documentation/security/credentials.txt)
   
   
