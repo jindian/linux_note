@@ -601,71 +601,145 @@ $26 = (initcall_t *) 0xc177e020
 
 ## _initialize virtual file system cache_
 
-  Defination of routine `vfs_caches_init`:
+Defination of routine `vfs_caches_init`:
 
-    ```vfs_caches_init
-
+```vfs\_caches\_init
     void __init vfs_caches_init(unsigned long mempages)
     {
-    	unsigned long reserve;
+        unsigned long reserve;
 
-    	/* Base hash sizes on available memory, with a reserve equal to
+        /* Base hash sizes on available memory, with a reserve equal to
                150% of current kernel size */
 
-    	reserve = min((mempages - nr_free_pages()) * 3/2, mempages - 1);
-    	mempages -= reserve;
+        reserve = min((mempages - nr_free_pages()) * 3/2, mempages - 1);
+        mempages -= reserve;
 
-    	names_cachep = kmem_cache_create("names_cache", PATH_MAX, 0,
-    			SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
+        names_cachep = kmem_cache_create("names_cache", PATH_MAX, 0,
+                SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
 
-    	dcache_init();
-    	inode_init();
-    	files_init(mempages);
-    	mnt_init();
-    	bdev_cache_init();
-    	chrdev_init();
+        dcache_init();
+        inode_init();
+        files_init(mempages);
+        mnt_init();
+        bdev_cache_init();
+        chrdev_init();
     }
-    ```
+```
 
-  `vfs_caches_init`
+`vfs_caches_init`
 
 * Allocates slab cache for path named `names_cache`
 
-* Involves routine `dcache_init` , which allocates slab cache for dirent data and registers `dcache_shrinker` 
+* Involves routine `dcache_init` , which allocates slab cache for dirent data and registers `dcache_shrinker`
 
 ```
-2333		dcache_init();
+2333        dcache_init();
 (gdb) s
 dcache_init () at fs/dcache.c:2286
-2286		dentry_cache = KMEM_CACHE(dentry,
+2286        dentry_cache = KMEM_CACHE(dentry,
 (gdb) n
-2289		register_shrinker(&dcache_shrinker);
+2289        register_shrinker(&dcache_shrinker);
 (gdb) s
 register_shrinker (
     shrinker=shrinker@entry=0xc16a9394 <dcache_shrinker>)
     at mm/vmscan.c:165
-165	{
+165    {
 (gdb) n
-166		shrinker->nr = 0;
+166        shrinker->nr = 0;
 (gdb) 
-167		down_write(&shrinker_rwsem);
+167        down_write(&shrinker_rwsem);
 (gdb) 
-168		list_add_tail(&shrinker->list, &shrinker_list);
+168        list_add_tail(&shrinker->list, &shrinker_list);
 (gdb) 
-169		up_write(&shrinker_rwsem);
+169        up_write(&shrinker_rwsem);
 (gdb) 
-170	}
+170    }
 (gdb) 
 dcache_init () at fs/dcache.c:2292
-2292		if (!hashdist)
+2292        if (!hashdist)
 (gdb) p hashdist 
 $3 = 0
 (gdb) n
 ```
 
 * Involves routine `inode_init` , which allocates slab cache for inode data and registers`icache_shrinker`, the procedure is similar with `dcache_init` 
-* 
+* Involves routine` files_init`,  which allocates slab cache for file data, initializes dynamically-tunable limits, initializes per cpu variable `fdtable_defer_list` and minimal number of file descriptor `sysctl_nr_open_max`, initializes per cpu counter
 
+```
+vfs_caches_init (mempages=27097) at fs/dcache.c:2335
+2335		files_init(mempages);
+(gdb) s
+files_init (mempages=mempages@entry=27097) at fs/file_table.c:446
+446		filp_cachep = kmem_cache_create("filp", sizeof(struct file), 0,
+(gdb) 
+454		n = (mempages * (PAGE_SIZE / 1024)) / 10;
+(gdb) 
+455		files_stat.max_files = n; 
+(gdb) p n
+$4 = 10838
+(gdb) n
+458		files_defer_init();
+(gdb) s
+files_defer_init () at fs/file.c:419
+419		for_each_possible_cpu(i)
+(gdb) 
+420			fdtable_defer_list_init(i);
+(gdb) s
+fdtable_defer_list_init (cpu=0) at fs/file.c:410
+410		struct fdtable_defer *fddef = &per_cpu(fdtable_defer_list, cpu);
+(gdb) n
+411		spin_lock_init(&fddef->lock);
+(gdb) 
+410		struct fdtable_defer *fddef = &per_cpu(fdtable_defer_list, cpu);
+(gdb) 
+411		spin_lock_init(&fddef->lock);
+(gdb) 
+412		INIT_WORK(&fddef->wq, free_fdtable_work);
+(gdb) 
+413		fddef->next = NULL;
+(gdb) 
+files_defer_init () at fs/file.c:419
+419		for_each_possible_cpu(i)
+(gdb) 
+421		sysctl_nr_open_max = min((size_t)INT_MAX, ~(size_t)0/sizeof(void *)) &
+(gdb) 
+423	}
+(gdb) p sysctl_nr_open_max
+$5 = 1073741792
+(gdb) n
+files_init (mempages=mempages@entry=27097) at fs/file_table.c:459
+459		percpu_counter_init(&nr_files, 0);
+(gdb) s
+__percpu_counter_init (fbc=fbc@entry=0xc1692060 <nr_files>, 
+    amount=0, key=key@entry=0xc1e61f80 <__key.22296>)
+    at lib/percpu_counter.c:72
+72		spin_lock_init(&fbc->lock);
+(gdb) 
+73		lockdep_set_class(&fbc->lock, key);
+(gdb) 
+74		fbc->count = amount;
+(gdb) 
+75		fbc->counters = alloc_percpu(s32);
+(gdb) 
+76		if (!fbc->counters)
+(gdb) 
+79		INIT_LIST_HEAD(&fbc->list);
+(gdb) 
+80		mutex_lock(&percpu_counters_lock);
+(gdb) 
+81		list_add(&fbc->list, &percpu_counters);
+(gdb) 
+82		mutex_unlock(&percpu_counters_lock);
+(gdb) 
+84		return 0;
+(gdb) 
+85	}
+(gdb) 
+files_init (mempages=mempages@entry=27097) at fs/file_table.c:460
+460	} 
+(gdb) 
+
+```
 
 # Links
 
