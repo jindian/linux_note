@@ -4,9 +4,9 @@ Continue routine `vfs_caches_init` of start\_kernel part IX
 
 * Involves routine `mnt_init`, which allocates slab cache for struct `vfsmount`named `mnt_cache`,  gets free pages for `mount_hashtable` and initializes  it, registers `sysfs`, this is needed later for actually finding root device, registers `rootfs`, creates the initial filesystem namespace, with rootfs mounted at `/`
 
-  Let's check more about `sysfs_init`, `init_rootfs`and `init_mount_tree` 
+  Let's check more about `sysfs_init`, `init_rootfs`and `init_mount_tree`
 
-       With `sysfs_init` to learn how a new file system mounted to kernel:
+  With \`sysfs\_init\` to learn how a new file system mounted to kernel
 
 ```
 (gdb) break sysfs_init
