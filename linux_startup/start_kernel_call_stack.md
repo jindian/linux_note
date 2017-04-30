@@ -457,6 +457,8 @@
                |--sysfs_init                                             # fs/sysfs/mount.c:88
                    |--sysfs_inode_init                                   # fs/sysfs/inode.c:44
                    |--register_filesystem                                # fs/filesystem.c:69
+                   |--kern_mount -> kern_mount_data                      # fs/super.c:1014
+                       |--vfs_kern_mount                                 # fs/super.c:914
            |--bdev_cache_init                                            # fs/block_dev.c:493
            |--chrdev_init                                                # fs/char_dev.c:568
 ```
