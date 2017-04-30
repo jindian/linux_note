@@ -1,7 +1,6 @@
-# start_kernl call stack
+# start\_kernl call stack
 
-```start_kernl_call_stack
-
+```start\_kernl\_call\_stack
     start_kernel                                                         # init/main.c:520
         |--smp_setup_processor_id                                        # init/main.c:496
         |--lockdep_init                                                  # kernel/lockdep.c:3570
@@ -455,41 +454,15 @@
            |--inode_init                                                 # fs/dcache.c:1585
            |--files_init                                                 # fs/table.c:442
            |--mnt_init                                                   # fs/namespace.c:2283
+               |--sysfs_init                                            
            |--bdev_cache_init                                            # fs/block_dev.c:493
            |--chrdev_init                                                # fs/char_dev.c:568
-  
-                   
-               
-       
-        
-
-        
-         
-                            
-                        
-                        
-                
-
-                    
-                
-                
-
-            
-                
-            
-            
-            
-                
-            
-                    
-                
-            
-            
-                
-                    
 ```
 
-
 # Links
-  * [SMP Boot](http://www.tldp.org/HOWTO/Linux-i386-Boot-Code-HOWTO/smpboot.html)
-  * [Linux Kernel 2.4 Internals](http://www.tldp.org/LDP/lki/lki.html#toc4)
+
+* [SMP Boot](http://www.tldp.org/HOWTO/Linux-i386-Boot-Code-HOWTO/smpboot.html)
+* [Linux Kernel 2.4 Internals](http://www.tldp.org/LDP/lki/lki.html#toc4)
+
+
+
