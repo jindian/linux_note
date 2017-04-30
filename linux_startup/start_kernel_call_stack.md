@@ -460,6 +460,11 @@
                    |--register_filesystem                                # fs/filesystem.c:69
                    |--kern_mount -> kern_mount_data                      # fs/super.c:1014
                        |--vfs_kern_mount                                 # fs/super.c:914
+               |--kobject_create_and_add                                 # lib/kobject.c:647
+                   |--kobject_create                                     # lib/kobject.c:622
+                   |--kobject_add                                        # lib/kobject.c:338
+               |--init_rootfs                                            # fs/ramfs/inode.c:307
+               |--init_mount_tree
            |--bdev_cache_init                                            # fs/block_dev.c:493
            |--chrdev_init                                                # fs/char_dev.c:568
 ```
