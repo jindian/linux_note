@@ -456,6 +456,7 @@
            |--mnt_init                                                   # fs/namespace.c:2283
                |--sysfs_init                                             # fs/sysfs/mount.c:88
                    |--sysfs_inode_init                                   # fs/sysfs/inode.c:44
+                       |--bdi_init                                       # mm/backing-dev.c:651
                    |--register_filesystem                                # fs/filesystem.c:69
                    |--kern_mount -> kern_mount_data                      # fs/super.c:1014
                        |--vfs_kern_mount                                 # fs/super.c:914
