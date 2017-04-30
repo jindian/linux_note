@@ -6,7 +6,7 @@ Continue routine `vfs_caches_init` of start\_kernel part IX
 
   Let's check more about `sysfs_init`, `init_rootfs`and `init_mount_tree`
 
-  With \`sysfs\_init\` to learn how a new file system mounted to kernel
+  With `sysfs_init` to learn how a new file system mounted to kernel
 
 ```
 (gdb) break sysfs_init
