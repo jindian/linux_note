@@ -6,7 +6,7 @@ Continue routine `vfs_caches_init` of start\_kernel part IX
 
   Let's check more about `sysfs_init`, `init_rootfs`and `init_mount_tree`
 
-  With `sysfs_init` to learn how a new file system mounted to kernel
+  With `sysfs_init` to learn how a new file system mounted to kernel, debug information of the function shown as below
 
 ```
 (gdb) break sysfs_init
@@ -317,6 +317,111 @@ sysfs_init () at fs/sysfs/mount.c:105
 (gdb) 
 mnt_init () at fs/namespace.c:2304
 2304        if (err)
+```
+
+
+
+      debug information of function `init_rootfs` shown as follow
+
+```
+2310		init_rootfs();
+(gdb) s
+init_rootfs () at fs/ramfs/inode.c:311
+311		err = bdi_init(&ramfs_backing_dev_info);
+(gdb) s
+bdi_init (bdi=bdi@entry=0xc16ad4c0 <ramfs_backing_dev_info>)
+    at mm/backing-dev.c:655
+(gdb) n
+655		bdi->dev = NULL;
+(gdb) 
+657		bdi->min_ratio = 0;
+(gdb) 
+658		bdi->max_ratio = 100;
+(gdb) 
+659		bdi->max_prop_frac = PROP_FRAC_BASE;
+(gdb) 
+660		spin_lock_init(&bdi->wb_lock);
+(gdb) 
+661		INIT_RCU_HEAD(&bdi->rcu_head);
+(gdb) 
+662		INIT_LIST_HEAD(&bdi->bdi_list);
+(gdb) 
+663		INIT_LIST_HEAD(&bdi->wb_list);
+(gdb) 
+663		INIT_LIST_HEAD(&bdi->wb_list);
+(gdb) 
+664		INIT_LIST_HEAD(&bdi->work_list);
+(gdb) 
+666		bdi_wb_init(&bdi->wb, bdi);
+(gdb) 
+666		bdi_wb_init(&bdi->wb, bdi);
+(gdb) 
+671		bdi->wb_mask = 1;
+(gdb) 
+672		bdi->wb_cnt = 1;
+(gdb) 
+675			err = percpu_counter_init(&bdi->bdi_stat[i], 0);
+(gdb) 
+676			if (err)
+(gdb) 
+680		bdi->dirty_exceeded = 0;
+(gdb) 
+681		err = prop_local_init_percpu(&bdi->completions);
+(gdb) 
+683		if (err) {
+(gdb) 
+685			while (i--)
+(gdb) 
+690	}
+(gdb) 
+init_rootfs () at fs/ramfs/inode.c:312
+312		if (err)
+(gdb) 
+315		err = register_filesystem(&rootfs_fs_type);
+(gdb) s
+register_filesystem (fs=fs@entry=0xc16ad400 <rootfs_fs_type>)
+    at fs/filesystems.c:74
+74		BUG_ON(strchr(fs->name, '.'));
+(gdb) n
+75		if (fs->next)
+(gdb) 
+77		INIT_LIST_HEAD(&fs->fs_supers);
+(gdb) 
+81			res = -EBUSY;
+(gdb) 
+77		INIT_LIST_HEAD(&fs->fs_supers);
+(gdb) 
+78		write_lock(&file_systems_lock);
+(gdb) 
+79		p = find_filesystem(fs->name, strlen(fs->name));
+(gdb) 
+80		if (*p)
+(gdb) 
+83			*p = fs;
+(gdb) 
+71		int res = 0;
+(gdb) p file_systems
+$18 = (struct file_system_type *) 0xc16ac520 <sysfs_fs_type>
+(gdb) p file_systems->next
+$19 = (struct file_system_type *) 0xc16ad400 <rootfs_fs_type>
+(gdb) p file_systems->next->next
+$20 = (struct file_system_type *) 0x0
+(gdb) n
+84		write_unlock(&file_systems_lock);
+(gdb) 
+85		return res;
+(gdb) 
+86	}
+(gdb) 
+init_rootfs () at fs/ramfs/inode.c:316
+316		if (err)
+(gdb) 
+320	}
+(gdb) 
+mnt_init () at fs/namespace.c:2311
+2311		init_mount_tree();
+
+
 ```
 
 # Links：
