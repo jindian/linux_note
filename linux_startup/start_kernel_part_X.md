@@ -4,7 +4,9 @@ Continue routine `vfs_caches_init` of start\_kernel part IX
 
 * Involves routine `mnt_init`, which allocates slab cache for struct `vfsmount`named `mnt_cache`,  gets free pages for `mount_hashtable` and initializes  it, registers `sysfs`, this is needed later for actually finding root device, registers `rootfs`, creates the initial filesystem namespace, with rootfs mounted at `/`
 
-  Let's check more about `sysfs_init`, `init_rootfs`and `init_mount_tree`
+  Let's check more about `sysfs_init`, `init_rootfs`and `init_mount_tree` 
+
+       With `sysfs_init` to learn how a new file system mounted to kernel:
 
 ```
 (gdb) break sysfs_init
@@ -184,84 +186,84 @@ kern_mount_data (type=type@entry=0xc16ac520 <sysfs_fs_type>,
 vfs_kern_mount (type=type@entry=0xc16ac520 <sysfs_fs_type>, 
     flags=flags@entry=4194304, name=0xc1616401 "sysfs", 
     data=data@entry=0x0) at fs/super.c:920
-920		if (!type)
+920        if (!type)
 (gdb) n
-924		mnt = alloc_vfsmnt(name);
+924        mnt = alloc_vfsmnt(name);
 (gdb) s
 alloc_vfsmnt (name=name@entry=0xc1616401 "sysfs")
     at fs/namespace.c:130
-130		struct vfsmount *mnt = kmem_cache_zalloc(mnt_cache, GFP_KERNEL);
+130        struct vfsmount *mnt = kmem_cache_zalloc(mnt_cache, GFP_KERNEL);
 (gdb) n
-131		if (mnt) {
+131        if (mnt) {
 (gdb) 
-134			err = mnt_alloc_id(mnt);
+134            err = mnt_alloc_id(mnt);
 (gdb) 
-138			if (name) {
+138            if (name) {
 (gdb) 
-139				mnt->mnt_devname = kstrdup(name, GFP_KERNEL);
+139                mnt->mnt_devname = kstrdup(name, GFP_KERNEL);
 (gdb) 
-140				if (!mnt->mnt_devname)
+140                if (!mnt->mnt_devname)
 (gdb) 
-144			atomic_set(&mnt->mnt_count, 1);
+144            atomic_set(&mnt->mnt_count, 1);
 (gdb) 
-145			INIT_LIST_HEAD(&mnt->mnt_hash);
+145            INIT_LIST_HEAD(&mnt->mnt_hash);
 (gdb) 
-146			INIT_LIST_HEAD(&mnt->mnt_child);
+146            INIT_LIST_HEAD(&mnt->mnt_child);
 (gdb) 
-147			INIT_LIST_HEAD(&mnt->mnt_mounts);
+147            INIT_LIST_HEAD(&mnt->mnt_mounts);
 (gdb) 
-148			INIT_LIST_HEAD(&mnt->mnt_list);
+148            INIT_LIST_HEAD(&mnt->mnt_list);
 (gdb) 
-149			INIT_LIST_HEAD(&mnt->mnt_expire);
+149            INIT_LIST_HEAD(&mnt->mnt_expire);
 (gdb) 
-150			INIT_LIST_HEAD(&mnt->mnt_share);
+150            INIT_LIST_HEAD(&mnt->mnt_share);
 (gdb) 
-151			INIT_LIST_HEAD(&mnt->mnt_slave_list);
+151            INIT_LIST_HEAD(&mnt->mnt_slave_list);
 (gdb) 
-152			INIT_LIST_HEAD(&mnt->mnt_slave);
+152            INIT_LIST_HEAD(&mnt->mnt_slave);
 (gdb) 
-154			mnt->mnt_writers = alloc_percpu(int);
+154            mnt->mnt_writers = alloc_percpu(int);
 (gdb) 
-155			if (!mnt->mnt_writers)
+155            if (!mnt->mnt_writers)
 (gdb) 
-172	}
+172    }
 (gdb) 
 vfs_kern_mount (type=type@entry=0xc16ac520 <sysfs_fs_type>, 
     flags=flags@entry=4194304, name=0xc1616401 "sysfs", 
     data=data@entry=0x0) at fs/super.c:925
-925		if (!mnt)
+925        if (!mnt)
 (gdb) 
-928		if (data && !(type->fs_flags & FS_BINARY_MOUNTDATA)) {
+928        if (data && !(type->fs_flags & FS_BINARY_MOUNTDATA)) {
 (gdb) 
-938		error = type->get_sb(type, flags, name, data, mnt);
+938        error = type->get_sb(type, flags, name, data, mnt);
 (gdb) 
-939		if (error < 0)
+939        if (error < 0)
 (gdb) 
-941		BUG_ON(!mnt->mnt_sb);
+941        BUG_ON(!mnt->mnt_sb);
 (gdb) 
-943	 	error = security_sb_kern_mount(mnt->mnt_sb, flags, secdata);
+943         error = security_sb_kern_mount(mnt->mnt_sb, flags, secdata);
 (gdb) s
 security_sb_kern_mount (sb=0xc7008430, flags=flags@entry=4194304, 
     data=data@entry=0x0) at security/security.c:273
-273		return security_ops->sb_kern_mount(sb, flags, data);
+273        return security_ops->sb_kern_mount(sb, flags, data);
 (gdb) s
 cap_sb_kern_mount (sb=0xc7008430, flags=4194304, data=0x0)
     at security/capability.c:65
-65	}
+65    }
 (gdb) n
 security_sb_kern_mount (sb=<optimized out>, 
     flags=flags@entry=4194304, data=data@entry=0x0)
     at security/security.c:274
-274	}
+274    }
 (gdb) 
 vfs_kern_mount (type=type@entry=0xc16ac520 <sysfs_fs_type>, 
     flags=flags@entry=4194304, name=<optimized out>, 
     data=data@entry=0x0) at fs/super.c:944
-944	 	if (error)
+944         if (error)
 (gdb) 
-954		WARN((mnt->mnt_sb->s_maxbytes < 0), "%s set sb->s_maxbytes to "
+954        WARN((mnt->mnt_sb->s_maxbytes < 0), "%s set sb->s_maxbytes to "
 (gdb) 
-957		mnt->mnt_mountpoint = mnt->mnt_root;
+957        mnt->mnt_mountpoint = mnt->mnt_root;
 (gdb) p mnt->mnt_root 
 $16 = (struct dentry *) 0xc6c02000
 (gdb) p *mnt->mnt_root 
@@ -282,40 +284,39 @@ $17 = {d_count = {counter = 2}, d_flags = 16, d_lock = {raw_lock = {
   d_fsdata = 0xc16ac580 <sysfs_root>, 
   d_iname = "/\000", 'k' <repeats 37 times>, "\245"}
 (gdb) n
-958		mnt->mnt_parent = mnt;
+958        mnt->mnt_parent = mnt;
 (gdb) 
-959		up_write(&mnt->mnt_sb->s_umount);
+959        up_write(&mnt->mnt_sb->s_umount);
 (gdb) 
-960		free_secdata(secdata);
+960        free_secdata(secdata);
 (gdb) s
 free_secdata (secdata=0x0) at include/linux/security.h:3133
-3133		free_page((unsigned long)secdata);
+3133        free_page((unsigned long)secdata);
 (gdb) s
 free_pages (addr=addr@entry=0, order=order@entry=0)
     at mm/page_alloc.c:2034
-2034		if (addr != 0) {
+2034        if (addr != 0) {
 (gdb) n
-2038	}
+2038    }
 (gdb) 
 vfs_kern_mount (type=type@entry=0xc16ac520 <sysfs_fs_type>, 
     flags=flags@entry=4194304, name=<optimized out>, 
     data=data@entry=0x0) at fs/super.c:961
-961		return mnt;
+961        return mnt;
 (gdb) n
-971	}
+971    }
 (gdb) 
 kern_mount_data (type=type@entry=0xc16ac520 <sysfs_fs_type>, 
     data=data@entry=0x0) at fs/super.c:1017
-1017	}
+1017    }
 (gdb) 
 sysfs_init () at fs/sysfs/mount.c:105
-105			if (IS_ERR(sysfs_mount)) {
+105            if (IS_ERR(sysfs_mount)) {
 (gdb) 
-120	}
+120    }
 (gdb) 
 mnt_init () at fs/namespace.c:2304
-2304		if (err)
-
+2304        if (err)
 ```
 
 # Links：
