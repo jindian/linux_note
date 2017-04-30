@@ -456,6 +456,7 @@
            |--mnt_init                                                   # fs/namespace.c:2283
                |--sysfs_init                                             # fs/sysfs/mount.c:88
                    |--sysfs_inode_init                                   # fs/sysfs/inode.c:44
+                   |--register_filesystem                                # fs/filesystem.c:69
            |--bdev_cache_init                                            # fs/block_dev.c:493
            |--chrdev_init                                                # fs/char_dev.c:568
 ```
