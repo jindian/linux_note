@@ -454,7 +454,8 @@
            |--inode_init                                                 # fs/dcache.c:1585
            |--files_init                                                 # fs/table.c:442
            |--mnt_init                                                   # fs/namespace.c:2283
-               |--sysfs_init                                            
+               |--sysfs_init                                             # fs/sysfs/mount.c:88
+                   |--sysfs_inode_init                                   # fs/sysfs/inode.c:44
            |--bdev_cache_init                                            # fs/block_dev.c:493
            |--chrdev_init                                                # fs/char_dev.c:568
 ```
