@@ -2,13 +2,11 @@
 
 Continue routine `vfs_caches_init` of start\_kernel part IX
 
-* Involves routine `mnt_init`, which 
-
-
+* Involves routine `mnt_init`, which registers `sysfs`, this is needed later for actually finding root device, registers `rootfs`, creates the initial filesystem namespace, with rootfs mounted at `/`
 
 # Links：
 
-\[RootFileSystem\]\(https://kernelnewbies.org/RootFileSystem\)
+* [How Is The Root File System Found?](https://kernelnewbies.org/RootFileSystem)
 
 
 
