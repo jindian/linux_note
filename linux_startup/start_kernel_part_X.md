@@ -420,165 +420,133 @@ mnt_init () at fs/namespace.c:2311
 2311        init_mount_tree();
 ```
 
-
-
       Debug information of  `init_mount_tree` shown as follow
-
-
 
 ```
 mnt_init () at fs/namespace.c:2311
-2311		init_mount_tree();
+2311        init_mount_tree();
 (gdb) s
 init_mount_tree () at fs/namespace.c:2266
-2266		mnt = do_kern_mount("rootfs", 0, "rootfs", NULL);
+2266        mnt = do_kern_mount("rootfs", 0, "rootfs", NULL);
 (gdb) s
 do_kern_mount (fstype=fstype@entry=0xc15ef45c "rootfs", 
     flags=flags@entry=0, name=name@entry=0xc15ef45c "rootfs", 
     data=data@entry=0x0) at fs/super.c:1000
-1000	{
+1000    {
 (gdb) n
-1001		struct file_system_type *type = get_fs_type(fstype);
+1001        struct file_system_type *type = get_fs_type(fstype);
 (gdb) 
-1003		if (!type)
+1003        if (!type)
 (gdb) 
-1005		mnt = vfs_kern_mount(type, flags, name, data);
+1005        mnt = vfs_kern_mount(type, flags, name, data);
 (gdb) p type
 $21 = (struct file_system_type *) 0xc16ad400 <rootfs_fs_type>
 (gdb) n
-1006		if (!IS_ERR(mnt) && (type->fs_flags & FS_HAS_SUBTYPE) &&
+1006        if (!IS_ERR(mnt) && (type->fs_flags & FS_HAS_SUBTYPE) &&
 (gdb) 
-1009		put_filesystem(type);
+1009        put_filesystem(type);
 (gdb) s
 put_filesystem (fs=fs@entry=0xc16ad400 <rootfs_fs_type>)
     at fs/filesystems.c:43
-43		module_put(fs->owner);
+43        module_put(fs->owner);
 (gdb) s
 module_put (module=0x0) at kernel/module.c:951
-951		if (module) {
+951        if (module) {
 (gdb) n
-961	}
+961    }
 (gdb) 
 put_filesystem (fs=fs@entry=0xc16ad400 <rootfs_fs_type>)
     at fs/filesystems.c:44
-44	}
+44    }
 (gdb) 
 do_kern_mount (fstype=fstype@entry=0xc15ef45c "rootfs", 
     flags=flags@entry=0, name=name@entry=0xc15ef45c "rootfs", 
     data=data@entry=0x0) at fs/super.c:1010
-1010		return mnt;
+1010        return mnt;
 (gdb) 
-1011	}
+1011    }
 (gdb) 
 init_mount_tree () at fs/namespace.c:2267
-2267		if (IS_ERR(mnt))
+2267        if (IS_ERR(mnt))
 (gdb) 
-2269		ns = create_mnt_ns(mnt);
+2269        ns = create_mnt_ns(mnt);
 (gdb) s
 create_mnt_ns (mnt=0xc701d0c0) at fs/namespace.c:2079
-2079	{
+2079    {
 (gdb) n
-2082		new_ns = alloc_mnt_ns();
+2082        new_ns = alloc_mnt_ns();
 (gdb) s
 alloc_mnt_ns () at fs/namespace.c:1986
-1986		new_ns = kmalloc(sizeof(struct mnt_namespace), GFP_KERNEL);
+1986        new_ns = kmalloc(sizeof(struct mnt_namespace), GFP_KERNEL);
 (gdb) n
-1987		if (!new_ns)
+1987        if (!new_ns)
 (gdb) 
-1988			return ERR_PTR(-ENOMEM);
+1989        atomic_set(&new_ns->count, 1);
 (gdb) 
-1987		if (!new_ns)
+1990        new_ns->root = NULL;
 (gdb) 
-1991		INIT_LIST_HEAD(&new_ns->list);
+1991        INIT_LIST_HEAD(&new_ns->list);
 (gdb) 
-1992		init_waitqueue_head(&new_ns->poll);
-(gdb) s
-1991		INIT_LIST_HEAD(&new_ns->list);
-(gdb) n
-1992		init_waitqueue_head(&new_ns->poll);
-(gdb) s
-1989		atomic_set(&new_ns->count, 1);
-(gdb) n
-1990		new_ns->root = NULL;
-(gdb) 
-1992		init_waitqueue_head(&new_ns->poll);
+1992        init_waitqueue_head(&new_ns->poll);
 (gdb) s
 __init_waitqueue_head (q=q@entry=0xc7001240, 
     key=key@entry=0xc1e6266c <__key.25018>) at kernel/wait.c:15
-15		spin_lock_init(&q->lock);
+15        spin_lock_init(&q->lock);
 (gdb) n
-14	{
-(gdb) 
-15		spin_lock_init(&q->lock);
-(gdb) 
-14	{
-(gdb) 
-15		spin_lock_init(&q->lock);
-(gdb) 
-16		lockdep_set_class(&q->lock, key);
+16        lockdep_set_class(&q->lock, key);
 (gdb) s
 lockdep_init_map (lock=lock@entry=0xc7001250, 
     name=name@entry=0xc16237be "key", 
     key=key@entry=0xc1e6266c <__key.25018>, 
-    subclass=subclass@entry=0) at kernel/lockdep.c:2683
-2683		if (DEBUG_LOCKS_WARN_ON(!name)) {
+    subclass=subclass@entry=0) at kernel/lockdep.c:2678
+2678        lock->class_cache = NULL;
 (gdb) n
-2678		lock->class_cache = NULL;
+2680        lock->cpu = raw_smp_processor_id();
 (gdb) 
-2680		lock->cpu = raw_smp_processor_id();
+2683        if (DEBUG_LOCKS_WARN_ON(!name)) {
 (gdb) 
-2683		if (DEBUG_LOCKS_WARN_ON(!name)) {
+2688        lock->name = name;
 (gdb) 
-2690		if (DEBUG_LOCKS_WARN_ON(!key))
+2690        if (DEBUG_LOCKS_WARN_ON(!key))
 (gdb) 
-2688		lock->name = name;
+2695        if (!static_obj(key)) {
 (gdb) 
-2690		if (DEBUG_LOCKS_WARN_ON(!key))
+2700        lock->key = key;
 (gdb) 
-2695		if (!static_obj(key)) {
+2702        if (unlikely(!debug_locks))
 (gdb) 
-2700		lock->key = key;
+2705        if (subclass)
 (gdb) 
-2702		if (unlikely(!debug_locks))
-(gdb) 
-2705		if (subclass)
-(gdb) 
-2707	}
+2707    }
 (gdb) 
 __init_waitqueue_head (q=q@entry=0xc7001240, 
     key=key@entry=0xc1e6266c <__key.25018>) at kernel/wait.c:17
-17		INIT_LIST_HEAD(&q->task_list);
+17        INIT_LIST_HEAD(&q->task_list);
 (gdb) 
-18	}
+18    }
 (gdb) 
-alloc_mnt_ns () at fs/namespace.c:1994
-1994		return new_ns;
+alloc_mnt_ns () at fs/namespace.c:1993
+1993        new_ns->event = 0;
 (gdb) 
-1993		new_ns->event = 0;
+1994        return new_ns;
 (gdb) 
-1995	}
+1995    }
 (gdb) 
 create_mnt_ns (mnt=0xc701d0c0) at fs/namespace.c:2083
-2083		if (!IS_ERR(new_ns)) {
+2083        if (!IS_ERR(new_ns)) {
 (gdb) 
-2082		new_ns = alloc_mnt_ns();
+2084            mnt->mnt_ns = new_ns;
 (gdb) 
-2083		if (!IS_ERR(new_ns)) {
+2085            new_ns->root = mnt;
 (gdb) 
-2084			mnt->mnt_ns = new_ns;
+2086            list_add(&new_ns->list, &new_ns->root->mnt_list);
 (gdb) 
-2086			list_add(&new_ns->list, &new_ns->root->mnt_list);
-(gdb) 
-2085			new_ns->root = mnt;
-(gdb) 
-2086			list_add(&new_ns->list, &new_ns->root->mnt_list);
-(gdb) 
-2089	}
+2089    }
 (gdb) 
 init_mount_tree () at fs/namespace.c:2270
-2270		if (IS_ERR(ns))
+2270        if (IS_ERR(ns))
 (gdb) 
-2273		init_task.nsproxy->mnt_ns = ns;
+2273        init_task.nsproxy->mnt_ns = ns;
 (gdb) p ns
 $22 = (struct mnt_namespace *) 0xc7001230
 (gdb) p *ns
@@ -590,138 +558,97 @@ $23 = {count = {counter = 1}, root = 0xc701d0c0, list = {
         name = 0xc16237be "key", cpu = 0, ip = 1802201963}}, 
     task_list = {next = 0xc7001264, prev = 0xc7001264}}, event = 0}
 (gdb) n
-2274		get_mnt_ns(ns);
-(gdb) s
-get_mnt_ns (ns=0xc7001230) at fs/namespace.c:2274
-2274		get_mnt_ns(ns);
-(gdb) n
-init_mount_tree () at fs/namespace.c:2276
-2276		root.mnt = ns->root;
+2274        get_mnt_ns(ns);
 (gdb) 
-2279		set_fs_pwd(current->fs, &root);
+2276        root.mnt = ns->root;
+(gdb) 
+2279        set_fs_pwd(current->fs, &root);
 (gdb) s
 get_current ()
     at /home/start-kernel/work_space/github/linux_startup/linux-2.6.32.69/arch/x86/include/asm/current.h:14
-14		return percpu_read_stable(current_task);
+14        return percpu_read_stable(current_task);
 (gdb) n
-init_mount_tree () at fs/namespace.c:2276
-2276		root.mnt = ns->root;
-(gdb) 
-2277		root.dentry = ns->root->mnt_root;
-(gdb) 
-2279		set_fs_pwd(current->fs, &root);
+init_mount_tree () at fs/namespace.c:2279
+2279        set_fs_pwd(current->fs, &root);
 (gdb) s
 set_fs_pwd (fs=0xc16aa620 <init_fs>, 
     path=path@entry=0xc168bf88 <init_thread_union+8072>)
     at fs/fs_struct.c:33
-33		write_lock(&fs->lock);
+33        write_lock(&fs->lock);
 (gdb) n
-30	{
-(gdb) 
-33		write_lock(&fs->lock);
-(gdb) 
-30	{
-(gdb) 
-33		write_lock(&fs->lock);
-(gdb) 
-34		old_pwd = fs->pwd;
+34        old_pwd = fs->pwd;
 (gdb) p fs->pwd
 $24 = {mnt = 0x0, dentry = 0x0}
 (gdb) n
-35		fs->pwd = *path;
+35        fs->pwd = *path;
 (gdb) p path
 $25 = (struct path *) 0xc168bf88 <init_thread_union+8072>
 (gdb) n
-34		old_pwd = fs->pwd;
-(gdb) 
-35		fs->pwd = *path;
-(gdb) 
-36		path_get(path);
+36        path_get(path);
 (gdb) p fs->pwd
 $26 = {mnt = 0xc701d0c0, dentry = 0x0}
 (gdb) s
-35		fs->pwd = *path;
-(gdb) n
-36		path_get(path);
-(gdb) s
 path_get (path=path@entry=0xc168bf88 <init_thread_union+8072>)
     at fs/namei.c:363
-363		mntget(path->mnt);
+363        mntget(path->mnt);
 (gdb) p path->mnt 
 $27 = (struct vfsmount *) 0xc701d0c0
 (gdb) p path->mnt->mnt_count
 $28 = {counter = 1}
 (gdb) n
-364		dget(path->dentry);
+364        dget(path->dentry);
 (gdb) p path->mnt->mnt_count
 $29 = {counter = 2}
 (gdb) s
 dget (dentry=0xc6c020d0) at include/linux/dcache.h:335
-335		if (dentry) {
+335        if (dentry) {
 (gdb) n
-336			BUG_ON(!atomic_read(&dentry->d_count));
+336            BUG_ON(!atomic_read(&dentry->d_count));
 (gdb) 
-337			atomic_inc(&dentry->d_count);
+337            atomic_inc(&dentry->d_count);
 (gdb) 
 path_get (path=path@entry=0xc168bf88 <init_thread_union+8072>)
     at fs/namei.c:365
-365	}
+365    }
 (gdb) 
 set_fs_pwd (fs=0xc16aa620 <init_fs>, 
     path=path@entry=0xc168bf88 <init_thread_union+8072>)
     at fs/fs_struct.c:37
-37		write_unlock(&fs->lock);
+37        write_unlock(&fs->lock);
 (gdb) 
-39		if (old_pwd.dentry)
+39        if (old_pwd.dentry)
 (gdb) p old_pwd.dentry 
 $30 = (struct dentry *) 0x0
 (gdb) n
-41	}
+41    }
 (gdb) 
 init_mount_tree () at fs/namespace.c:2280
-2280		set_fs_root(current->fs, &root);
+2280        set_fs_root(current->fs, &root);
 (gdb) s
 set_fs_root (fs=0xc16aa620 <init_fs>, 
     path=path@entry=0xc168bf88 <init_thread_union+8072>)
     at fs/fs_struct.c:16
-16		write_lock(&fs->lock);
+16        write_lock(&fs->lock);
 (gdb) n
-13	{
+17        old_root = fs->root;
 (gdb) 
-16		write_lock(&fs->lock);
-(gdb) 
-13	{
-(gdb) 
-16		write_lock(&fs->lock);
-(gdb) 
-17		old_root = fs->root;
-(gdb) 
-18		fs->root = *path;
+18        fs->root = *path;
 (gdb) p fs->root 
 $31 = {mnt = 0x0, dentry = 0x0}
 (gdb) n
-17		old_root = fs->root;
-(gdb) 
-18		fs->root = *path;
-(gdb) 
-19		path_get(path);
+19        path_get(path);
 (gdb) p fs->root 
 $32 = {mnt = 0xc701d0c0, dentry = 0x0}
 (gdb) n
-18		fs->root = *path;
+20        write_unlock(&fs->lock);
 (gdb) 
-19		path_get(path);
+21        if (old_root.dentry)
 (gdb) 
-20		write_unlock(&fs->lock);
-(gdb) 
-21		if (old_root.dentry)
-(gdb) 
-23	}
+23    }
 (gdb) 
 mnt_init () at fs/namespace.c:2312
-2312	}
-(gdb) 
-
+2312    }
+(gdb)
 ```
 
 # Links：
