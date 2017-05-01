@@ -656,30 +656,30 @@ mnt_init () at fs/namespace.c:2312
 
 ```
 Breakpoint 2, chrdev_init () at fs/char_dev.c:569
-569	{
+569    {
 (gdb) n
-570		cdev_map = kobj_map_init(base_probe, &chrdevs_lock);
+570        cdev_map = kobj_map_init(base_probe, &chrdevs_lock);
 (gdb) s
 kobj_map_init (base_probe=base_probe@entry=0xc1116760 <base_probe>, 
     lock=lock@entry=0xc16a7a20 <chrdevs_lock>)
     at drivers/base/map.c:137
-137	{
+137    {
 (gdb) n
-138		struct kobj_map *p = kmalloc(sizeof(struct kobj_map), GFP_KERNEL);
+138        struct kobj_map *p = kmalloc(sizeof(struct kobj_map), GFP_KERNEL);
 (gdb) 
-139		struct probe *base = kzalloc(sizeof(*base), GFP_KERNEL);
+139        struct probe *base = kzalloc(sizeof(*base), GFP_KERNEL);
 (gdb) 
-142		if ((p == NULL) || (base == NULL)) {
+142        if ((p == NULL) || (base == NULL)) {
 (gdb) 
-148		base->dev = 1;
+148        base->dev = 1;
 (gdb) 
-149		base->range = ~0;
+149        base->range = ~0;
 (gdb) 
-150		base->get = base_probe;
+150        base->get = base_probe;
 (gdb) 
-151		for (i = 0; i < 255; i++)
+151        for (i = 0; i < 255; i++)
 (gdb) 
-152			p->probes[i] = base;
+152            p->probes[i] = base;
 (gdb) break if i==254
 Breakpoint 3 at 0xc12f5218: file drivers/base/map.c, line 152.
 (gdb) c
@@ -689,32 +689,41 @@ Breakpoint 3, kobj_map_init (
     base_probe=base_probe@entry=0xc1116760 <base_probe>, 
     lock=lock@entry=0xc16a7a20 <chrdevs_lock>)
     at drivers/base/map.c:152
-152			p->probes[i] = base;
+152            p->probes[i] = base;
 (gdb) p i
 $1 = 254
 (gdb) n
-151		for (i = 0; i < 255; i++)
+151        for (i = 0; i < 255; i++)
 (gdb) 
-153		p->lock = lock;
+153        p->lock = lock;
 (gdb) 
-154		return p;
+154        return p;
 (gdb) 
-155	}
+155    }
 (gdb) 
 chrdev_init () at fs/char_dev.c:571
-571		bdi_init(&directly_mappable_cdev_bdi);
+571        bdi_init(&directly_mappable_cdev_bdi);
 chrdev_init () at fs/char_dev.c:572
-572	}
+572    }
 (gdb) 
 vfs_caches_init (mempages=27097) at fs/dcache.c:2339
-2339	}
+2339    }
 (gdb) 
 start_kernel () at init/main.c:674
-674		radix_tree_init();
-
+674        radix_tree_init();
 ```
 
 
+
+## _initialize radix tree_
+
+`radix_tree_init` allocates slab cache for struct `radix_tree_node`, initializes max index of radix tree, registers notifier `radix_tree_callback` when cpu hot plugin.
+
+## _initialize signals_
+
+`signals_init` just allocates slab cache for struct `sigqueue`.
+
+## _initialize page writeback_
 
 
 
