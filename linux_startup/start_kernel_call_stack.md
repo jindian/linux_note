@@ -467,6 +467,9 @@
                |--init_mount_tree
            |--bdev_cache_init                                            # fs/block_dev.c:493
            |--chrdev_init                                                # fs/char_dev.c:568
+       |--radix_tree_init                                                # lib/radix-tree.c:1249
+       |--signals_init                                                   # kernel/signal.c:2690
+       |--page_writeback_init                                            # mm/page-writeback.c:794
 ```
 
 # Links
