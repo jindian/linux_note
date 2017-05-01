@@ -319,7 +319,11 @@ mnt_init () at fs/namespace.c:2304
 2304        if (err)
 ```
 
-      Debug information of `init_rootfs` shown as follow, it just registers `rootfs`
+
+
+  Debug information of \`init\_rootfs\` shown as follow, it just registers \`rootfs\`
+
+
 
 ```
 2310        init_rootfs();
@@ -420,7 +424,11 @@ mnt_init () at fs/namespace.c:2311
 2311        init_mount_tree();
 ```
 
-      Debug information of  `init_mount_tree` shown as follow
+
+
+  Debug information of  \`init\_mount\_tree\` shown as follow
+
+
 
 ```
 mnt_init () at fs/namespace.c:2311
