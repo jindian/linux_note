@@ -713,8 +713,6 @@ start_kernel () at init/main.c:674
 674        radix_tree_init();
 ```
 
-
-
 ## _initialize radix tree_
 
 `radix_tree_init` allocates slab cache for struct `radix_tree_node`, initializes max index of radix tree, registers notifier `radix_tree_callback` when cpu hot plugin.
@@ -725,11 +723,11 @@ start_kernel () at init/main.c:674
 
 ## _initialize page writeback_
 
-
-
 # Links：
 
 * [How Is The Root File System Found?](https://kernelnewbies.org/RootFileSystem)
+* [The Page Cache and Page Writeback](http://www.makelinux.net/books/lkd2/ch15)
+* [Linux Page Cache Basics](https://www.thomas-krenn.com/en/wiki/Linux_Page_Cache_Basics)
 
 
 
