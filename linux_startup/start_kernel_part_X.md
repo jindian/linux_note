@@ -319,11 +319,7 @@ mnt_init () at fs/namespace.c:2304
 2304        if (err)
 ```
 
-
-
-  Debug information of \`init\_rootfs\` shown as follow, it just registers \`rootfs\`
-
-
+Debug information of \`init\_rootfs\` shown as follow, it just registers \`rootfs\`
 
 ```
 2310        init_rootfs();
@@ -424,11 +420,7 @@ mnt_init () at fs/namespace.c:2311
 2311        init_mount_tree();
 ```
 
-
-
-  Debug information of  \`init\_mount\_tree\` shown as follow
-
-
+Debug information of  \`init\_mount\_tree\` shown as follow
 
 ```
 mnt_init () at fs/namespace.c:2311
@@ -658,6 +650,73 @@ mnt_init () at fs/namespace.c:2312
 2312    }
 (gdb)
 ```
+
+* Involves routine `bdev_cache_init` to initialize block device. Inside `bdev_cache_init`, it creates slab cache for struct `bdev_inode`, registers file system type `bd_type` and mounts the new regisgered file system, with routine `kmemleak_not_leak` to tell kmemleak not to report it, finnaly initializes block device super block data.
+* Involves routine chrdev\_init to initialize charactor device.
+
+```
+Breakpoint 2, chrdev_init () at fs/char_dev.c:569
+569	{
+(gdb) n
+570		cdev_map = kobj_map_init(base_probe, &chrdevs_lock);
+(gdb) s
+kobj_map_init (base_probe=base_probe@entry=0xc1116760 <base_probe>, 
+    lock=lock@entry=0xc16a7a20 <chrdevs_lock>)
+    at drivers/base/map.c:137
+137	{
+(gdb) n
+138		struct kobj_map *p = kmalloc(sizeof(struct kobj_map), GFP_KERNEL);
+(gdb) 
+139		struct probe *base = kzalloc(sizeof(*base), GFP_KERNEL);
+(gdb) 
+142		if ((p == NULL) || (base == NULL)) {
+(gdb) 
+148		base->dev = 1;
+(gdb) 
+149		base->range = ~0;
+(gdb) 
+150		base->get = base_probe;
+(gdb) 
+151		for (i = 0; i < 255; i++)
+(gdb) 
+152			p->probes[i] = base;
+(gdb) break if i==254
+Breakpoint 3 at 0xc12f5218: file drivers/base/map.c, line 152.
+(gdb) c
+Continuing.
+
+Breakpoint 3, kobj_map_init (
+    base_probe=base_probe@entry=0xc1116760 <base_probe>, 
+    lock=lock@entry=0xc16a7a20 <chrdevs_lock>)
+    at drivers/base/map.c:152
+152			p->probes[i] = base;
+(gdb) p i
+$1 = 254
+(gdb) n
+151		for (i = 0; i < 255; i++)
+(gdb) 
+153		p->lock = lock;
+(gdb) 
+154		return p;
+(gdb) 
+155	}
+(gdb) 
+chrdev_init () at fs/char_dev.c:571
+571		bdi_init(&directly_mappable_cdev_bdi);
+chrdev_init () at fs/char_dev.c:572
+572	}
+(gdb) 
+vfs_caches_init (mempages=27097) at fs/dcache.c:2339
+2339	}
+(gdb) 
+start_kernel () at init/main.c:674
+674		radix_tree_init();
+
+```
+
+
+
+
 
 # Links：
 
