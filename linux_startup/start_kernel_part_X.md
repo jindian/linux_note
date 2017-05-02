@@ -731,12 +731,68 @@ The page cache consists of physical pages in RAM. Each page in the cache corresp
 
 Individual disk blocks can also tie into the page cache, by way of block I/O buffers. A buffer is the in-memory representation of a single physical disk block. Buffers act as descriptors that map pages in memory to disk blocks; thus, the page cache also reduces disk access during block I/O operations by both caching disk blocks and buffering block I/O operations until later. This caching is often referred to as the "buffer cache," although in reality it is not a separate cache and is part of the page cache.
 
-`page_writeback_init` is called early on to tune the page writeback dirty limits. 
+`page_writeback_init` is called early on to tune the page writeback dirty limits.
 
 * Involves `writeback_set_ratelimit` to set `ratelimit_pages`,  If `ratelimit_pages` is too high then we can get into dirty-data overload if a large number of processes all perform writes at the same time. If it is too low then SMP machines will call the \(expensive\) `get_writeback_state` too often
 * Register notifier when cpu going up/down
-* 
+* Calculate the couple the period to the dirty\_ratio
 
+* Initialzes prop\_descriptor `vm_completions` and `vm_dirties`
+
+```
+page_writeback_init () at mm/page-writeback.c:801
+801		shift = calc_period_shift();
+(gdb) 
+802		prop_descriptor_init(&vm_completions, shift);
+(gdb) p shift
+$8 = 14
+(gdb) s
+prop_descriptor_init (pd=pd@entry=0xc1e5c820 <vm_completions>, 
+    shift=shift@entry=14) at lib/proportions.c:83
+83		pd->index = 0;
+(gdb) n
+84		pd->pg[0].shift = shift;
+(gdb) 
+85		mutex_init(&pd->mutex);
+(gdb) 
+86		err = percpu_counter_init(&pd->pg[0].events, 0);
+(gdb) 
+87		if (err)
+(gdb) 
+90		err = percpu_counter_init(&pd->pg[1].events, 0);
+(gdb) 
+91		if (err)
+(gdb) 
+96	}
+page_writeback_init () at mm/page-writeback.c:803
+803		prop_descriptor_init(&vm_dirties, shift);
+(gdb) s
+prop_descriptor_init (pd=pd@entry=0xc1e5c740 <vm_dirties>, 
+    shift=shift@entry=14) at lib/proportions.c:83
+83		pd->index = 0;
+(gdb) n
+84		pd->pg[0].shift = shift;
+(gdb) 
+85		mutex_init(&pd->mutex);
+(gdb) 
+86		err = percpu_counter_init(&pd->pg[0].events, 0);
+(gdb) 
+87		if (err)
+(gdb) 
+90		err = percpu_counter_init(&pd->pg[1].events, 0);
+(gdb) 
+91		if (err)
+(gdb) 
+96	}
+(gdb) 
+page_writeback_init () at mm/page-writeback.c:804
+804	}
+(gdb) 
+start_kernel () at init/main.c:679
+679		proc_root_init();
+(gdb) 
+
+```
 
 # Links：
 
