@@ -471,6 +471,7 @@
        |--signals_init                                                   # kernel/signal.c:2690
        |--page_writeback_init                                            # mm/page-writeback.c:794
            |--writeback_set_ratelimit                                    # mm/page-writeback.c:755
+           |--register_cpu_notifier                                      # kernel/cpu.c:128
 ```
 
 # Links

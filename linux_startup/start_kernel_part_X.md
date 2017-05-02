@@ -731,6 +731,8 @@ The page cache consists of physical pages in RAM. Each page in the cache corresp
 
 Individual disk blocks can also tie into the page cache, by way of block I/O buffers. A buffer is the in-memory representation of a single physical disk block. Buffers act as descriptors that map pages in memory to disk blocks; thus, the page cache also reduces disk access during block I/O operations by both caching disk blocks and buffering block I/O operations until later. This caching is often referred to as the "buffer cache," although in reality it is not a separate cache and is part of the page cache.
 
+`page_writeback_init` is called early on to tune the page writeback dirty limits. `page_writeback_init` involves `writeback_set_ratelimit` to set `ratelimit_pages`,  If `ratelimit_pages` is too high then we can get into dirty-data overload if a large number of processes all perform writes at the same time. If it is too low then SMP machines will call the \(expensive\) `get_writeback_state` too often.
+
 # Links：
 
 * [How Is The Root File System Found?](https://kernelnewbies.org/RootFileSystem)
