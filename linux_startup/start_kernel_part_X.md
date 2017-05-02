@@ -741,58 +741,61 @@ Individual disk blocks can also tie into the page cache, by way of block I/O buf
 
 ```
 page_writeback_init () at mm/page-writeback.c:801
-801		shift = calc_period_shift();
+801        shift = calc_period_shift();
 (gdb) 
-802		prop_descriptor_init(&vm_completions, shift);
+802        prop_descriptor_init(&vm_completions, shift);
 (gdb) p shift
 $8 = 14
 (gdb) s
 prop_descriptor_init (pd=pd@entry=0xc1e5c820 <vm_completions>, 
     shift=shift@entry=14) at lib/proportions.c:83
-83		pd->index = 0;
+83        pd->index = 0;
 (gdb) n
-84		pd->pg[0].shift = shift;
+84        pd->pg[0].shift = shift;
 (gdb) 
-85		mutex_init(&pd->mutex);
+85        mutex_init(&pd->mutex);
 (gdb) 
-86		err = percpu_counter_init(&pd->pg[0].events, 0);
+86        err = percpu_counter_init(&pd->pg[0].events, 0);
 (gdb) 
-87		if (err)
+87        if (err)
 (gdb) 
-90		err = percpu_counter_init(&pd->pg[1].events, 0);
+90        err = percpu_counter_init(&pd->pg[1].events, 0);
 (gdb) 
-91		if (err)
+91        if (err)
 (gdb) 
-96	}
+96    }
 page_writeback_init () at mm/page-writeback.c:803
-803		prop_descriptor_init(&vm_dirties, shift);
+803        prop_descriptor_init(&vm_dirties, shift);
 (gdb) s
 prop_descriptor_init (pd=pd@entry=0xc1e5c740 <vm_dirties>, 
     shift=shift@entry=14) at lib/proportions.c:83
-83		pd->index = 0;
+83        pd->index = 0;
 (gdb) n
-84		pd->pg[0].shift = shift;
+84        pd->pg[0].shift = shift;
 (gdb) 
-85		mutex_init(&pd->mutex);
+85        mutex_init(&pd->mutex);
 (gdb) 
-86		err = percpu_counter_init(&pd->pg[0].events, 0);
+86        err = percpu_counter_init(&pd->pg[0].events, 0);
 (gdb) 
-87		if (err)
+87        if (err)
 (gdb) 
-90		err = percpu_counter_init(&pd->pg[1].events, 0);
+90        err = percpu_counter_init(&pd->pg[1].events, 0);
 (gdb) 
-91		if (err)
+91        if (err)
 (gdb) 
-96	}
+96    }
 (gdb) 
 page_writeback_init () at mm/page-writeback.c:804
-804	}
+804    }
 (gdb) 
 start_kernel () at init/main.c:679
-679		proc_root_init();
-(gdb) 
-
+679        proc_root_init();
+(gdb)
 ```
+
+## _initialize proc file system_
+
+
 
 # Links：
 
