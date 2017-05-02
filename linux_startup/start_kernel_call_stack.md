@@ -470,6 +470,7 @@
        |--radix_tree_init                                                # lib/radix-tree.c:1249
        |--signals_init                                                   # kernel/signal.c:2690
        |--page_writeback_init                                            # mm/page-writeback.c:794
+           |--writeback_set_ratelimit                                    # mm/page-writeback.c:755
 ```
 
 # Links

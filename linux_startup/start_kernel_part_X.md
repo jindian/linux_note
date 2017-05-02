@@ -723,6 +723,14 @@ start_kernel () at init/main.c:674
 
 ## _initialize page writeback_
 
+The linux kernel implements a primary disk cache called the page cache. The goal of this cache is to minimize disk I/O by storing in physical memory data that would otherwise be accessed from disk.
+
+Disk caches are beneficial for two reasons. First, disk access is magnitudes slower than memory access. Accessing data from memory rather than the disk is much faster. Second, data accessed once will, with a high likelihood, find itself accessed again in the near future. This principle, that access to a particular piece of data tends to be clustered in time, is called temporal localityz.Temporal locality ensures that if data is cached on its first access, there is a high probability of a cache hit \(access to data that is in the cache\) in the near future.
+
+The page cache consists of physical pages in RAM. Each page in the cache corresponds to multiple blocks on the disk. Whenever the kernel begins a page I/O operation \(a disk operation in page-size chunks, usually to a regular file\), it first checks whether the requisite data is in the page cache. If it is, the kernel can forego accessing the disk and use the data straight from the page cache.
+
+Individual disk blocks can also tie into the page cache, by way of block I/O buffers. A buffer is the in-memory representation of a single physical disk block. Buffers act as descriptors that map pages in memory to disk blocks; thus, the page cache also reduces disk access during block I/O operations by both caching disk blocks and buffering block I/O operations until later. This caching is often referred to as the "buffer cache," although in reality it is not a separate cache and is part of the page cache.
+
 # Links：
 
 * [How Is The Root File System Found?](https://kernelnewbies.org/RootFileSystem)
