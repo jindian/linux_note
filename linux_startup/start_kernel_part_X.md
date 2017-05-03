@@ -795,13 +795,14 @@ start_kernel () at init/main.c:679
 
 ## _initialize proc file system_
 
-
+/proc is very special in that it is also a virtual filesystem. It's sometimes referred to as a process information pseudo-file system. It doesn't contain 'real' files but runtime system information \(e.g. system memory, devices mounted, hardware configuration, etc\). For this reason it can be regarded as a control and information centre for the kernel. In fact, quite a lot of system utilities are simply calls to files in this directory. For example, 'lsmod' is the same as 'cat /proc/modules' while 'lspci' is a synonym for 'cat /proc/pci'. By altering files located in this directory you can even read/change kernel parameters \(sysctl\) while the system is running.
 
 # Links：
 
 * [How Is The Root File System Found?](https://kernelnewbies.org/RootFileSystem)
 * [The Page Cache and Page Writeback](http://www.makelinux.net/books/lkd2/ch15)
 * [Linux Page Cache Basics](https://www.thomas-krenn.com/en/wiki/Linux_Page_Cache_Basics)
+* [/proc](http://www.tldp.org/LDP/Linux-Filesystem-Hierarchy/html/proc.html)
 
 
 
