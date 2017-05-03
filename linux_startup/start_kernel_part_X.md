@@ -797,6 +797,73 @@ start_kernel () at init/main.c:679
 
 /proc is very special in that it is also a virtual filesystem. It's sometimes referred to as a process information pseudo-file system. It doesn't contain 'real' files but runtime system information \(e.g. system memory, devices mounted, hardware configuration, etc\). For this reason it can be regarded as a control and information centre for the kernel. In fact, quite a lot of system utilities are simply calls to files in this directory. For example, 'lsmod' is the same as 'cat /proc/modules' while 'lspci' is a synonym for 'cat /proc/pci'. By altering files located in this directory you can even read/change kernel parameters \(sysctl\) while the system is running.
 
+`proc_root_init` 
+
+* Create slab caches for struct `proc_inode` named `proc_inode_cache`
+
+```
+Breakpoint 2, proc_root_init () at fs/proc/root.c:105
+105	{
+(gdb) n
+108		proc_init_inodecache();
+(gdb) s
+proc_init_inodecache () at fs/proc/inode.c:105
+105		proc_inode_cachep = kmem_cache_create("proc_inode_cache",
+(gdb) n
+110	}
+(gdb) 
+proc_root_init () at fs/proc/root.c:109
+```
+
+* Registers proc filesystem and checks the result
+
+```
+109		err = register_filesystem(&proc_fs_type);
+(gdb) p proc_fs_type 
+$1 = {name = 0xc15dbf10 "proc", fs_flags = 0, 
+  get_sb = 0xc115e4f0 <proc_get_sb>, kill_sb = 0xc115e4c0 <proc_kill_sb>, 
+  owner = 0x0, next = 0x0, fs_supers = {next = 0x0, prev = 0x0}, s_lock_key = {
+    subkeys = {{__one_byte = 0 '\000'}, {__one_byte = 0 '\000'}, {
+        __one_byte = 0 '\000'}, {__one_byte = 0 '\000'}, {
+        __one_byte = 0 '\000'}, {__one_byte = 0 '\000'}, {
+        __one_byte = 0 '\000'}, {__one_byte = 0 '\000'}}}, s_umount_key = {
+    subkeys = {{__one_byte = 0 '\000'}, {__one_byte = 0 '\000'}, {
+        __one_byte = 0 '\000'}, {__one_byte = 0 '\000'}, {
+        __one_byte = 0 '\000'}, {__one_byte = 0 '\000'}, {
+        __one_byte = 0 '\000'}, {__one_byte = 0 '\000'}}}, i_lock_key = {
+    subkeys = {{__one_byte = 0 '\000'}, {__one_byte = 0 '\000'}, {
+        __one_byte = 0 '\000'}, {__one_byte = 0 '\000'}, {
+        __one_byte = 0 '\000'}, {__one_byte = 0 '\000'}, {
+        __one_byte = 0 '\000'}, {__one_byte = 0 '\000'}}}, i_mutex_key = {
+    subkeys = {{__one_byte = 0 '\000'}, {__one_byte = 0 '\000'}, {
+        __one_byte = 0 '\000'}, {__one_byte = 0 '\000'}, {
+        __one_byte = 0 '\000'}, {__one_byte = 0 '\000'}, {
+        __one_byte = 0 '\000'}, {__one_byte = 0 '\000'}}}, i_mutex_dir_key = {
+    subkeys = {{__one_byte = 0 '\000'}, {__one_byte = 0 '\000'}, {
+        __one_byte = 0 '\000'}, {__one_byte = 0 '\000'}, {
+        __one_byte = 0 '\000'}, {__one_byte = 0 '\000'}, {
+        __one_byte = 0 '\000'}, {__one_byte = 0 '\000'}}}, i_alloc_sem_key = {
+---Type <return> to continue, or q <return> to quit---
+    subkeys = {{__one_byte = 0 '\000'}, {__one_byte = 0 '\000'}, {
+        __one_byte = 0 '\000'}, {__one_byte = 0 '\000'}, {
+        __one_byte = 0 '\000'}, {__one_byte = 0 '\000'}, {
+        __one_byte = 0 '\000'}, {__one_byte = 0 '\000'}}}}
+(gdb) n
+110		if (err)
+
+```
+
+* Mounts proc filesystem and checks the result
+
+```
+(gdb) 
+112		proc_mnt = kern_mount_data(&proc_fs_type, &init_pid_ns);
+(gdb) 
+114		if (IS_ERR(proc_mnt)) {
+```
+
+
+
 # Links：
 
 * [How Is The Root File System Found?](https://kernelnewbies.org/RootFileSystem)
