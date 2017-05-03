@@ -797,20 +797,20 @@ start_kernel () at init/main.c:679
 
 /proc is very special in that it is also a virtual filesystem. It's sometimes referred to as a process information pseudo-file system. It doesn't contain 'real' files but runtime system information \(e.g. system memory, devices mounted, hardware configuration, etc\). For this reason it can be regarded as a control and information centre for the kernel. In fact, quite a lot of system utilities are simply calls to files in this directory. For example, 'lsmod' is the same as 'cat /proc/modules' while 'lspci' is a synonym for 'cat /proc/pci'. By altering files located in this directory you can even read/change kernel parameters \(sysctl\) while the system is running.
 
-`proc_root_init` 
+`proc_root_init`
 
 * Create slab caches for struct `proc_inode` named `proc_inode_cache`
 
 ```
 Breakpoint 2, proc_root_init () at fs/proc/root.c:105
-105	{
+105    {
 (gdb) n
-108		proc_init_inodecache();
+108        proc_init_inodecache();
 (gdb) s
 proc_init_inodecache () at fs/proc/inode.c:105
-105		proc_inode_cachep = kmem_cache_create("proc_inode_cache",
+105        proc_inode_cachep = kmem_cache_create("proc_inode_cache",
 (gdb) n
-110	}
+110    }
 (gdb) 
 proc_root_init () at fs/proc/root.c:109
 ```
@@ -818,7 +818,7 @@ proc_root_init () at fs/proc/root.c:109
 * Registers proc filesystem and checks the result
 
 ```
-109		err = register_filesystem(&proc_fs_type);
+109        err = register_filesystem(&proc_fs_type);
 (gdb) p proc_fs_type 
 $1 = {name = 0xc15dbf10 "proc", fs_flags = 0, 
   get_sb = 0xc115e4f0 <proc_get_sb>, kill_sb = 0xc115e4c0 <proc_kill_sb>, 
@@ -849,20 +849,171 @@ $1 = {name = 0xc15dbf10 "proc", fs_flags = 0,
         __one_byte = 0 '\000'}, {__one_byte = 0 '\000'}, {
         __one_byte = 0 '\000'}, {__one_byte = 0 '\000'}}}}
 (gdb) n
-110		if (err)
-
+110        if (err)
 ```
 
 * Mounts proc filesystem and checks the result
 
 ```
 (gdb) 
-112		proc_mnt = kern_mount_data(&proc_fs_type, &init_pid_ns);
+112        proc_mnt = kern_mount_data(&proc_fs_type, &init_pid_ns);
 (gdb) 
-114		if (IS_ERR(proc_mnt)) {
+114        if (IS_ERR(proc_mnt)) {
 ```
 
+Create symlink `mounts` under `proc_root` for the real destination directory `self/mounts`
 
+```
+119		proc_symlink("mounts", NULL, "self/mounts");
+(gdb) s
+proc_symlink (name=name@entry=0xc15f0aec "mounts", parent=parent@entry=0x0, 
+    dest=dest@entry=0xc15f0ae7 "self/mounts") at fs/proc/generic.c:643
+643	{
+(gdb) n
+646		ent = __proc_create(&parent, name,
+(gdb) s
+__proc_create (parent=parent@entry=0xc168bfa8 <init_thread_union+8104>, 
+    name=name@entry=0xc15f0aec "mounts", mode=mode@entry=41471, 
+    nlink=nlink@entry=1) at fs/proc/generic.c:606
+606	{
+(gdb) n
+608		const char *fn = name;
+(gdb) 
+612		if (!name || !strlen(name)) goto out;
+(gdb) 
+614		if (xlate_proc_name(name, parent, &fn) != 0)
+(gdb) s
+xlate_proc_name (name=name@entry=0xc15f0aec "mounts", 
+    ret=ret@entry=0xc168bfa8 <init_thread_union+8104>, 
+    residual=residual@entry=0xc168bf8c <init_thread_union+8076>)
+    at fs/proc/generic.c:302
+302		de = *ret;
+(gdb) n
+304			de = &proc_root;
+(gdb) 
+306		spin_lock(&proc_subdir_lock);
+(gdb) 
+308			next = strchr(cp, '/');
+(gdb) 
+309			if (!next)
+(gdb) 
+323		*residual = cp;
+(gdb) 
+324		*ret = de;
+(gdb) 
+326		spin_unlock(&proc_subdir_lock);
+(gdb) 
+328	}
+(gdb) p residual 
+$2 = (const char **) 0xc168bf8c <init_thread_union+8076>
+(gdb) p *residual 
+$3 = 0xc15f0aec "mounts"
+(gdb) p ret
+$4 = (struct proc_dir_entry **) 0xc168bfa8 <init_thread_union+8104>
+(gdb) p *ret
+$5 = (struct proc_dir_entry *) 0xc16abe20 <proc_root>
+(gdb) n
+__proc_create (parent=parent@entry=0xc168bfa8 <init_thread_union+8104>, 
+    name=name@entry=0xc15f0aec "mounts", mode=mode@entry=41471, 
+    nlink=nlink@entry=1) at fs/proc/generic.c:618
+618		if (strchr(fn, '/'))
+(gdb) 
+621		len = strlen(fn);
+(gdb) 
+623		ent = kmalloc(sizeof(struct proc_dir_entry) + len + 1, GFP_KERNEL);
+(gdb) p len
+$6 = 6
+(gdb) n
+624		if (!ent) goto out;
+(gdb) 
+626		memset(ent, 0, sizeof(struct proc_dir_entry));
+(gdb) 
+627		memcpy(((char *) ent) + sizeof(struct proc_dir_entry), fn, len + 1);
+(gdb) 
+628		ent->name = ((char *) ent) + sizeof(*ent);
+(gdb) 
+629		ent->namelen = len;
+(gdb) 
+630		ent->mode = mode;
+(gdb) 
+631		ent->nlink = nlink;
+(gdb) 
+632		atomic_set(&ent->count, 1);
+(gdb) 
+633		ent->pde_users = 0;
+(gdb) 
+634		spin_lock_init(&ent->pde_unload_lock);
+(gdb) 
+635		ent->pde_unload_completion = NULL;
+(gdb) 
+636		INIT_LIST_HEAD(&ent->pde_openers);
+(gdb) 
+639	}
+(gdb) p ent
+$7 = (struct proc_dir_entry *) 0xc701f420
+(gdb) p *ent
+$8 = {low_ino = 0, namelen = 6, name = 0xc701f498 "mounts", mode = 41471, 
+  nlink = 1, uid = 0, gid = 0, size = 0, proc_iops = 0x0, proc_fops = 0x0, 
+  next = 0x0, parent = 0x0, subdir = 0x0, data = 0x0, read_proc = 0x0, 
+  write_proc = 0x0, count = {counter = 1}, pde_users = 0, pde_unload_lock = {
+    raw_lock = {slock = 0}, magic = 3735899821, owner_cpu = 4294967295, 
+    owner = 0xffffffff, dep_map = {key = 0xc1e62b00 <__key.14684>, 
+      class_cache = 0x0, name = 0xc15f0d6f "&ent->pde_unload_lock", cpu = 0, 
+      ip = 0}}, pde_unload_completion = 0x0, pde_openers = {next = 0xc701f490, 
+    prev = 0xc701f490}}
+(gdb) n
+639	}
+(gdb) 
+proc_symlink (name=name@entry=0xc15f0aec "mounts", 
+    parent=0xc16abe20 <proc_root>, parent@entry=0x0, 
+    dest=dest@entry=0xc15f0ae7 "self/mounts") at fs/proc/generic.c:649
+649		if (ent) {
+(gdb) 
+650			ent->data = kmalloc((ent->size=strlen(dest))+1, GFP_KERNEL);
+(gdb) 
+651			if (ent->data) {
+(gdb) 
+652				strcpy((char*)ent->data,dest);
+(gdb) 
+653				if (proc_register(parent, ent) < 0) {
+(gdb) s
+proc_register (dir=0xc16abe20 <proc_root>, dp=dp@entry=0xc701f420)
+    at fs/proc/generic.c:560
+560	{
+(gdb) n
+564		i = get_inode_number();
+(gdb) 
+569		if (S_ISDIR(dp->mode)) {
+(gdb) 
+575		} else if (S_ISLNK(dp->mode)) {
+(gdb) 
+576			if (dp->proc_iops == NULL)
+(gdb) 
+577				dp->proc_iops = &proc_link_inode_operations;
+(gdb) 
+585		spin_lock(&proc_subdir_lock);
+(gdb) 
+587		for (tmp = dir->subdir; tmp; tmp = tmp->next)
+(gdb) 
+594		dp->next = dir->subdir;
+(gdb) 
+595		dp->parent = dir;
+(gdb) 
+596		dir->subdir = dp;
+(gdb) 
+597		spin_unlock(&proc_subdir_lock);
+(gdb) 
+599		return 0;
+(gdb) 
+600	}
+(gdb) 
+proc_symlink (name=name@entry=0xc15f0aec "mounts", 
+    parent=0xc16abe20 <proc_root>, parent@entry=0x0, 
+    dest=dest@entry=0xc15f0ae7 "self/mounts") at fs/proc/generic.c:664
+664	}
+(gdb) 
+
+```
 
 # Links：
 
