@@ -864,46 +864,46 @@ $1 = {name = 0xc15dbf10 "proc", fs_flags = 0,
 * Create symlink `mounts` under `proc_root` for the real destination directory `self/mounts`
 
 ```
-119		proc_symlink("mounts", NULL, "self/mounts");
+119        proc_symlink("mounts", NULL, "self/mounts");
 (gdb) s
 proc_symlink (name=name@entry=0xc15f0aec "mounts", parent=parent@entry=0x0, 
     dest=dest@entry=0xc15f0ae7 "self/mounts") at fs/proc/generic.c:643
-643	{
+643    {
 (gdb) n
-646		ent = __proc_create(&parent, name,
+646        ent = __proc_create(&parent, name,
 (gdb) s
 __proc_create (parent=parent@entry=0xc168bfa8 <init_thread_union+8104>, 
     name=name@entry=0xc15f0aec "mounts", mode=mode@entry=41471, 
     nlink=nlink@entry=1) at fs/proc/generic.c:606
-606	{
+606    {
 (gdb) n
-608		const char *fn = name;
+608        const char *fn = name;
 (gdb) 
-612		if (!name || !strlen(name)) goto out;
+612        if (!name || !strlen(name)) goto out;
 (gdb) 
-614		if (xlate_proc_name(name, parent, &fn) != 0)
+614        if (xlate_proc_name(name, parent, &fn) != 0)
 (gdb) s
 xlate_proc_name (name=name@entry=0xc15f0aec "mounts", 
     ret=ret@entry=0xc168bfa8 <init_thread_union+8104>, 
     residual=residual@entry=0xc168bf8c <init_thread_union+8076>)
     at fs/proc/generic.c:302
-302		de = *ret;
+302        de = *ret;
 (gdb) n
-304			de = &proc_root;
+304            de = &proc_root;
 (gdb) 
-306		spin_lock(&proc_subdir_lock);
+306        spin_lock(&proc_subdir_lock);
 (gdb) 
-308			next = strchr(cp, '/');
+308            next = strchr(cp, '/');
 (gdb) 
-309			if (!next)
+309            if (!next)
 (gdb) 
-323		*residual = cp;
+323        *residual = cp;
 (gdb) 
-324		*ret = de;
+324        *ret = de;
 (gdb) 
-326		spin_unlock(&proc_subdir_lock);
+326        spin_unlock(&proc_subdir_lock);
 (gdb) 
-328	}
+328    }
 (gdb) p residual 
 $2 = (const char **) 0xc168bf8c <init_thread_union+8076>
 (gdb) p *residual 
@@ -916,39 +916,39 @@ $5 = (struct proc_dir_entry *) 0xc16abe20 <proc_root>
 __proc_create (parent=parent@entry=0xc168bfa8 <init_thread_union+8104>, 
     name=name@entry=0xc15f0aec "mounts", mode=mode@entry=41471, 
     nlink=nlink@entry=1) at fs/proc/generic.c:618
-618		if (strchr(fn, '/'))
+618        if (strchr(fn, '/'))
 (gdb) 
-621		len = strlen(fn);
+621        len = strlen(fn);
 (gdb) 
-623		ent = kmalloc(sizeof(struct proc_dir_entry) + len + 1, GFP_KERNEL);
+623        ent = kmalloc(sizeof(struct proc_dir_entry) + len + 1, GFP_KERNEL);
 (gdb) p len
 $6 = 6
 (gdb) n
-624		if (!ent) goto out;
+624        if (!ent) goto out;
 (gdb) 
-626		memset(ent, 0, sizeof(struct proc_dir_entry));
+626        memset(ent, 0, sizeof(struct proc_dir_entry));
 (gdb) 
-627		memcpy(((char *) ent) + sizeof(struct proc_dir_entry), fn, len + 1);
+627        memcpy(((char *) ent) + sizeof(struct proc_dir_entry), fn, len + 1);
 (gdb) 
-628		ent->name = ((char *) ent) + sizeof(*ent);
+628        ent->name = ((char *) ent) + sizeof(*ent);
 (gdb) 
-629		ent->namelen = len;
+629        ent->namelen = len;
 (gdb) 
-630		ent->mode = mode;
+630        ent->mode = mode;
 (gdb) 
-631		ent->nlink = nlink;
+631        ent->nlink = nlink;
 (gdb) 
-632		atomic_set(&ent->count, 1);
+632        atomic_set(&ent->count, 1);
 (gdb) 
-633		ent->pde_users = 0;
+633        ent->pde_users = 0;
 (gdb) 
-634		spin_lock_init(&ent->pde_unload_lock);
+634        spin_lock_init(&ent->pde_unload_lock);
 (gdb) 
-635		ent->pde_unload_completion = NULL;
+635        ent->pde_unload_completion = NULL;
 (gdb) 
-636		INIT_LIST_HEAD(&ent->pde_openers);
+636        INIT_LIST_HEAD(&ent->pde_openers);
 (gdb) 
-639	}
+639    }
 (gdb) p ent
 $7 = (struct proc_dir_entry *) 0xc701f420
 (gdb) p *ent
@@ -962,40 +962,196 @@ $8 = {low_ino = 0, namelen = 6, name = 0xc701f498 "mounts", mode = 41471,
       ip = 0}}, pde_unload_completion = 0x0, pde_openers = {next = 0xc701f490, 
     prev = 0xc701f490}}
 (gdb) n
-639	}
+639    }
 (gdb) 
 proc_symlink (name=name@entry=0xc15f0aec "mounts", 
     parent=0xc16abe20 <proc_root>, parent@entry=0x0, 
     dest=dest@entry=0xc15f0ae7 "self/mounts") at fs/proc/generic.c:649
-649		if (ent) {
+649        if (ent) {
 (gdb) 
-650			ent->data = kmalloc((ent->size=strlen(dest))+1, GFP_KERNEL);
+650            ent->data = kmalloc((ent->size=strlen(dest))+1, GFP_KERNEL);
 (gdb) 
-651			if (ent->data) {
+651            if (ent->data) {
 (gdb) 
-652				strcpy((char*)ent->data,dest);
+652                strcpy((char*)ent->data,dest);
 (gdb) 
-653				if (proc_register(parent, ent) < 0) {
+653                if (proc_register(parent, ent) < 0) {
 (gdb) s
 proc_register (dir=0xc16abe20 <proc_root>, dp=dp@entry=0xc701f420)
     at fs/proc/generic.c:560
+560    {
+(gdb) n
+564        i = get_inode_number();
+(gdb) 
+569        if (S_ISDIR(dp->mode)) {
+(gdb) 
+575        } else if (S_ISLNK(dp->mode)) {
+(gdb) 
+576            if (dp->proc_iops == NULL)
+(gdb) 
+577                dp->proc_iops = &proc_link_inode_operations;
+(gdb) 
+585        spin_lock(&proc_subdir_lock);
+(gdb) 
+587        for (tmp = dir->subdir; tmp; tmp = tmp->next)
+(gdb) 
+594        dp->next = dir->subdir;
+(gdb) 
+595        dp->parent = dir;
+(gdb) 
+596        dir->subdir = dp;
+(gdb) 
+597        spin_unlock(&proc_subdir_lock);
+(gdb) 
+599        return 0;
+(gdb) 
+600    }
+(gdb) 
+proc_symlink (name=name@entry=0xc15f0aec "mounts", 
+    parent=0xc16abe20 <proc_root>, parent@entry=0x0, 
+    dest=dest@entry=0xc15f0ae7 "self/mounts") at fs/proc/generic.c:664
+664    }
+(gdb)
+```
+
+* Create net symlink
+
+```
+proc_root_init () at fs/proc/root.c:121
+121		proc_net_init();
+(gdb) s
+proc_net_init () at fs/proc/proc_net.c:237
+237		proc_symlink("net", NULL, "self/net");
+(gdb) n
+239		return register_pernet_subsys(&proc_net_ns_ops);
+(gdb) s
+register_pernet_subsys (ops=ops@entry=0xc173f838 <proc_net_ns_ops>)
+    at net/core/net_namespace.c:343
+343		mutex_lock(&net_mutex);
+(gdb) p ops
+$9 = (struct pernet_operations *) 0xc173f838 <proc_net_ns_ops>
+(gdb) p *ops
+$10 = {list = {next = 0x0, prev = 0x0}, init = 0xc1716f76 <proc_net_ns_init>, 
+  exit = 0xc14643a0 <proc_net_ns_exit>}
+(gdb) n
+341	{
+(gdb) 
+343		mutex_lock(&net_mutex);
+(gdb) 
+340	int register_pernet_subsys(struct pernet_operations *ops)
+(gdb) 
+344		error =  register_pernet_operations(first_device, ops);
+(gdb) p first_device 
+$11 = (struct list_head *) 0xc16d3bf4 <pernet_list>
+(gdb) p *first_device 
+$12 = {next = 0xc16d3bf4 <pernet_list>, prev = 0xc16d3bf4 <pernet_list>}
+(gdb) s
+register_pernet_operations (list=0xc16d3bf4 <pernet_list>, 
+    ops=0xc173f838 <proc_net_ns_ops>) at net/core/net_namespace.c:308
+308			return 0;
+(gdb) n
+307		if (ops->init == NULL)
+(gdb) 
+309		return ops->init(&init_net);
+(gdb) s
+proc_net_ns_init (net=0xc1f2a8c0 <init_net>) at fs/proc/proc_net.c:199
+199		netd = kzalloc(sizeof(*netd), GFP_KERNEL);
+(gdb) n
+194	{
+(gdb) 
+199		netd = kzalloc(sizeof(*netd), GFP_KERNEL);
+(gdb) 
+200		if (!netd)
+(gdb) 
+203		netd->data = net;
+(gdb) 
+210		net_statd = proc_net_mkdir(net, "stat", netd);
+(gdb) s
+204		netd->nlink = 2;
+(gdb) n
+210		net_statd = proc_net_mkdir(net, "stat", netd);
+(gdb) s
+205		netd->name = "net";
+(gdb) n
+206		netd->namelen = 3;
+(gdb) 
+207		netd->parent = &proc_root;
+(gdb) 
+210		net_statd = proc_net_mkdir(net, "stat", netd);
+(gdb) s
+proc_net_mkdir (net=net@entry=0xc1f2a8c0 <init_net>, 
+    name=name@entry=0xc15dbc06 "stat", parent=parent@entry=0xc701f6e0)
+    at fs/proc/generic.c:683
+683	{
+(gdb) n
+686		ent = __proc_create(&parent, name, S_IFDIR | S_IRUGO | S_IXUGO, 2);
+(gdb) n
+687		if (ent) {
+(gdb) p parent
+$13 = (struct proc_dir_entry *) 0xc701f6e0
+(gdb) p *parent
+$14 = {low_ino = 0, namelen = 3, name = 0xc15f1035 "net", mode = 0, nlink = 2, 
+  uid = 0, gid = 0, size = 0, proc_iops = 0x0, proc_fops = 0x0, next = 0x0, 
+  parent = 0xc16abe20 <proc_root>, subdir = 0x0, data = 0xc1f2a8c0 <init_net>, 
+  read_proc = 0x0, write_proc = 0x0, count = {counter = 0}, pde_users = 0, 
+  pde_unload_lock = {raw_lock = {slock = 0}, magic = 0, owner_cpu = 0, 
+    owner = 0x0, dep_map = {key = 0x0, class_cache = 0x0, name = 0x0, cpu = 0, 
+      ip = 0}}, pde_unload_completion = 0x0, pde_openers = {next = 0x0, 
+    prev = 0x0}}
+(gdb) p ent
+$15 = <optimized out>
+(gdb) n
+686		ent = __proc_create(&parent, name, S_IFDIR | S_IRUGO | S_IXUGO, 2);
+(gdb) 
+687		if (ent) {
+(gdb) p *parent
+$16 = {low_ino = 0, namelen = 3, name = 0xc15f1035 "net", mode = 0, nlink = 2, 
+  uid = 0, gid = 0, size = 0, proc_iops = 0x0, proc_fops = 0x0, next = 0x0, 
+  parent = 0xc16abe20 <proc_root>, subdir = 0x0, data = 0xc1f2a8c0 <init_net>, 
+  read_proc = 0x0, write_proc = 0x0, count = {counter = 0}, pde_users = 0, 
+  pde_unload_lock = {raw_lock = {slock = 0}, magic = 0, owner_cpu = 0, 
+    owner = 0x0, dep_map = {key = 0x0, class_cache = 0x0, name = 0x0, cpu = 0, 
+      ip = 0}}, pde_unload_completion = 0x0, pde_openers = {next = 0x0, 
+    prev = 0x0}}
+(gdb) p ent
+$17 = (struct proc_dir_entry *) 0xc701f790
+(gdb) p *ent
+$18 = {low_ino = 0, namelen = 4, name = 0xc701f808 "stat", mode = 16749, 
+  nlink = 2, uid = 0, gid = 0, size = 0, proc_iops = 0x0, proc_fops = 0x0, 
+  next = 0x0, parent = 0x0, subdir = 0x0, data = 0x0, read_proc = 0x0, 
+  write_proc = 0x0, count = {counter = 1}, pde_users = 0, pde_unload_lock = {
+    raw_lock = {slock = 0}, magic = 3735899821, owner_cpu = 4294967295, 
+    owner = 0xffffffff, dep_map = {key = 0xc1e62b00 <__key.14684>, 
+      class_cache = 0x0, name = 0xc15f0d6f "&ent->pde_unload_lock", cpu = 0, 
+      ip = 0}}, pde_unload_completion = 0x0, pde_openers = {next = 0xc701f800, 
+    prev = 0xc701f800}}
+(gdb) n
+688			ent->data = net;
+(gdb) 
+689			if (proc_register(parent, ent) < 0) {
+(gdb) s
+proc_register (dir=0xc701f6e0, dp=dp@entry=0xc701f790) at fs/proc/generic.c:560
 560	{
 (gdb) n
 564		i = get_inode_number();
 (gdb) 
 569		if (S_ISDIR(dp->mode)) {
 (gdb) 
-575		} else if (S_ISLNK(dp->mode)) {
+570			if (dp->proc_iops == NULL) {
 (gdb) 
-576			if (dp->proc_iops == NULL)
+571				dp->proc_fops = &proc_dir_operations;
 (gdb) 
-577				dp->proc_iops = &proc_link_inode_operations;
+572				dp->proc_iops = &proc_dir_inode_operations;
+(gdb) 
+574			dir->nlink++;
 (gdb) 
 585		spin_lock(&proc_subdir_lock);
 (gdb) 
 587		for (tmp = dir->subdir; tmp; tmp = tmp->next)
 (gdb) 
 594		dp->next = dir->subdir;
+(gdb) 
+597		spin_unlock(&proc_subdir_lock);
 (gdb) 
 595		dp->parent = dir;
 (gdb) 
@@ -1007,10 +1163,49 @@ proc_register (dir=0xc16abe20 <proc_root>, dp=dp@entry=0xc701f420)
 (gdb) 
 600	}
 (gdb) 
-proc_symlink (name=name@entry=0xc15f0aec "mounts", 
-    parent=0xc16abe20 <proc_root>, parent@entry=0x0, 
-    dest=dest@entry=0xc15f0ae7 "self/mounts") at fs/proc/generic.c:664
-664	}
+proc_net_mkdir (net=net@entry=0xc1f2a8c0 <init_net>, 
+    name=name@entry=0xc15dbc06 "stat", parent=parent@entry=0xc701f6e0)
+    at fs/proc/generic.c:695
+695	}
+(gdb) 
+proc_net_ns_init (net=0xc1f2a8c0 <init_net>) at fs/proc/proc_net.c:211
+211		if (!net_statd)
+(gdb) 
+215		net->proc_net_stat = net_statd;
+(gdb) 
+216		return 0;
+(gdb) p net_stated
+No symbol "net_stated" in current context.
+(gdb) p net_statd
+$19 = (struct proc_dir_entry *) 0xc701f790
+(gdb) p *net_statd
+$20 = {low_ino = 4026531842, namelen = 4, name = 0xc701f808 "stat", 
+  mode = 16749, nlink = 2, uid = 0, gid = 0, size = 0, 
+  proc_iops = 0xc14a24c0 <proc_dir_inode_operations>, 
+  proc_fops = 0xc14a2520 <proc_dir_operations>, next = 0x0, 
+  parent = 0xc701f6e0, subdir = 0x0, data = 0xc1f2a8c0 <init_net>, 
+  read_proc = 0x0, write_proc = 0x0, count = {counter = 1}, pde_users = 0, 
+  pde_unload_lock = {raw_lock = {slock = 0}, magic = 3735899821, 
+    owner_cpu = 4294967295, owner = 0xffffffff, dep_map = {
+      key = 0xc1e62b00 <__key.14684>, class_cache = 0x0, 
+      name = 0xc15f0d6f "&ent->pde_unload_lock", cpu = 0, ip = 0}}, 
+  pde_unload_completion = 0x0, pde_openers = {next = 0xc701f800, 
+    prev = 0xc701f800}}
+(gdb) n
+214		net->proc_net = netd;
+(gdb) 
+216		return 0;
+(gdb) 
+222	}
+(gdb) 
+register_pernet_subsys (ops=ops@entry=0xc173f838 <proc_net_ns_ops>)
+    at net/core/net_namespace.c:345
+345		mutex_unlock(&net_mutex);
+(gdb) 
+347	}
+(gdb) 
+proc_net_init () at fs/proc/proc_net.c:240
+240	}
 (gdb) 
 
 ```
