@@ -861,7 +861,7 @@ $1 = {name = 0xc15dbf10 "proc", fs_flags = 0,
 114        if (IS_ERR(proc_mnt)) {
 ```
 
-Create symlink `mounts` under `proc_root` for the real destination directory `self/mounts`
+* Create symlink `mounts` under `proc_root` for the real destination directory `self/mounts`
 
 ```
 119		proc_symlink("mounts", NULL, "self/mounts");
@@ -1014,6 +1014,8 @@ proc_symlink (name=name@entry=0xc15f0aec "mounts",
 (gdb) 
 
 ```
+
+
 
 # Links：
 
