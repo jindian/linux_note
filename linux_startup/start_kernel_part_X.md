@@ -1014,7 +1014,7 @@ proc_symlink (name=name@entry=0xc15f0aec "mounts",
 (gdb)
 ```
 
-* Create a symlink for /proc/net, it links to /proc/self/net
+* Create a symlink for /proc/net which links to /proc/self/net, register a network namespace subsystem
 
 ```
 proc_root_init () at fs/proc/root.c:121
@@ -1028,8 +1028,6 @@ proc_net_init () at fs/proc/proc_net.c:237
 register_pernet_subsys (ops=ops@entry=0xc173f838 <proc_net_ns_ops>)
     at net/core/net_namespace.c:343
 343        mutex_lock(&net_mutex);
-(gdb) p ops
-$9 = (struct pernet_operations *) 0xc173f838 <proc_net_ns_ops>
 (gdb) p *ops
 $10 = {list = {next = 0x0, prev = 0x0}, init = 0xc1716f76 <proc_net_ns_init>, 
   exit = 0xc14643a0 <proc_net_ns_exit>}
@@ -1037,8 +1035,6 @@ $10 = {list = {next = 0x0, prev = 0x0}, init = 0xc1716f76 <proc_net_ns_init>,
 341    {
 (gdb) 
 343        mutex_lock(&net_mutex);
-(gdb) 
-340    int register_pernet_subsys(struct pernet_operations *ops)
 (gdb) 
 344        error =  register_pernet_operations(first_device, ops);
 (gdb) p first_device 
@@ -1057,22 +1053,14 @@ register_pernet_operations (list=0xc16d3bf4 <pernet_list>,
 proc_net_ns_init (net=0xc1f2a8c0 <init_net>) at fs/proc/proc_net.c:199
 199        netd = kzalloc(sizeof(*netd), GFP_KERNEL);
 (gdb) n
-194    {
-(gdb) 
-199        netd = kzalloc(sizeof(*netd), GFP_KERNEL);
-(gdb) 
 200        if (!netd)
 (gdb) 
 203        netd->data = net;
 (gdb) 
-210        net_statd = proc_net_mkdir(net, "stat", netd);
-(gdb) s
 204        netd->nlink = 2;
-(gdb) n
-210        net_statd = proc_net_mkdir(net, "stat", netd);
-(gdb) s
+(gdb) 
 205        netd->name = "net";
-(gdb) n
+(gdb) 
 206        netd->namelen = 3;
 (gdb) 
 207        netd->parent = &proc_root;
@@ -1085,8 +1073,6 @@ proc_net_mkdir (net=net@entry=0xc1f2a8c0 <init_net>,
 683    {
 (gdb) n
 686        ent = __proc_create(&parent, name, S_IFDIR | S_IRUGO | S_IXUGO, 2);
-(gdb) n
-687        if (ent) {
 (gdb) p parent
 $13 = (struct proc_dir_entry *) 0xc701f6e0
 (gdb) p *parent
@@ -1098,21 +1084,8 @@ $14 = {low_ino = 0, namelen = 3, name = 0xc15f1035 "net", mode = 0, nlink = 2,
     owner = 0x0, dep_map = {key = 0x0, class_cache = 0x0, name = 0x0, cpu = 0, 
       ip = 0}}, pde_unload_completion = 0x0, pde_openers = {next = 0x0, 
     prev = 0x0}}
-(gdb) p ent
-$15 = <optimized out>
 (gdb) n
-686        ent = __proc_create(&parent, name, S_IFDIR | S_IRUGO | S_IXUGO, 2);
-(gdb) 
 687        if (ent) {
-(gdb) p *parent
-$16 = {low_ino = 0, namelen = 3, name = 0xc15f1035 "net", mode = 0, nlink = 2, 
-  uid = 0, gid = 0, size = 0, proc_iops = 0x0, proc_fops = 0x0, next = 0x0, 
-  parent = 0xc16abe20 <proc_root>, subdir = 0x0, data = 0xc1f2a8c0 <init_net>, 
-  read_proc = 0x0, write_proc = 0x0, count = {counter = 0}, pde_users = 0, 
-  pde_unload_lock = {raw_lock = {slock = 0}, magic = 0, owner_cpu = 0, 
-    owner = 0x0, dep_map = {key = 0x0, class_cache = 0x0, name = 0x0, cpu = 0, 
-      ip = 0}}, pde_unload_completion = 0x0, pde_openers = {next = 0x0, 
-    prev = 0x0}}
 (gdb) p ent
 $17 = (struct proc_dir_entry *) 0xc701f790
 (gdb) p *ent
@@ -1151,8 +1124,6 @@ proc_register (dir=0xc701f6e0, dp=dp@entry=0xc701f790) at fs/proc/generic.c:560
 (gdb) 
 594        dp->next = dir->subdir;
 (gdb) 
-597        spin_unlock(&proc_subdir_lock);
-(gdb) 
 595        dp->parent = dir;
 (gdb) 
 596        dir->subdir = dp;
@@ -1171,11 +1142,9 @@ proc_net_mkdir (net=net@entry=0xc1f2a8c0 <init_net>,
 proc_net_ns_init (net=0xc1f2a8c0 <init_net>) at fs/proc/proc_net.c:211
 211        if (!net_statd)
 (gdb) 
-215        net->proc_net_stat = net_statd;
+214        net->proc_net = netd;
 (gdb) 
-216        return 0;
-(gdb) p net_stated
-No symbol "net_stated" in current context.
+215        net->proc_net_stat = net_statd;
 (gdb) p net_statd
 $19 = (struct proc_dir_entry *) 0xc701f790
 (gdb) p *net_statd
@@ -1192,8 +1161,6 @@ $20 = {low_ino = 4026531842, namelen = 4, name = 0xc701f808 "stat",
   pde_unload_completion = 0x0, pde_openers = {next = 0xc701f800, 
     prev = 0xc701f800}}
 (gdb) n
-214        net->proc_net = netd;
-(gdb) 
 216        return 0;
 (gdb) 
 222    }
