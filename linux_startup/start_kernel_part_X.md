@@ -1014,33 +1014,33 @@ proc_symlink (name=name@entry=0xc15f0aec "mounts",
 (gdb)
 ```
 
-* Create net symlink
+* Create a symlink for /proc/net, it links to /proc/self/net
 
 ```
 proc_root_init () at fs/proc/root.c:121
-121		proc_net_init();
+121        proc_net_init();
 (gdb) s
 proc_net_init () at fs/proc/proc_net.c:237
-237		proc_symlink("net", NULL, "self/net");
+237        proc_symlink("net", NULL, "self/net");
 (gdb) n
-239		return register_pernet_subsys(&proc_net_ns_ops);
+239        return register_pernet_subsys(&proc_net_ns_ops);
 (gdb) s
 register_pernet_subsys (ops=ops@entry=0xc173f838 <proc_net_ns_ops>)
     at net/core/net_namespace.c:343
-343		mutex_lock(&net_mutex);
+343        mutex_lock(&net_mutex);
 (gdb) p ops
 $9 = (struct pernet_operations *) 0xc173f838 <proc_net_ns_ops>
 (gdb) p *ops
 $10 = {list = {next = 0x0, prev = 0x0}, init = 0xc1716f76 <proc_net_ns_init>, 
   exit = 0xc14643a0 <proc_net_ns_exit>}
 (gdb) n
-341	{
+341    {
 (gdb) 
-343		mutex_lock(&net_mutex);
+343        mutex_lock(&net_mutex);
 (gdb) 
-340	int register_pernet_subsys(struct pernet_operations *ops)
+340    int register_pernet_subsys(struct pernet_operations *ops)
 (gdb) 
-344		error =  register_pernet_operations(first_device, ops);
+344        error =  register_pernet_operations(first_device, ops);
 (gdb) p first_device 
 $11 = (struct list_head *) 0xc16d3bf4 <pernet_list>
 (gdb) p *first_device 
@@ -1048,45 +1048,45 @@ $12 = {next = 0xc16d3bf4 <pernet_list>, prev = 0xc16d3bf4 <pernet_list>}
 (gdb) s
 register_pernet_operations (list=0xc16d3bf4 <pernet_list>, 
     ops=0xc173f838 <proc_net_ns_ops>) at net/core/net_namespace.c:308
-308			return 0;
+308            return 0;
 (gdb) n
-307		if (ops->init == NULL)
+307        if (ops->init == NULL)
 (gdb) 
-309		return ops->init(&init_net);
+309        return ops->init(&init_net);
 (gdb) s
 proc_net_ns_init (net=0xc1f2a8c0 <init_net>) at fs/proc/proc_net.c:199
-199		netd = kzalloc(sizeof(*netd), GFP_KERNEL);
+199        netd = kzalloc(sizeof(*netd), GFP_KERNEL);
 (gdb) n
-194	{
+194    {
 (gdb) 
-199		netd = kzalloc(sizeof(*netd), GFP_KERNEL);
+199        netd = kzalloc(sizeof(*netd), GFP_KERNEL);
 (gdb) 
-200		if (!netd)
+200        if (!netd)
 (gdb) 
-203		netd->data = net;
+203        netd->data = net;
 (gdb) 
-210		net_statd = proc_net_mkdir(net, "stat", netd);
+210        net_statd = proc_net_mkdir(net, "stat", netd);
 (gdb) s
-204		netd->nlink = 2;
+204        netd->nlink = 2;
 (gdb) n
-210		net_statd = proc_net_mkdir(net, "stat", netd);
+210        net_statd = proc_net_mkdir(net, "stat", netd);
 (gdb) s
-205		netd->name = "net";
+205        netd->name = "net";
 (gdb) n
-206		netd->namelen = 3;
+206        netd->namelen = 3;
 (gdb) 
-207		netd->parent = &proc_root;
+207        netd->parent = &proc_root;
 (gdb) 
-210		net_statd = proc_net_mkdir(net, "stat", netd);
+210        net_statd = proc_net_mkdir(net, "stat", netd);
 (gdb) s
 proc_net_mkdir (net=net@entry=0xc1f2a8c0 <init_net>, 
     name=name@entry=0xc15dbc06 "stat", parent=parent@entry=0xc701f6e0)
     at fs/proc/generic.c:683
-683	{
+683    {
 (gdb) n
-686		ent = __proc_create(&parent, name, S_IFDIR | S_IRUGO | S_IXUGO, 2);
+686        ent = __proc_create(&parent, name, S_IFDIR | S_IRUGO | S_IXUGO, 2);
 (gdb) n
-687		if (ent) {
+687        if (ent) {
 (gdb) p parent
 $13 = (struct proc_dir_entry *) 0xc701f6e0
 (gdb) p *parent
@@ -1101,9 +1101,9 @@ $14 = {low_ino = 0, namelen = 3, name = 0xc15f1035 "net", mode = 0, nlink = 2,
 (gdb) p ent
 $15 = <optimized out>
 (gdb) n
-686		ent = __proc_create(&parent, name, S_IFDIR | S_IRUGO | S_IXUGO, 2);
+686        ent = __proc_create(&parent, name, S_IFDIR | S_IRUGO | S_IXUGO, 2);
 (gdb) 
-687		if (ent) {
+687        if (ent) {
 (gdb) p *parent
 $16 = {low_ino = 0, namelen = 3, name = 0xc15f1035 "net", mode = 0, nlink = 2, 
   uid = 0, gid = 0, size = 0, proc_iops = 0x0, proc_fops = 0x0, next = 0x0, 
@@ -1126,54 +1126,54 @@ $18 = {low_ino = 0, namelen = 4, name = 0xc701f808 "stat", mode = 16749,
       ip = 0}}, pde_unload_completion = 0x0, pde_openers = {next = 0xc701f800, 
     prev = 0xc701f800}}
 (gdb) n
-688			ent->data = net;
+688            ent->data = net;
 (gdb) 
-689			if (proc_register(parent, ent) < 0) {
+689            if (proc_register(parent, ent) < 0) {
 (gdb) s
 proc_register (dir=0xc701f6e0, dp=dp@entry=0xc701f790) at fs/proc/generic.c:560
-560	{
+560    {
 (gdb) n
-564		i = get_inode_number();
+564        i = get_inode_number();
 (gdb) 
-569		if (S_ISDIR(dp->mode)) {
+569        if (S_ISDIR(dp->mode)) {
 (gdb) 
-570			if (dp->proc_iops == NULL) {
+570            if (dp->proc_iops == NULL) {
 (gdb) 
-571				dp->proc_fops = &proc_dir_operations;
+571                dp->proc_fops = &proc_dir_operations;
 (gdb) 
-572				dp->proc_iops = &proc_dir_inode_operations;
+572                dp->proc_iops = &proc_dir_inode_operations;
 (gdb) 
-574			dir->nlink++;
+574            dir->nlink++;
 (gdb) 
-585		spin_lock(&proc_subdir_lock);
+585        spin_lock(&proc_subdir_lock);
 (gdb) 
-587		for (tmp = dir->subdir; tmp; tmp = tmp->next)
+587        for (tmp = dir->subdir; tmp; tmp = tmp->next)
 (gdb) 
-594		dp->next = dir->subdir;
+594        dp->next = dir->subdir;
 (gdb) 
-597		spin_unlock(&proc_subdir_lock);
+597        spin_unlock(&proc_subdir_lock);
 (gdb) 
-595		dp->parent = dir;
+595        dp->parent = dir;
 (gdb) 
-596		dir->subdir = dp;
+596        dir->subdir = dp;
 (gdb) 
-597		spin_unlock(&proc_subdir_lock);
+597        spin_unlock(&proc_subdir_lock);
 (gdb) 
-599		return 0;
+599        return 0;
 (gdb) 
-600	}
+600    }
 (gdb) 
 proc_net_mkdir (net=net@entry=0xc1f2a8c0 <init_net>, 
     name=name@entry=0xc15dbc06 "stat", parent=parent@entry=0xc701f6e0)
     at fs/proc/generic.c:695
-695	}
+695    }
 (gdb) 
 proc_net_ns_init (net=0xc1f2a8c0 <init_net>) at fs/proc/proc_net.c:211
-211		if (!net_statd)
+211        if (!net_statd)
 (gdb) 
-215		net->proc_net_stat = net_statd;
+215        net->proc_net_stat = net_statd;
 (gdb) 
-216		return 0;
+216        return 0;
 (gdb) p net_stated
 No symbol "net_stated" in current context.
 (gdb) p net_statd
@@ -1192,25 +1192,22 @@ $20 = {low_ino = 4026531842, namelen = 4, name = 0xc701f808 "stat",
   pde_unload_completion = 0x0, pde_openers = {next = 0xc701f800, 
     prev = 0xc701f800}}
 (gdb) n
-214		net->proc_net = netd;
+214        net->proc_net = netd;
 (gdb) 
-216		return 0;
+216        return 0;
 (gdb) 
-222	}
+222    }
 (gdb) 
 register_pernet_subsys (ops=ops@entry=0xc173f838 <proc_net_ns_ops>)
     at net/core/net_namespace.c:345
-345		mutex_unlock(&net_mutex);
+345        mutex_unlock(&net_mutex);
 (gdb) 
-347	}
+347    }
 (gdb) 
 proc_net_init () at fs/proc/proc_net.c:240
-240	}
-(gdb) 
-
+240    }
+(gdb)
 ```
-
-
 
 # Links：
 
