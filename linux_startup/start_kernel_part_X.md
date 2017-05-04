@@ -1176,6 +1176,139 @@ proc_net_init () at fs/proc/proc_net.c:240
 (gdb)
 ```
 
+* Creates /proc/sysvipc directory
+
+```
+proc_root_init () at fs/proc/root.c:124
+124		proc_mkdir("sysvipc", NULL);
+(gdb) s
+proc_mkdir (name=name@entry=0xc15f0af3 "sysvipc", parent=parent@entry=0x0)
+    at fs/proc/generic.c:701
+701		return proc_mkdir_mode(name, S_IRUGO | S_IXUGO, parent);
+(gdb) s
+proc_mkdir_mode (name=name@entry=0xc15f0af3 "sysvipc", mode=mode@entry=365, 
+    parent=parent@entry=0x0) at fs/proc/generic.c:671
+671		ent = __proc_create(&parent, name, S_IFDIR | mode, 2);
+(gdb) s
+__proc_create (parent=parent@entry=0xc168bfa4 <init_thread_union+8100>, 
+    name=name@entry=0xc15f0af3 "sysvipc", mode=16749, nlink=nlink@entry=2)
+    at fs/proc/generic.c:606
+606	{
+(gdb) n
+612		if (!name || !strlen(name)) goto out;
+(gdb) 
+614		if (xlate_proc_name(name, parent, &fn) != 0)
+(gdb) 
+618		if (strchr(fn, '/'))
+(gdb) 
+621		len = strlen(fn);
+(gdb) p fn
+$21 = 0xc15f0af3 "sysvipc"
+(gdb) n
+623		ent = kmalloc(sizeof(struct proc_dir_entry) + len + 1, GFP_KERNEL);
+(gdb) 
+624		if (!ent) goto out;
+(gdb) 
+626		memset(ent, 0, sizeof(struct proc_dir_entry));
+(gdb) 
+627		memcpy(((char *) ent) + sizeof(struct proc_dir_entry), fn, len + 1);
+(gdb) 
+628		ent->name = ((char *) ent) + sizeof(*ent);
+(gdb) 
+629		ent->namelen = len;
+(gdb) 
+630		ent->mode = mode;
+(gdb) 
+631		ent->nlink = nlink;
+(gdb) 
+632		atomic_set(&ent->count, 1);
+(gdb) 
+633		ent->pde_users = 0;
+(gdb) 
+634		spin_lock_init(&ent->pde_unload_lock);
+(gdb) 
+635		ent->pde_unload_completion = NULL;
+(gdb) 
+636		INIT_LIST_HEAD(&ent->pde_openers);
+(gdb) 
+639	}
+(gdb) 
+proc_mkdir_mode (name=name@entry=0xc15f0af3 "sysvipc", mode=mode@entry=365, 
+    parent=0xc16abe20 <proc_root>, parent@entry=0x0) at fs/proc/generic.c:672
+672		if (ent) {
+(gdb) 
+673			if (proc_register(parent, ent) < 0) {
+(gdb) p parent
+$22 = (struct proc_dir_entry *) 0xc16abe20 <proc_root>
+(gdb) p *parent
+$23 = {low_ino = 1, namelen = 5, name = 0xc15f0b03 "/proc", mode = 16749, 
+  nlink = 2, uid = 0, gid = 0, size = 0, 
+  proc_iops = 0xc14a0ce0 <proc_root_inode_operations>, 
+  proc_fops = 0xc14a0d40 <proc_root_operations>, next = 0x0, 
+  parent = 0xc16abe20 <proc_root>, subdir = 0xc701f580, data = 0x0, 
+  read_proc = 0x0, write_proc = 0x0, count = {counter = 2}, pde_users = 0, 
+  pde_unload_lock = {raw_lock = {slock = 0}, magic = 0, owner_cpu = 0, 
+    owner = 0x0, dep_map = {key = 0x0, class_cache = 0x0, name = 0x0, cpu = 0, 
+      ip = 0}}, pde_unload_completion = 0x0, pde_openers = {next = 0x0, 
+    prev = 0x0}}
+(gdb) p ent
+$24 = (struct proc_dir_entry *) 0xc701f840
+(gdb) p *ent
+$25 = {low_ino = 0, namelen = 7, name = 0xc701f8b8 "sysvipc", mode = 16749, 
+  nlink = 2, uid = 0, gid = 0, size = 0, proc_iops = 0x0, proc_fops = 0x0, 
+  next = 0x0, parent = 0x0, subdir = 0x0, data = 0x0, read_proc = 0x0, 
+  write_proc = 0x0, count = {counter = 1}, pde_users = 0, pde_unload_lock = {
+    raw_lock = {slock = 0}, magic = 3735899821, owner_cpu = 4294967295, 
+    owner = 0xffffffff, dep_map = {key = 0xc1e62b00 <__key.14684>, 
+      class_cache = 0x0, name = 0xc15f0d6f "&ent->pde_unload_lock", cpu = 0, 
+      ip = 0}}, pde_unload_completion = 0x0, pde_openers = {next = 0xc701f8b0, 
+    prev = 0xc701f8b0}}
+(gdb) s
+proc_register (dir=0xc16abe20 <proc_root>, dp=dp@entry=0xc701f840)
+    at fs/proc/generic.c:560
+560	{
+(gdb) n
+564		i = get_inode_number();
+(gdb) 
+569		if (S_ISDIR(dp->mode)) {
+(gdb) 
+570			if (dp->proc_iops == NULL) {
+(gdb) 
+571				dp->proc_fops = &proc_dir_operations;
+(gdb) 
+572				dp->proc_iops = &proc_dir_inode_operations;
+(gdb) 
+574			dir->nlink++;
+(gdb) 
+585		spin_lock(&proc_subdir_lock);
+(gdb) 
+587		for (tmp = dir->subdir; tmp; tmp = tmp->next)
+(gdb) 
+588			if (strcmp(tmp->name, dp->name) == 0) {
+(gdb) 
+594		dp->next = dir->subdir;
+(gdb) 
+595		dp->parent = dir;
+(gdb) 
+596		dir->subdir = dp;
+(gdb) 
+597		spin_unlock(&proc_subdir_lock);
+(gdb) 
+599		return 0;
+(gdb) 
+600	}
+(gdb) 
+proc_mkdir_mode (name=name@entry=0xc15f0af3 "sysvipc", mode=mode@entry=365, 
+    parent=0xc16abe20 <proc_root>, parent@entry=0x0) at fs/proc/generic.c:679
+679	}
+(gdb) 
+proc_mkdir (name=name@entry=0xc15f0af3 "sysvipc", parent=parent@entry=0x0)
+    at fs/proc/generic.c:702
+702	}
+(gdb) 
+
+```
+
 # Links：
 
 * [How Is The Root File System Found?](https://kernelnewbies.org/RootFileSystem)
