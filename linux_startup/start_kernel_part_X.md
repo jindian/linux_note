@@ -1309,6 +1309,201 @@ proc_mkdir (name=name@entry=0xc15f0af3 "sysvipc", parent=parent@entry=0x0)
 
 ```
 
+* Creates /proc/fs
+* Creates /proc/driver
+* Creates /proc/fs/nfsd
+
+```
+
+proc_root_init () at fs/proc/root.c:126
+126		proc_mkdir("fs", NULL);
+(gdb) 
+127		proc_mkdir("driver", NULL);
+(gdb) 
+128		proc_mkdir("fs/nfsd", NULL); /* somewhere for the nfsd filesystem to be mounted */
+(gdb) 
+```
+
+* Create the /proc/tty subtree
+
+```
+
+133		proc_tty_init();
+(gdb) s
+proc_tty_init () at fs/proc/proc_tty.c:177
+177		if (!proc_mkdir("tty", NULL))
+(gdb) n
+179		proc_tty_ldisc = proc_mkdir("tty/ldisc", NULL);
+(gdb) 
+186		proc_tty_driver = proc_mkdir_mode("tty/driver", S_IRUSR|S_IXUSR, NULL);
+(gdb) s
+proc_mkdir_mode (name=name@entry=0xc15f0f69 "tty/driver", mode=mode@entry=320, 
+    parent=parent@entry=0x0) at fs/proc/generic.c:671
+671		ent = __proc_create(&parent, name, S_IFDIR | mode, 2);
+(gdb) n
+672		if (ent) {
+(gdb) p ent
+$27 = (struct proc_dir_entry *) 0xc701fc60
+(gdb) p *ent
+$28 = {low_ino = 0, namelen = 6, name = 0xc701fcd8 "driver", mode = 16704, 
+  nlink = 2, uid = 0, gid = 0, size = 0, proc_iops = 0x0, proc_fops = 0x0, 
+  next = 0x0, parent = 0x0, subdir = 0x0, data = 0x0, read_proc = 0x0, 
+  write_proc = 0x0, count = {counter = 1}, pde_users = 0, pde_unload_lock = {
+    raw_lock = {slock = 0}, magic = 3735899821, owner_cpu = 4294967295, 
+    owner = 0xffffffff, dep_map = {key = 0xc1e62b00 <__key.14684>, 
+      class_cache = 0x0, name = 0xc15f0d6f "&ent->pde_unload_lock", cpu = 0, 
+      ip = 0}}, pde_unload_completion = 0x0, pde_openers = {next = 0xc701fcd0, 
+    prev = 0xc701fcd0}}
+(gdb) p parent
+$29 = (struct proc_dir_entry *) 0xc701fb00
+(gdb) p *parent
+$30 = {low_ino = 4026531847, namelen = 3, name = 0xc701fb78 "tty", 
+  mode = 16749, nlink = 3, uid = 0, gid = 0, size = 0, 
+  proc_iops = 0xc14a24c0 <proc_dir_inode_operations>, 
+  proc_fops = 0xc14a2520 <proc_dir_operations>, next = 0xc701f9a0, 
+  parent = 0xc16abe20 <proc_root>, subdir = 0xc701fbb0, data = 0x0, 
+  read_proc = 0x0, write_proc = 0x0, count = {counter = 1}, pde_users = 0, 
+  pde_unload_lock = {raw_lock = {slock = 0}, magic = 3735899821, 
+    owner_cpu = 4294967295, owner = 0xffffffff, dep_map = {
+      key = 0xc1e62b00 <__key.14684>, class_cache = 0x0, 
+      name = 0xc15f0d6f "&ent->pde_unload_lock", cpu = 0, ip = 0}}, 
+  pde_unload_completion = 0x0, pde_openers = {next = 0xc701fb70, 
+    prev = 0xc701fb70}}
+(gdb) n
+673			if (proc_register(parent, ent) < 0) {
+(gdb) s
+proc_register (dir=0xc701fb00, dp=dp@entry=0xc701fc60) at fs/proc/generic.c:560
+560	{
+(gdb) n
+564		i = get_inode_number();
+(gdb) 
+569		if (S_ISDIR(dp->mode)) {
+(gdb) 
+570			if (dp->proc_iops == NULL) {
+(gdb) 
+571				dp->proc_fops = &proc_dir_operations;
+(gdb) 
+572				dp->proc_iops = &proc_dir_inode_operations;
+(gdb) 
+574			dir->nlink++;
+(gdb) 
+585		spin_lock(&proc_subdir_lock);
+(gdb) 
+587		for (tmp = dir->subdir; tmp; tmp = tmp->next)
+(gdb) 
+588			if (strcmp(tmp->name, dp->name) == 0) {
+(gdb) 
+594		dp->next = dir->subdir;
+(gdb) 
+595		dp->parent = dir;
+(gdb) 
+596		dir->subdir = dp;
+(gdb) 
+597		spin_unlock(&proc_subdir_lock);
+(gdb) 
+599		return 0;
+(gdb) 
+600	}
+(gdb) 
+proc_mkdir_mode (name=name@entry=0xc15f0f69 "tty/driver", mode=mode@entry=320, 
+    parent=0xc701fb00, parent@entry=0x0) at fs/proc/generic.c:679
+679	}
+(gdb) 
+proc_tty_init () at fs/proc/proc_tty.c:187
+187		proc_create("tty/ldiscs", 0, NULL, &tty_ldiscs_proc_fops);
+(gdb) s
+proc_create (proc_fops=<optimized out>, parent=0x0, mode=0, 
+    name=0xc15f0f74 "tty/ldiscs") at include/linux/proc_fs.h:155
+155		return proc_create_data(name, mode, parent, proc_fops, NULL);
+(gdb) s
+proc_create_data (name=name@entry=0xc15f0f74 "tty/ldiscs", mode=mode@entry=0, 
+    parent=parent@entry=0x0, proc_fops=0xc14bf580 <tty_ldiscs_proc_fops>, 
+    data=data@entry=0x0) at fs/proc/generic.c:740
+740		if (S_ISDIR(mode)) {
+(gdb) n
+736	{
+(gdb) 
+740		if (S_ISDIR(mode)) {
+(gdb) 
+746				mode |= S_IFREG;
+(gdb) 
+747			if ((mode & S_IALLUGO) == 0)
+(gdb) 
+748				mode |= S_IRUGO;
+(gdb) 
+752		pde = __proc_create(&parent, name, mode, nlink);
+(gdb) 
+753		if (!pde)
+(gdb) 
+755		pde->proc_fops = proc_fops;
+(gdb) p parent
+$31 = (struct proc_dir_entry *) 0xc701fb00
+(gdb) p *parent
+$32 = {low_ino = 4026531847, namelen = 3, name = 0xc701fb78 "tty", 
+  mode = 16749, nlink = 4, uid = 0, gid = 0, size = 0, 
+  proc_iops = 0xc14a24c0 <proc_dir_inode_operations>, 
+  proc_fops = 0xc14a2520 <proc_dir_operations>, next = 0xc701f9a0, 
+  parent = 0xc16abe20 <proc_root>, subdir = 0xc701fc60, data = 0x0, 
+  read_proc = 0x0, write_proc = 0x0, count = {counter = 1}, pde_users = 0, 
+  pde_unload_lock = {raw_lock = {slock = 0}, magic = 3735899821, 
+    owner_cpu = 4294967295, owner = 0xffffffff, dep_map = {
+      key = 0xc1e62b00 <__key.14684>, class_cache = 0x0, 
+      name = 0xc15f0d6f "&ent->pde_unload_lock", cpu = 0, ip = 0}}, 
+  pde_unload_completion = 0x0, pde_openers = {next = 0xc701fb70, 
+    prev = 0xc701fb70}}
+(gdb) p *pde
+$33 = {low_ino = 0, namelen = 6, name = 0xc701fd88 "ldiscs", mode = 33060, 
+  nlink = 1, uid = 0, gid = 0, size = 0, proc_iops = 0x0, proc_fops = 0x0, 
+  next = 0x0, parent = 0x0, subdir = 0x0, data = 0x0, read_proc = 0x0, 
+  write_proc = 0x0, count = {counter = 1}, pde_users = 0, pde_unload_lock = {
+    raw_lock = {slock = 0}, magic = 3735899821, owner_cpu = 4294967295, 
+    owner = 0xffffffff, dep_map = {key = 0xc1e62b00 <__key.14684>, 
+      class_cache = 0x0, name = 0xc15f0d6f "&ent->pde_unload_lock", cpu = 0, 
+      ip = 0}}, pde_unload_completion = 0x0, pde_openers = {next = 0xc701fd80, 
+    prev = 0xc701fd80}}
+(gdb) n
+756		pde->data = data;
+(gdb) 
+757		if (proc_register(parent, pde) < 0)
+(gdb) 
+764	}
+(gdb) 
+proc_tty_init () at fs/proc/proc_tty.c:189
+189	}
+(gdb) 
+```
+
+* Creates /proc/bus
+
+```
+
+proc_root_init () at fs/proc/root.c:137
+137		proc_mkdir("bus", NULL);
+(gdb) n
+```
+
+* Creates /proc/sys
+
+```
+
+138		proc_sys_init();
+(gdb) s
+proc_sys_init () at fs/proc/proc_sysctl.c:409
+409		proc_sys_root = proc_mkdir("sys", NULL);
+(gdb) n
+410		proc_sys_root->proc_iops = &proc_sys_dir_operations;
+(gdb) 
+411		proc_sys_root->proc_fops = &proc_sys_dir_file_operations;
+(gdb) 
+412		proc_sys_root->nlink = 0;
+(gdb) 
+414	}
+(gdb) 
+proc_root_init () at fs/proc/root.c:139
+139	}
+(gdb) 
+```
+
 # Links：
 
 * [How Is The Root File System Found?](https://kernelnewbies.org/RootFileSystem)
