@@ -1,8 +1,8 @@
 # start\_kernel part I
 
-'start_kernel' is the most important routine of linux startup, it includes subroutines of linux initialization, it will be devided into several parts to study.
+'start\_kernel' is the most important routine of linux startup, it includes subroutines of linux initialization, it will be devided into several parts to study.
 
-```start_kernel
+```start\_kernel
 init/main.c:520
 
 asmlinkage void __init start_kernel(void)
@@ -21,7 +21,7 @@ SMP systems are tightly coupled multiprocessor systems with a pool of homogeneou
 
 To enable lockdep module, enable the configuration of lockdep as follow:
 
-```enable_lockdep
+```enable\_lockdep
 1.  edit .config through menuconfig
       make menuconfig
 2.  enable lockdep related hacking options
@@ -39,7 +39,7 @@ To enable lockdep module, enable the configuration of lockdep as follow:
 
 boot the new kernel image, under /proc you should see the following new folders:
 
-```lockdep_folders_under_proc
+```lockdep\_folders\_under\_proc
 /proc/lockdep
 /proc/lockdep_chains
 /proc/lockdep_stat
@@ -47,11 +47,11 @@ boot the new kernel image, under /proc you should see the following new folders:
 /proc/lock_stats
 ```
 
-If the app deadlocks(hangs), do a: `ps -aux | grep <app_name>`, you should see a +D (uninterruptible sleep) state for your app, do a: `dmesg`, the log it prints will include the function/file causing the deadlock.
+If the app deadlocks\(hangs\), do a: `ps -aux | grep <app_name>`, you should see a +D \(uninterruptible sleep\) state for your app, do a: `dmesg`, the log it prints will include the function/file causing the deadlock.
 
 `debug_objects_early_init` initialize the hash buckets and link the static object pool objects into the poll list. After this call the object tracker is fully operational.
 
-`boot_init_stack_canary` intialize the stack canary value. Stack canaries are used to detect a stack buffer overflow before execution of malicious code can occur. This method works by placing a small integer, the value of which is randomly chosen at program start, in memory just before the stack return pointer. Most buffer overflows overwrite memory from lower to higher memory addresses, so in order to overwrite the return pointer (and thus take control of the process) the canary value must also be overwritten. This value is checked to make sure it has not changed before a routine uses the return pointer on the stack. This technique can greatly increase the difficulty of exploiting a stack buffer overflow because it forces the attacker to gain control of the instruction pointer by some non-traditional means such as corrupting other important variables on the stack.
+`boot_init_stack_canary` intialize the stack canary value. Stack canaries are used to detect a stack buffer overflow before execution of malicious code can occur. This method works by placing a small integer, the value of which is randomly chosen at program start, in memory just before the stack return pointer. Most buffer overflows overwrite memory from lower to higher memory addresses, so in order to overwrite the return pointer \(and thus take control of the process\) the canary value must also be overwritten. This value is checked to make sure it has not changed before a routine uses the return pointer on the stack. This technique can greatly increase the difficulty of exploiting a stack buffer overflow because it forces the attacker to gain control of the instruction pointer by some non-traditional means such as corrupting other important variables on the stack.
 
 `cgroup_init_early` initialize [cgroups](https://www.kernel.org/doc/Documentation/cgroup-v1/cgroups.txt) at system boot, and initialize any subsystems that request early init. In our linux all configured cgroups subsystems all follow:
 
@@ -69,18 +69,17 @@ Global variable subsys defined in kernel/cgroup.c line 62
 
 `early_init_irq_lock_class` set lock key for every interrupt descriptor, but interrupt descriptor table pointer is NULL, actually nothing done here.
 
-```irq_to_desc
-
+```irq\_to\_desc
 kernel/irq/handle.c:192
 
 struct irq_desc *irq_to_desc(unsigned int irq)
 {
-	if (irq_desc_ptrs && irq < nr_irqs)
+    if (irq_desc_ptrs && irq < nr_irqs)
 (gdb) p irq_desc_ptrs
 $4 = (struct irq_desc **) 0x0
-		return irq_desc_ptrs[irq];
+        return irq_desc_ptrs[irq];
 
-	return NULL;
+    return NULL;
 }
 ```
 
@@ -98,5 +97,6 @@ Now interrupts are still disabled, we will continue the intialization of kernel.
 * [Stack buffer overflow](https://en.wikipedia.org/wiki/Stack_buffer_overflow)
 * [CGROUPS](https://www.kernel.org/doc/Documentation/cgroup-v1/cgroups.txt)
 * [extended assembly](http://www.ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html)
+
 
 
