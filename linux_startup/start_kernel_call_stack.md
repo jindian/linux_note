@@ -472,6 +472,13 @@
        |--page_writeback_init                                            # mm/page-writeback.c:794
            |--writeback_set_ratelimit                                    # mm/page-writeback.c:755
            |--register_cpu_notifier                                      # kernel/cpu.c:128
+       |--proc_root_init                                                 # fs/proc/root.c:104
+           |--proc_init_inodecache                                       # fs/proc/inode.c:103
+           |--register_filesystem                                        # fs/filesystem.c:69
+           |--kern_mount_data                                            # fs/super.c:1014
+           |--proc_mkdir                                                 # fs/proc/generic:698
+           |--proc_tty_init                                              # fs/proc/proc_tty.c:175
+           |--proc_sys_init                                              # fs/proc/proc_sysctl.c:405
 ```
 
 # Links
