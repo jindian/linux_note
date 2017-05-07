@@ -18,7 +18,7 @@ cgroup_init () at kernel/cgroup.c:3267
 3268        if (err)
 ```
 
-initializes any cgroup subsystems that don't need early init, all configured cgroup subsystems are defined in linux/cgroup\_subsys.h.
+* initializes any cgroup subsystems that don't need early init, all configured cgroup subsystems are defined in linux/cgroup\_subsys.h.
 
 ```
 (gdb) 
