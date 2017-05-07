@@ -479,6 +479,7 @@
            |--proc_mkdir                                                 # fs/proc/generic:698
            |--proc_tty_init                                              # fs/proc/proc_tty.c:175
            |--proc_sys_init                                              # fs/proc/proc_sysctl.c:405
+       |--cgroup_init                                                    # kernel/cgroup.c:3261
 ```
 
 # Links
