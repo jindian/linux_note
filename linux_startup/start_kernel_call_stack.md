@@ -496,6 +496,16 @@
            |--check_popad
            |--alternative_instructions
        |--acpi_early_init                                                # drivers/acpi/bus.c:800
+           |--acpi_reallocate_root_table
+           |--acpi_initialize_subsystem                                  # drivers/acpi/acpica/utxface.c:67
+               |--acpi_os_initialize
+               |--acpi_ut_init_globals
+                   |--acpi_ut_create_caches                              # drivers/acpi/acpica/utalloc.c:62
+               |--acpi_ut_mutex_initialize                               # drivers/acpi/acpica/utmutex.c:68
+               |--acpi_ns_root_initialize                                # drivers/acpi/acpica/nsaccess.c:66
+           |--acpi_load_tables
+               |--acpi_tb_load_namespace                                 # drivers/acpi/acpica/tbxface.c:499
+           |--acpi_enable_subsystem
        |--sfi_init_late                                                  # drivers/sfi/sfi_core.c:401
        |--ftrace_init                                                    # kernel/trace/ftrace.c:2734
        |--rest_init                                                      # init/main.c:412
