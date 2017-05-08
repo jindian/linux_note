@@ -220,6 +220,10 @@ If a cpuset is cpu or mem exclusive, no other cpuset, other than a direct ancest
 
 User level code may create and destroy cpusets by name in the cpuset virtual file system, manage the attributes and permissions of these cpusets and which CPUs and Memory Nodes are assigned to each cpuset, specify and query to which cpuset a task is assigned, and list the task pids assigned to a cpuset.
 
+* `cpuset_init` allocates cpu mask variable of `top_cpuset` and initializes `top_cpuset`
+* Registers cpuset filesystem
+* Allocates cpu mask variable `cpus_attach`
+
 
 
 # Links
