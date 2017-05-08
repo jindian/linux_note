@@ -224,12 +224,24 @@ User level code may create and destroy cpusets by name in the cpuset virtual fil
 * Registers cpuset filesystem
 * Allocates cpu mask variable `cpus_attach`
 
+## early init task statistics
+
+Taskstats is a netlink-based interface for sending per-task and per-process statistics from the kernel to userspace.
+Taskstats was designed for the following benefits:
+
+- efficiently provide statistics during lifetime of a task and on its exit
+- unified interface for multiple accounting subsystems
+- extensibility for use by future accounting patches
+
+`taskstats_init_early` allocates slab cache memory for struct taskstats and initializes list and semaphore for per cpu variable `listener_array`.
+
 
 
 # Links
 
 * [CGROUPS](https://www.kernel.org/doc/Documentation/cgroup-v1/cgroups.txt)
 * [CPUSETS](https://lwn.net/Articles/127936/)
+* [Per-task statistics interface](https://www.kernel.org/doc/Documentation/accounting/taskstats.txt)
 
 
 

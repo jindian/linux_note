@@ -481,6 +481,7 @@
            |--proc_sys_init                                              # fs/proc/proc_sysctl.c:405
        |--cgroup_init                                                    # kernel/cgroup.c:3261
        |--cpuset_init                                                    # kernel/cpuset.c:1878
+       |--taskstats_init_early                                           # kernel/taskstats.c:605
 ```
 
 # Links
