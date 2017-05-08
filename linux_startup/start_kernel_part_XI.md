@@ -287,17 +287,17 @@ delayacct_init () at kernel/delayacct.c:37
 (gdb) 
 ```
 
-## check bugs of cpu
+## _check bugs of cpu_
 
 `check_bugs` is used to intialize boot cpu and checks bugs of the cpu.
 
-## early initialize acpi
+## _early initialize acpi_
 
-## late initialize of sfi ([Simple Firmware Interface](https://en.wikipedia.org/wiki/Simple_Firmware_Interface))
+## _late initialize of sfi_
 
-## initialze [ftrace - Function Tracer](https://www.kernel.org/doc/Documentation/trace/ftrace.txt)
+## _initialze ftrace_
 
-## rest of kernel initailization
+## _rest of kernel initailization_
 
 # Links
 
