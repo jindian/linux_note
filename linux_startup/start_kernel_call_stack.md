@@ -483,6 +483,7 @@
        |--cpuset_init                                                    # kernel/cpuset.c:1878
        |--taskstats_init_early                                           # kernel/taskstats.c:605
        |--delayacct_init                                                 # kernel/delayacct.c:33
+       |--check_bugs                                                     # arch/x86/kernel/cpu/bugs.c:155
 ```
 
 # Links
