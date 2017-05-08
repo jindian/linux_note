@@ -1,6 +1,6 @@
 # start\_kernel part XI
 
-### _**initialize cgoup**_
+## _initialize cgoup_
 
 [Control Groups](https://www.kernel.org/doc/Documentation/cgroup-v1/cgroups.txt) provide a mechanism for aggregating/partitioning sets of tasks, and all their future children, into hierarchical groups with specialized behaviour.
 
@@ -208,7 +208,7 @@ $15 = {{first = 0x0} <repeats 46 times>, {
 3294    }
 ```
 
-### _**initialize cpusets**_
+## _initialize cpusets_
 
 Cpusets provide a mechanism for assigning a set of CPUs and Memory Nodes to a set of tasks.
 
@@ -220,7 +220,9 @@ If a cpuset is cpu or mem exclusive, no other cpuset, other than a direct ancest
 
 User level code may create and destroy cpusets by name in the cpuset virtual file system, manage the attributes and permissions of these cpusets and which CPUs and Memory Nodes are assigned to each cpuset, specify and query to which cpuset a task is assigned, and list the task pids assigned to a cpuset.
 
-## Links
+
+
+# Links
 
 * [CGROUPS](https://www.kernel.org/doc/Documentation/cgroup-v1/cgroups.txt)
 * [CPUSETS](https://lwn.net/Articles/127936/)
