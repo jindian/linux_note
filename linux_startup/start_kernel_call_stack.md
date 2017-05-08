@@ -484,6 +484,11 @@
        |--taskstats_init_early                                           # kernel/taskstats.c:605
        |--delayacct_init                                                 # kernel/delayacct.c:33
        |--check_bugs                                                     # arch/x86/kernel/cpu/bugs.c:155
+       |--acpi_early_init                                                # drivers/acpi/bus.c:800
+       |--sfi_init_late                                                  # drivers/sfi/sfi_core.c:401
+       |--ftrace_init                                                    # kernel/trace/ftrace.c:2734
+       |--rest_init                                                      # init/main.c:412
+       
 ```
 
 # Links

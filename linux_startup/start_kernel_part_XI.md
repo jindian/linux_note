@@ -224,7 +224,7 @@ User level code may create and destroy cpusets by name in the cpuset virtual fil
 * Registers cpuset filesystem
 * Allocates cpu mask variable `cpus_attach`
 
-## early init task statistics
+## _early init task statistics_
 
 Taskstats is a netlink-based interface for sending per-task and per-process statistics from the kernel to userspace.
 Taskstats was designed for the following benefits:
@@ -235,7 +235,7 @@ Taskstats was designed for the following benefits:
 
 `taskstats_init_early` allocates slab cache memory for struct taskstats and initializes list and semaphore for per cpu variable `listener_array`.
 
-## initialize per task delay accounting
+## _initialize per task delay accounting_
 
 Tasks encounter delays in execution when they wait for some kernel resource to become available e.g. a runnable task may wait for a free CPU to run on.
 
@@ -286,6 +286,14 @@ delayacct_init () at kernel/delayacct.c:37
 37	}
 (gdb) 
 ```
+
+## check bugs of cpu
+
+`check_bugs` is used to intialize boot cpu and checks bugs of the cpu.
+
+## early initialize acpi
+
+## late initialize of sfi
 
 ## 
 
