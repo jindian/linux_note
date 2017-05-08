@@ -463,9 +463,9 @@ init_hw_perf_events () at arch/x86/kernel/cpu/perf_event.c:2190
 * Checks cpu bugs
 * Replaces instructions(`__alt_instructions`, `__alt_instructions_end`) with architecture specified instructions
 
-
-
 ## _early initialize acpi_
+
+
 
 ## _late initialize of sfi_
 

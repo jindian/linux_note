@@ -484,6 +484,17 @@
        |--taskstats_init_early                                           # kernel/taskstats.c:605
        |--delayacct_init                                                 # kernel/delayacct.c:33
        |--check_bugs                                                     # arch/x86/kernel/cpu/bugs.c:155
+           |--identify_boot_cpu
+               |--identify_cpu
+               |--init_c1e_mask
+               |--sysenter_setup
+               |--enable_sep_cpu
+               |--init_hw_perf_events                                    # arch/x86/kernel/cpu/perf_event.c:2148
+           |--check_config                                               # arch/x86/kernel/cpu/bugs.c:140
+           |--check_fpu
+           |--check_hlt
+           |--check_popad
+           |--alternative_instructions
        |--acpi_early_init                                                # drivers/acpi/bus.c:800
        |--sfi_init_late                                                  # drivers/sfi/sfi_core.c:401
        |--ftrace_init                                                    # kernel/trace/ftrace.c:2734
