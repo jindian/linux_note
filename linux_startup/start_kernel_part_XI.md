@@ -293,9 +293,11 @@ delayacct_init () at kernel/delayacct.c:37
 
 ## early initialize acpi
 
-## late initialize of sfi
+## late initialize of sfi ([Simple Firmware Interface](https://en.wikipedia.org/wiki/Simple_Firmware_Interface))
 
-## 
+## initialze [ftrace - Function Tracer](https://www.kernel.org/doc/Documentation/trace/ftrace.txt)
+
+## rest of kernel initailization
 
 # Links
 
@@ -303,6 +305,8 @@ delayacct_init () at kernel/delayacct.c:37
 * [CPUSETS](https://lwn.net/Articles/127936/)
 * [Per-task statistics interface](https://www.kernel.org/doc/Documentation/accounting/taskstats.txt)
 * [Delay accounting](https://www.kernel.org/doc/Documentation/accounting/delay-accounting.txt)
+* [Simple Firmware Interface](https://en.wikipedia.org/wiki/Simple_Firmware_Interface)
+* [ftrace - Function Tracer](https://www.kernel.org/doc/Documentation/trace/ftrace.txt)
 
 
 
