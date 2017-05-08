@@ -226,12 +226,12 @@ User level code may create and destroy cpusets by name in the cpuset virtual fil
 
 ## _early init task statistics_
 
-Taskstats is a netlink-based interface for sending per-task and per-process statistics from the kernel to userspace.
+Taskstats is a netlink-based interface for sending per-task and per-process statistics from the kernel to userspace.  
 Taskstats was designed for the following benefits:
 
-- efficiently provide statistics during lifetime of a task and on its exit
-- unified interface for multiple accounting subsystems
-- extensibility for use by future accounting patches
+* efficiently provide statistics during lifetime of a task and on its exit
+* unified interface for multiple accounting subsystems
+* extensibility for use by future accounting patches
 
 `taskstats_init_early` allocates slab cache memory for struct taskstats and initializes list and semaphore for per cpu variable `listener_array`.
 
@@ -241,59 +241,298 @@ Tasks encounter delays in execution when they wait for some kernel resource to b
 
 The per-task delay accounting functionality measures the delays experienced by a task while
 
-a) waiting for a CPU (while being runnable)
-b) completion of synchronous block I/O initiated by the task
-c) swapping in pages
-d) memory reclaim
+a\) waiting for a CPU \(while being runnable\)  
+b\) completion of synchronous block I/O initiated by the task  
+c\) swapping in pages  
+d\) memory reclaim
 
 and makes these statistics available to userspace through the taskstats interface.
 
 Such delays provide feedback for setting a task's cpu priority, io priority and rss limit values appropriately. Long delays for important tasks could be a trigger for raising its corresponding priority.
 
-The functionality, through its use of the taskstats interface, also provides delay statistics aggregated for all tasks (or threads) belonging to a thread group (corresponding to a traditional Unix process). This is a commonly needed aggregation that is more efficiently done by the kernel.
+The functionality, through its use of the taskstats interface, also provides delay statistics aggregated for all tasks \(or threads\) belonging to a thread group \(corresponding to a traditional Unix process\). This is a commonly needed aggregation that is more efficiently done by the kernel.
 
 Userspace utilities, particularly resource management applications, can also aggregate delay statistics into arbitrary groups. To enable this, delay statistics of a task are available both during its lifetime as well as on its exit, ensuring continuous and complete monitoring can be done.
 
 `delayacct_init` allocates slab cache memory for struct `task_delay_info` and initializes delay accounting for init task.
 
-```delayacct_init
+```delayacct\_init
 Breakpoint 2, delayacct_init () at kernel/delayacct.c:34
-34	{
+34    {
 (gdb) n
-35		delayacct_cache = KMEM_CACHE(task_delay_info, SLAB_PANIC);
+35        delayacct_cache = KMEM_CACHE(task_delay_info, SLAB_PANIC);
 (gdb) 
-36		delayacct_tsk_init(&init_task);
+36        delayacct_tsk_init(&init_task);
 (gdb) s
 delayacct_tsk_init (tsk=<optimized out>) at include/linux/delayacct.h:67
-67		tsk->delays = NULL;
+67        tsk->delays = NULL;
 (gdb) n
-68		if (delayacct_on)
+68        if (delayacct_on)
 (gdb) p delayacct_on 
 $1 = 1
 (gdb) n
-69			__delayacct_tsk_init(tsk);
+69            __delayacct_tsk_init(tsk);
 (gdb) s
 __delayacct_tsk_init (tsk=0xc1692440 <init_task>) at kernel/delayacct.c:41
-41		tsk->delays = kmem_cache_zalloc(delayacct_cache, GFP_KERNEL);
+41        tsk->delays = kmem_cache_zalloc(delayacct_cache, GFP_KERNEL);
 (gdb) n
-42		if (tsk->delays)
+42        if (tsk->delays)
 (gdb) 
-43			spin_lock_init(&tsk->delays->lock);
+43            spin_lock_init(&tsk->delays->lock);
 (gdb) 
-44	}
+44    }
 (gdb) 
 delayacct_init () at kernel/delayacct.c:37
-37	}
-(gdb) 
+37    }
+(gdb)
 ```
 
 ## _check bugs of cpu_
 
 `check_bugs` is used to intialize boot cpu and checks bugs of the cpu.
 
-* `check_bugs` identifies boot cpu to initialize `boot_cpu_data`; checks powermanagerment idle function, if it's c1e_idle, allocates c1e_mask; 
+* `check_bugs` identifies boot cpu to initialize `boot_cpu_data`; checks powermanagerment idle function, if it's c1e\_idle, allocates c1e\_mask; setup syscall enter with vDSO mechanism; 
 
-```identify_boot_cpu
+```identify\_boot\_cpu
+Breakpoint 2, check_bugs () at arch/x86/kernel/cpu/bugs.c:156
+156	{
+(gdb) n
+157		identify_boot_cpu();
+(gdb) s
+identify_boot_cpu () at arch/x86/kernel/cpu/common.c:866
+866		identify_cpu(&boot_cpu_data);
+(gdb) n
+867		init_c1e_mask();
+(gdb) p boot_cpu_data 
+$1 = {x86 = 6 '\006', x86_vendor = 0 '\000', x86_model = 6 '\006', 
+  x86_mask = 3 '\003', wp_works_ok = 1 '\001', hlt_works_ok = 1 '\001', 
+  hard_math = 1 '\001', rfu = 0 '\000', fdiv_bug = -1 '\377', 
+  f00f_bug = 0 '\000', coma_bug = 0 '\000', pad0 = 0 '\000', 
+  x86_virt_bits = 32 ' ', x86_phys_bits = 36 '$', x86_coreid_bits = 0 '\000', 
+  extended_cpuid_level = 2147483652, cpuid_level = 4, x86_capability = {
+    125873145, 0, 0, 262208, 2155872257, 0, 0, 0, 0}, 
+  x86_vendor_id = "GenuineIntel\000\000\000", 
+  x86_model_id = "QEMU Virtual CPU version 2.0.0", '\000' <repeats 33 times>, 
+  x86_cache_size = 4096, x86_cache_alignment = 32, x86_power = 0, 
+  loops_per_jiffy = 13568436, llc_shared_map = {{bits = {0}}}, 
+  x86_max_cores = 1, apicid = 0, initial_apicid = 0, x86_clflush_size = 32, 
+  booted_cores = 0, phys_proc_id = 0, cpu_core_id = 0, cpu_index = 0, 
+  x86_hyper_vendor = 0}
+(gdb) s
+init_c1e_mask () at arch/x86/kernel/process.c:529
+529		if (pm_idle == c1e_idle)
+(gdb) p pm_idle
+$2 = (void (*)(void)) 0xc1009d60 <default_idle>
+(gdb) p c1e_idle 
+$3 = {void (void)} 0xc1009de0 <c1e_idle>
+(gdb) n
+527	{
+(gdb) 
+529		if (pm_idle == c1e_idle)
+(gdb) 
+531	}
+(gdb) 
+identify_boot_cpu () at arch/x86/kernel/cpu/common.c:869
+869		sysenter_setup();
+(gdb) s
+sysenter_setup () at arch/x86/vdso/vdso32-setup.c:285
+285		void *syscall_page = (void *)get_zeroed_page(GFP_ATOMIC);
+(gdb) n
+289		vdso32_pages[0] = virt_to_page(syscall_page);
+(gdb) 
+292		gate_vma_init();
+(gdb) s
+gate_vma_init () at arch/x86/vdso/vdso32-setup.c:248
+248		gate_vma.vm_mm = NULL;
+(gdb) n
+252		gate_vma.vm_page_prot = __P101;
+(gdb) 
+259		gate_vma.vm_flags |= VM_ALWAYSDUMP;
+gate_vma_init () at arch/x86/vdso/vdso32-setup.c:249
+249		gate_vma.vm_start = FIXADDR_USER_START;
+(gdb) n
+sysenter_setup () at arch/x86/vdso/vdso32-setup.c:298
+298		} else if (vdso32_sysenter()){
+(gdb) s
+289		vdso32_pages[0] = virt_to_page(syscall_page);
+(gdb) n
+292		gate_vma_init();
+(gdb) s
+gate_vma_init () at arch/x86/vdso/vdso32-setup.c:249
+249		gate_vma.vm_start = FIXADDR_USER_START;
+(gdb) n
+250		gate_vma.vm_end = FIXADDR_USER_END;
+(gdb) 
+sysenter_setup () at arch/x86/vdso/vdso32-setup.c:298
+298		} else if (vdso32_sysenter()){
+(gdb) s
+300			vsyscall_len = &vdso32_sysenter_end - &vdso32_sysenter_start;
+(gdb) n
+299			vsyscall = &vdso32_sysenter_start;
+(gdb) 
+300			vsyscall_len = &vdso32_sysenter_end - &vdso32_sysenter_start;
+(gdb) 
+306		memcpy(syscall_page, vsyscall, vsyscall_len);
+(gdb) p vsyscall
+$4 = (const void *) 0xc173c7f8
+(gdb) p *vsyscall
+Attempt to dereference a generic pointer.
+(gdb) p vsyscall_len 
+$5 = 1652
+(gdb) n
+307		relocate_vdso(syscall_page);
+(gdb) s
+relocate_vdso (ehdr=0xc7027000) at arch/x86/vdso/vdso32-setup.c:165
+165		BUG_ON(memcmp(ehdr->e_ident, ELFMAG, SELFMAG) != 0 ||
+(gdb) n
+169		ehdr->e_entry += VDSO_ADDR_ADJUST;
+(gdb) 
+172		phdr = (void *)ehdr + ehdr->e_phoff;
+(gdb) 
+173		for (i = 0; i < ehdr->e_phnum; i++) {
+(gdb) 
+169		ehdr->e_entry += VDSO_ADDR_ADJUST;
+(gdb) 
+172		phdr = (void *)ehdr + ehdr->e_phoff;
+(gdb) 
+173		for (i = 0; i < ehdr->e_phnum; i++) {
+(gdb) 
+174			phdr[i].p_vaddr += VDSO_ADDR_ADJUST;
+(gdb) 
+177			if (phdr[i].p_type == PT_DYNAMIC)
+(gdb) 
+173		for (i = 0; i < ehdr->e_phnum; i++) {
+(gdb) 
+174			phdr[i].p_vaddr += VDSO_ADDR_ADJUST;
+(gdb) 
+177			if (phdr[i].p_type == PT_DYNAMIC)
+(gdb) 
+178				reloc_dyn(ehdr, phdr[i].p_offset);
+(gdb) 
+173		for (i = 0; i < ehdr->e_phnum; i++) {
+(gdb) 
+174			phdr[i].p_vaddr += VDSO_ADDR_ADJUST;
+(gdb) p ehdr->e_phnum 
+$6 = 4
+(gdb) n
+177			if (phdr[i].p_type == PT_DYNAMIC)
+(gdb) 
+173		for (i = 0; i < ehdr->e_phnum; i++) {
+(gdb) 
+174			phdr[i].p_vaddr += VDSO_ADDR_ADJUST;
+(gdb) 
+177			if (phdr[i].p_type == PT_DYNAMIC)
+(gdb) 
+173		for (i = 0; i < ehdr->e_phnum; i++) {
+(gdb) 
+182		shdr = (void *)ehdr + ehdr->e_shoff;
+(gdb) 
+183		for(i = 0; i < ehdr->e_shnum; i++) {
+(gdb) 
+182		shdr = (void *)ehdr + ehdr->e_shoff;
+(gdb) 
+183		for(i = 0; i < ehdr->e_shnum; i++) {
+(gdb) 
+184			if (!(shdr[i].sh_flags & SHF_ALLOC))
+(gdb) 
+183		for(i = 0; i < ehdr->e_shnum; i++) {
+(gdb) 
+184			if (!(shdr[i].sh_flags & SHF_ALLOC))
+(gdb) 
+187			shdr[i].sh_addr += VDSO_ADDR_ADJUST;
+(gdb) 
+189			if (shdr[i].sh_type == SHT_SYMTAB ||
+(gdb) 
+183		for(i = 0; i < ehdr->e_shnum; i++) {
+(gdb) 
+184			if (!(shdr[i].sh_flags & SHF_ALLOC))
+(gdb) 
+187			shdr[i].sh_addr += VDSO_ADDR_ADJUST;
+(gdb) 
+189			if (shdr[i].sh_type == SHT_SYMTAB ||
+(gdb) 
+191				reloc_symtab(ehdr, shdr[i].sh_offset,
+(gdb) 
+183		for(i = 0; i < ehdr->e_shnum; i++) {
+(gdb) 
+184			if (!(shdr[i].sh_flags & SHF_ALLOC))
+(gdb) 
+187			shdr[i].sh_addr += VDSO_ADDR_ADJUST;
+(gdb) 
+189			if (shdr[i].sh_type == SHT_SYMTAB ||
+(gdb) 
+183		for(i = 0; i < ehdr->e_shnum; i++) {
+(gdb) 
+184			if (!(shdr[i].sh_flags & SHF_ALLOC))
+(gdb) 
+187			shdr[i].sh_addr += VDSO_ADDR_ADJUST;
+(gdb) 
+189			if (shdr[i].sh_type == SHT_SYMTAB ||
+(gdb) 
+183		for(i = 0; i < ehdr->e_shnum; i++) {
+(gdb) 
+184			if (!(shdr[i].sh_flags & SHF_ALLOC))
+(gdb) 
+187			shdr[i].sh_addr += VDSO_ADDR_ADJUST;
+(gdb) 
+189			if (shdr[i].sh_type == SHT_SYMTAB ||
+(gdb) 
+183		for(i = 0; i < ehdr->e_shnum; i++) {
+(gdb) 
+184			if (!(shdr[i].sh_flags & SHF_ALLOC))
+(gdb) p ehdr->e_shnum
+value has been optimized out
+(gdb) n
+187			shdr[i].sh_addr += VDSO_ADDR_ADJUST;
+(gdb) 
+189			if (shdr[i].sh_type == SHT_SYMTAB ||
+(gdb) 
+183		for(i = 0; i < ehdr->e_shnum; i++) {
+(gdb) 
+184			if (!(shdr[i].sh_flags & SHF_ALLOC))
+(gdb) 
+187			shdr[i].sh_addr += VDSO_ADDR_ADJUST;
+(gdb) 
+189			if (shdr[i].sh_type == SHT_SYMTAB ||
+(gdb) 
+183		for(i = 0; i < ehdr->e_shnum; i++) {
+(gdb) 
+184			if (!(shdr[i].sh_flags & SHF_ALLOC))
+(gdb) 
+187			shdr[i].sh_addr += VDSO_ADDR_ADJUST;
+(gdb) 
+189			if (shdr[i].sh_type == SHT_SYMTAB ||
+(gdb) 
+183		for(i = 0; i < ehdr->e_shnum; i++) {
+(gdb) 
+184			if (!(shdr[i].sh_flags & SHF_ALLOC))
+(gdb) 
+187			shdr[i].sh_addr += VDSO_ADDR_ADJUST;
+(gdb) 
+189			if (shdr[i].sh_type == SHT_SYMTAB ||
+(gdb) p i
+$7 = 9
+(gdb) n
+183		for(i = 0; i < ehdr->e_shnum; i++) {
+(gdb) 
+184			if (!(shdr[i].sh_flags & SHF_ALLOC))
+(gdb) 
+187			shdr[i].sh_addr += VDSO_ADDR_ADJUST;
+(gdb) 
+189			if (shdr[i].sh_type == SHT_SYMTAB ||
+(gdb) 
+183		for(i = 0; i < ehdr->e_shnum; i++) {
+(gdb) 
+184			if (!(shdr[i].sh_flags & SHF_ALLOC))
+(gdb) 
+183		for(i = 0; i < ehdr->e_shnum; i++) {
+(gdb) 
+sysenter_setup () at arch/x86/vdso/vdso32-setup.c:310
+310	}
+(gdb) 
+identify_boot_cpu () at arch/x86/kernel/cpu/common.c:870
+870		enable_sep_cpu();
+(gdb) 
 
 ```
 
@@ -313,6 +552,7 @@ delayacct_init () at kernel/delayacct.c:37
 * [Delay accounting](https://www.kernel.org/doc/Documentation/accounting/delay-accounting.txt)
 * [Simple Firmware Interface](https://en.wikipedia.org/wiki/Simple_Firmware_Interface)
 * [ftrace - Function Tracer](https://www.kernel.org/doc/Documentation/trace/ftrace.txt)
+* [vDSO](https://en.wikipedia.org/wiki/VDSO)
 
 
 
