@@ -237,6 +237,56 @@ Taskstats was designed for the following benefits:
 
 ## initialize per task delay accounting
 
+Tasks encounter delays in execution when they wait for some kernel resource to become available e.g. a runnable task may wait for a free CPU to run on.
+
+The per-task delay accounting functionality measures the delays experienced by a task while
+
+a) waiting for a CPU (while being runnable)
+b) completion of synchronous block I/O initiated by the task
+c) swapping in pages
+d) memory reclaim
+
+and makes these statistics available to userspace through the taskstats interface.
+
+Such delays provide feedback for setting a task's cpu priority, io priority and rss limit values appropriately. Long delays for important tasks could be a trigger for raising its corresponding priority.
+
+The functionality, through its use of the taskstats interface, also provides delay statistics aggregated for all tasks (or threads) belonging to a thread group (corresponding to a traditional Unix process). This is a commonly needed aggregation that is more efficiently done by the kernel.
+
+Userspace utilities, particularly resource management applications, can also aggregate delay statistics into arbitrary groups. To enable this, delay statistics of a task are available both during its lifetime as well as on its exit, ensuring continuous and complete monitoring can be done.
+
+`delayacct_init` allocates slab cache memory for struct `task_delay_info` and initializes delay accounting for init task.
+
+```delayacct_init
+Breakpoint 2, delayacct_init () at kernel/delayacct.c:34
+34	{
+(gdb) n
+35		delayacct_cache = KMEM_CACHE(task_delay_info, SLAB_PANIC);
+(gdb) 
+36		delayacct_tsk_init(&init_task);
+(gdb) s
+delayacct_tsk_init (tsk=<optimized out>) at include/linux/delayacct.h:67
+67		tsk->delays = NULL;
+(gdb) n
+68		if (delayacct_on)
+(gdb) p delayacct_on 
+$1 = 1
+(gdb) n
+69			__delayacct_tsk_init(tsk);
+(gdb) s
+__delayacct_tsk_init (tsk=0xc1692440 <init_task>) at kernel/delayacct.c:41
+41		tsk->delays = kmem_cache_zalloc(delayacct_cache, GFP_KERNEL);
+(gdb) n
+42		if (tsk->delays)
+(gdb) 
+43			spin_lock_init(&tsk->delays->lock);
+(gdb) 
+44	}
+(gdb) 
+delayacct_init () at kernel/delayacct.c:37
+37	}
+(gdb) 
+```
+
 
 
 # Links
