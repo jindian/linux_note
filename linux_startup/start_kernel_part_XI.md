@@ -291,7 +291,7 @@ delayacct_init () at kernel/delayacct.c:37
 
 `check_bugs` is used to intialize boot cpu and checks bugs of the cpu.
 
-* `check_bugs` identifies boot cpu to initialize `boot_cpu_data`; checks powermanagerment idle function, if it's c1e\_idle, allocates c1e\_mask; setup syscall enter with vDSO mechanism; enables SYSENTER/SYSEXIT feature if cpu has this feature and update MSR register; 
+* `check_bugs` identifies boot cpu to initialize `boot_cpu_data`; checks powermanagerment idle function, if it's c1e\_idle, allocates c1e\_mask; setup syscall enter with vDSO mechanism; enables SYSENTER/SYSEXIT feature if cpu has this feature and update MSR register; initializes performance events.
 
 ```identify\_boot\_cpu
 Breakpoint 2, check_bugs () at arch/x86/kernel/cpu/bugs.c:156
@@ -387,6 +387,77 @@ enable_sep_cpu () at arch/x86/vdso/vdso32-setup.c:228
 238		wrmsr(MSR_IA32_SYSENTER_CS, __KERNEL_CS, 0);
 (gdb) 
 242	}
+(gdb) 
+identify_boot_cpu () at arch/x86/kernel/cpu/common.c:874
+874		init_hw_perf_events();
+(gdb) s
+init_hw_perf_events () at arch/x86/kernel/cpu/perf_event.c:2152
+2152		pr_info("Performance Events: ");
+(gdb) n
+2154		switch (boot_cpu_data.x86_vendor) {
+(gdb) 
+2156			err = intel_pmu_init();
+(gdb) s
+intel_pmu_init () at arch/x86/kernel/cpu/perf_event.c:2059
+2059		if (!cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON)) {
+(gdb) n
+2061		   if (boot_cpu_data.x86 == 6) {
+(gdb) 
+2062			return p6_pmu_init();
+(gdb) s
+p6_pmu_init () at arch/x86/kernel/cpu/perf_event.c:2021
+2021		switch (boot_cpu_data.x86_model) {
+(gdb) p boot_cpu_data.x86_model
+$8 = 6 '\006'
+(gdb) n
+2040		x86_pmu = p6_pmu;
+(gdb) 
+2042		if (!cpu_has_apic) {
+(gdb) 
+init_hw_perf_events () at arch/x86/kernel/cpu/perf_event.c:2169
+2169		pr_cont("%s PMU driver.\n", x86_pmu.name);
+(gdb) 
+2171		if (x86_pmu.num_events > X86_PMC_MAX_GENERIC) {
+(gdb) 
+2176		perf_event_mask = (1 << x86_pmu.num_events) - 1;
+(gdb) 
+2177		perf_max_events = x86_pmu.num_events;
+(gdb) 
+2179		if (x86_pmu.num_events_fixed > X86_PMC_MAX_FIXED) {
+(gdb) 
+2185		perf_event_mask |=
+(gdb) 
+2186			((1LL << x86_pmu.num_events_fixed)-1) << X86_PMC_IDX_FIXED;
+(gdb) 
+2187		x86_pmu.intel_ctrl = perf_event_mask;
+(gdb) 
+2189		perf_events_lapic_init();
+(gdb) s
+perf_events_lapic_init () at arch/x86/kernel/cpu/perf_event.c:1897
+1897		if (!x86_pmu.apic || !x86_pmu_initialized())
+(gdb) n
+1903		apic_write(APIC_LVTPC, APIC_DM_NMI);
+(gdb) 
+1905	}
+(gdb) 
+init_hw_perf_events () at arch/x86/kernel/cpu/perf_event.c:2190
+2190		register_die_notifier(&perf_event_nmi_notifier);
+(gdb) 
+2192		pr_info("... version:                %d\n",     x86_pmu.version);
+(gdb) 
+2193		pr_info("... bit width:              %d\n",     x86_pmu.event_bits);
+(gdb) 
+2194		pr_info("... generic registers:      %d\n",     x86_pmu.num_events);
+(gdb) 
+2195		pr_info("... value mask:             %016Lx\n", x86_pmu.event_mask);
+(gdb) 
+2196		pr_info("... max period:             %016Lx\n", x86_pmu.max_period);
+(gdb) 
+2197		pr_info("... fixed-purpose events:   %d\n",     x86_pmu.num_events_fixed);
+(gdb) 
+2198		pr_info("... event mask:             %016Lx\n", perf_event_mask);
+(gdb) 
+2199	}
 ```
 
 ## _early initialize acpi_
