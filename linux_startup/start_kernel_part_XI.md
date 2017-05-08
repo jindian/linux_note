@@ -244,6 +244,7 @@ Taskstats was designed for the following benefits:
 * [CGROUPS](https://www.kernel.org/doc/Documentation/cgroup-v1/cgroups.txt)
 * [CPUSETS](https://lwn.net/Articles/127936/)
 * [Per-task statistics interface](https://www.kernel.org/doc/Documentation/accounting/taskstats.txt)
+* [Delay accounting](https://www.kernel.org/doc/Documentation/accounting/delay-accounting.txt)
 
 
 
