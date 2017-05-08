@@ -291,7 +291,7 @@ delayacct_init () at kernel/delayacct.c:37
 
 `check_bugs` is used to intialize boot cpu and checks bugs of the cpu.
 
-* `check_bugs` identifies boot cpu to initialize `boot_cpu_data`; checks powermanagerment idle function, if it's c1e\_idle, allocates c1e\_mask; setup syscall enter with vDSO mechanism; 
+* `check_bugs` identifies boot cpu to initialize `boot_cpu_data`; checks powermanagerment idle function, if it's c1e\_idle, allocates c1e\_mask; setup syscall enter with vDSO mechanism; enables SYSENTER/SYSEXIT feature if cpu has this feature and update MSR register; 
 
 ```identify\_boot\_cpu
 Breakpoint 2, check_bugs () at arch/x86/kernel/cpu/bugs.c:156
@@ -344,30 +344,18 @@ sysenter_setup () at arch/x86/vdso/vdso32-setup.c:285
 (gdb) s
 gate_vma_init () at arch/x86/vdso/vdso32-setup.c:248
 248		gate_vma.vm_mm = NULL;
-(gdb) n
+(gdb) 
+249		gate_vma.vm_start = FIXADDR_USER_START;
+(gdb) 
+250		gate_vma.vm_end = FIXADDR_USER_END;
+(gdb) 
 252		gate_vma.vm_page_prot = __P101;
 (gdb) 
 259		gate_vma.vm_flags |= VM_ALWAYSDUMP;
-gate_vma_init () at arch/x86/vdso/vdso32-setup.c:249
-249		gate_vma.vm_start = FIXADDR_USER_START;
-(gdb) n
-sysenter_setup () at arch/x86/vdso/vdso32-setup.c:298
-298		} else if (vdso32_sysenter()){
-(gdb) s
-289		vdso32_pages[0] = virt_to_page(syscall_page);
-(gdb) n
-292		gate_vma_init();
-(gdb) s
-gate_vma_init () at arch/x86/vdso/vdso32-setup.c:249
-249		gate_vma.vm_start = FIXADDR_USER_START;
-(gdb) n
-250		gate_vma.vm_end = FIXADDR_USER_END;
 (gdb) 
 sysenter_setup () at arch/x86/vdso/vdso32-setup.c:298
 298		} else if (vdso32_sysenter()){
-(gdb) s
-300			vsyscall_len = &vdso32_sysenter_end - &vdso32_sysenter_start;
-(gdb) n
+(gdb) 
 299			vsyscall = &vdso32_sysenter_start;
 (gdb) 
 300			vsyscall_len = &vdso32_sysenter_end - &vdso32_sysenter_start;
@@ -375,165 +363,30 @@ sysenter_setup () at arch/x86/vdso/vdso32-setup.c:298
 306		memcpy(syscall_page, vsyscall, vsyscall_len);
 (gdb) p vsyscall
 $4 = (const void *) 0xc173c7f8
-(gdb) p *vsyscall
-Attempt to dereference a generic pointer.
 (gdb) p vsyscall_len 
 $5 = 1652
 (gdb) n
 307		relocate_vdso(syscall_page);
-(gdb) s
-relocate_vdso (ehdr=0xc7027000) at arch/x86/vdso/vdso32-setup.c:165
-165		BUG_ON(memcmp(ehdr->e_ident, ELFMAG, SELFMAG) != 0 ||
-(gdb) n
-169		ehdr->e_entry += VDSO_ADDR_ADJUST;
 (gdb) 
-172		phdr = (void *)ehdr + ehdr->e_phoff;
-(gdb) 
-173		for (i = 0; i < ehdr->e_phnum; i++) {
-(gdb) 
-169		ehdr->e_entry += VDSO_ADDR_ADJUST;
-(gdb) 
-172		phdr = (void *)ehdr + ehdr->e_phoff;
-(gdb) 
-173		for (i = 0; i < ehdr->e_phnum; i++) {
-(gdb) 
-174			phdr[i].p_vaddr += VDSO_ADDR_ADJUST;
-(gdb) 
-177			if (phdr[i].p_type == PT_DYNAMIC)
-(gdb) 
-173		for (i = 0; i < ehdr->e_phnum; i++) {
-(gdb) 
-174			phdr[i].p_vaddr += VDSO_ADDR_ADJUST;
-(gdb) 
-177			if (phdr[i].p_type == PT_DYNAMIC)
-(gdb) 
-178				reloc_dyn(ehdr, phdr[i].p_offset);
-(gdb) 
-173		for (i = 0; i < ehdr->e_phnum; i++) {
-(gdb) 
-174			phdr[i].p_vaddr += VDSO_ADDR_ADJUST;
-(gdb) p ehdr->e_phnum 
-$6 = 4
-(gdb) n
-177			if (phdr[i].p_type == PT_DYNAMIC)
-(gdb) 
-173		for (i = 0; i < ehdr->e_phnum; i++) {
-(gdb) 
-174			phdr[i].p_vaddr += VDSO_ADDR_ADJUST;
-(gdb) 
-177			if (phdr[i].p_type == PT_DYNAMIC)
-(gdb) 
-173		for (i = 0; i < ehdr->e_phnum; i++) {
-(gdb) 
-182		shdr = (void *)ehdr + ehdr->e_shoff;
-(gdb) 
-183		for(i = 0; i < ehdr->e_shnum; i++) {
-(gdb) 
-182		shdr = (void *)ehdr + ehdr->e_shoff;
-(gdb) 
-183		for(i = 0; i < ehdr->e_shnum; i++) {
-(gdb) 
-184			if (!(shdr[i].sh_flags & SHF_ALLOC))
-(gdb) 
-183		for(i = 0; i < ehdr->e_shnum; i++) {
-(gdb) 
-184			if (!(shdr[i].sh_flags & SHF_ALLOC))
-(gdb) 
-187			shdr[i].sh_addr += VDSO_ADDR_ADJUST;
-(gdb) 
-189			if (shdr[i].sh_type == SHT_SYMTAB ||
-(gdb) 
-183		for(i = 0; i < ehdr->e_shnum; i++) {
-(gdb) 
-184			if (!(shdr[i].sh_flags & SHF_ALLOC))
-(gdb) 
-187			shdr[i].sh_addr += VDSO_ADDR_ADJUST;
-(gdb) 
-189			if (shdr[i].sh_type == SHT_SYMTAB ||
-(gdb) 
-191				reloc_symtab(ehdr, shdr[i].sh_offset,
-(gdb) 
-183		for(i = 0; i < ehdr->e_shnum; i++) {
-(gdb) 
-184			if (!(shdr[i].sh_flags & SHF_ALLOC))
-(gdb) 
-187			shdr[i].sh_addr += VDSO_ADDR_ADJUST;
-(gdb) 
-189			if (shdr[i].sh_type == SHT_SYMTAB ||
-(gdb) 
-183		for(i = 0; i < ehdr->e_shnum; i++) {
-(gdb) 
-184			if (!(shdr[i].sh_flags & SHF_ALLOC))
-(gdb) 
-187			shdr[i].sh_addr += VDSO_ADDR_ADJUST;
-(gdb) 
-189			if (shdr[i].sh_type == SHT_SYMTAB ||
-(gdb) 
-183		for(i = 0; i < ehdr->e_shnum; i++) {
-(gdb) 
-184			if (!(shdr[i].sh_flags & SHF_ALLOC))
-(gdb) 
-187			shdr[i].sh_addr += VDSO_ADDR_ADJUST;
-(gdb) 
-189			if (shdr[i].sh_type == SHT_SYMTAB ||
-(gdb) 
-183		for(i = 0; i < ehdr->e_shnum; i++) {
-(gdb) 
-184			if (!(shdr[i].sh_flags & SHF_ALLOC))
-(gdb) p ehdr->e_shnum
-value has been optimized out
-(gdb) n
-187			shdr[i].sh_addr += VDSO_ADDR_ADJUST;
-(gdb) 
-189			if (shdr[i].sh_type == SHT_SYMTAB ||
-(gdb) 
-183		for(i = 0; i < ehdr->e_shnum; i++) {
-(gdb) 
-184			if (!(shdr[i].sh_flags & SHF_ALLOC))
-(gdb) 
-187			shdr[i].sh_addr += VDSO_ADDR_ADJUST;
-(gdb) 
-189			if (shdr[i].sh_type == SHT_SYMTAB ||
-(gdb) 
-183		for(i = 0; i < ehdr->e_shnum; i++) {
-(gdb) 
-184			if (!(shdr[i].sh_flags & SHF_ALLOC))
-(gdb) 
-187			shdr[i].sh_addr += VDSO_ADDR_ADJUST;
-(gdb) 
-189			if (shdr[i].sh_type == SHT_SYMTAB ||
-(gdb) 
-183		for(i = 0; i < ehdr->e_shnum; i++) {
-(gdb) 
-184			if (!(shdr[i].sh_flags & SHF_ALLOC))
-(gdb) 
-187			shdr[i].sh_addr += VDSO_ADDR_ADJUST;
-(gdb) 
-189			if (shdr[i].sh_type == SHT_SYMTAB ||
-(gdb) p i
-$7 = 9
-(gdb) n
-183		for(i = 0; i < ehdr->e_shnum; i++) {
-(gdb) 
-184			if (!(shdr[i].sh_flags & SHF_ALLOC))
-(gdb) 
-187			shdr[i].sh_addr += VDSO_ADDR_ADJUST;
-(gdb) 
-189			if (shdr[i].sh_type == SHT_SYMTAB ||
-(gdb) 
-183		for(i = 0; i < ehdr->e_shnum; i++) {
-(gdb) 
-184			if (!(shdr[i].sh_flags & SHF_ALLOC))
-(gdb) 
-183		for(i = 0; i < ehdr->e_shnum; i++) {
-(gdb) 
-sysenter_setup () at arch/x86/vdso/vdso32-setup.c:310
 310	}
 (gdb) 
 identify_boot_cpu () at arch/x86/kernel/cpu/common.c:870
 870		enable_sep_cpu();
+(gdb) s
+enable_sep_cpu () at arch/x86/vdso/vdso32-setup.c:228
+228		int cpu = get_cpu();
+(gdb) n
+229		struct tss_struct *tss = &per_cpu(init_tss, cpu);
 (gdb) 
-
+231		if (!boot_cpu_has(X86_FEATURE_SEP)) {
+(gdb) 
+236		tss->x86_tss.ss1 = __KERNEL_CS;
+(gdb) 
+237		tss->x86_tss.sp1 = sizeof(struct tss_struct) + (unsigned long) tss;
+(gdb) 
+238		wrmsr(MSR_IA32_SYSENTER_CS, __KERNEL_CS, 0);
+(gdb) 
+242	}
 ```
 
 ## _early initialize acpi_
@@ -553,6 +406,8 @@ identify_boot_cpu () at arch/x86/kernel/cpu/common.c:870
 * [Simple Firmware Interface](https://en.wikipedia.org/wiki/Simple_Firmware_Interface)
 * [ftrace - Function Tracer](https://www.kernel.org/doc/Documentation/trace/ftrace.txt)
 * [vDSO](https://en.wikipedia.org/wiki/VDSO)
+* [SYSENTER](http://wiki.osdev.org/SYSENTER)
+* [model-specific register (MSR)](https://en.wikipedia.org/wiki/Model-specific_register)
 
 
 
