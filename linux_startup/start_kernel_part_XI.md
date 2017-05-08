@@ -235,6 +235,8 @@ Taskstats was designed for the following benefits:
 
 `taskstats_init_early` allocates slab cache memory for struct taskstats and initializes list and semaphore for per cpu variable `listener_array`.
 
+## initialize per task delay accounting
+
 
 
 # Links
