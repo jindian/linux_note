@@ -291,6 +291,12 @@ delayacct_init () at kernel/delayacct.c:37
 
 `check_bugs` is used to intialize boot cpu and checks bugs of the cpu.
 
+* `check_bugs` identifies boot cpu to initialize `boot_cpu_data`; checks powermanagerment idle function, if it's c1e_idle, allocates c1e_mask; 
+
+```identify_boot_cpu
+
+```
+
 ## _early initialize acpi_
 
 ## _late initialize of sfi_
