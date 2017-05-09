@@ -473,6 +473,92 @@ If sfi is enabled, unmapps early mapped memory with early_ioremap, uses ioremap 
 
 ## _initialze ftrace_
 
+Ftrace is an internal tracer designed to help out developers and designers of systems to find what is going on inside the kernel.
+It can be used for debugging or analyzing latencies and performance issues that take place outside of user-space.
+
+Although ftrace is typically considered the function tracer, it is really a frame work of several assorted tracing utilities.
+There's latency tracing to examine what occurs between interrupts disabled and enabled, as well as for preemption and from a time a task is woken to the task is actually scheduled in.
+
+One of the most common uses of ftrace is the event tracing. Through out the kernel is hundreds of static event points that can be enabled via the debugfs file system to see what is going on in certain parts of the kernel.
+
+* The default nop is P6_NOP5, tests it to make sure that the nop actually work on this CPU. If it faults, then go to a lesser efficient 5 byte nop. If that fails then just use a jmp as nop. This isn't the most efficient nop, but we can not use a multi part nop since we would then risk being preempted in the middle of that nop, and if we enabled tracing then, it might cause a system crash.
+
+```ftrace_dyn_arch_init
+Breakpoint 2, ftrace_init () at kernel/trace/ftrace.c:2735
+2735	{
+(gdb) n
+2740		addr = (unsigned long)ftrace_stub;
+(gdb) p ftrace_stub 
+$1 = {<text variable, no debug info>} 0xc1003b0b <ftrace_stub>
+(gdb) n
+2742		local_irq_save(flags);
+(gdb) 
+2743		ftrace_dyn_arch_init(&addr);
+(gdb) s
+ftrace_dyn_arch_init (data=data@entry=0xc168bfac <init_thread_union+8108>)
+    at arch/x86/kernel/ftrace.c:315
+315		asm volatile (
+(gdb) n
+337		switch (faulted) {
+(gdb) 
+339			pr_info("ftrace: converting mcount calls to 0f 1f 44 00 00\n");
+(gdb) p faulted 
+$2 = 0
+(gdb) n
+340			memcpy(ftrace_nop, ftrace_test_p6nop, MCOUNT_INSN_SIZE);
+(gdb) 
+353		*(unsigned long *)data = 0;
+(gdb) 
+356	}
+(gdb) n
+ftrace_init () at kernel/trace/ftrace.c:2744
+2744		local_irq_restore(flags);
+(gdb) 
+2747		if (addr)
+(gdb) 
+```
+
+* Allocates pages for ftrace
+
+```ftrace_dyn_table_alloc
+2750		count = __stop_mcount_loc - __start_mcount_loc;
+(gdb) 
+2752		ret = ftrace_dyn_table_alloc(count);
+(gdb) s
+ftrace_dyn_table_alloc (num_to_init=<optimized out>)
+    at kernel/trace/ftrace.c:1292
+1292		ftrace_pages_start = (void *)get_zeroed_page(GFP_KERNEL);
+(gdb) n
+1293		if (!ftrace_pages_start)
+(gdb) 
+1310		pg = ftrace_pages = ftrace_pages_start;
+(gdb) 
+1312		cnt = num_to_init / ENTRIES_PER_PAGE;
+(gdb) 
+1313		pr_info("ftrace: allocating %ld entries in %d pages\n",
+(gdb) 
+1316		for (i = 0; i < cnt; i++) {
+(gdb) p cnt
+$5 = 41
+(gdb) n
+1317			pg->next = (void *)get_zeroed_page(GFP_KERNEL);
+(gdb) break if i==40
+Breakpoint 3 at 0xc171162a: file kernel/trace/ftrace.c, line 1317.
+(gdb) c
+Continuing.
+
+Breakpoint 3, ftrace_dyn_table_alloc (num_to_init=<optimized out>)
+    at kernel/trace/ftrace.c:1317
+1317			pg->next = (void *)get_zeroed_page(GFP_KERNEL);
+(gdb) n
+1320			if (!pg->next)
+(gdb) 
+1323			pg = pg->next;
+(gdb) 
+1316		for (i = 0; i < cnt; i++) {
+(gdb) 
+```
+
 ## _rest of kernel initailization_
 
 # Links
