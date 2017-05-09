@@ -518,7 +518,7 @@ ftrace_init () at kernel/trace/ftrace.c:2744
 (gdb) 
 ```
 
-* Allocates pages for ftrace
+* Allocates pages for ftrace dynamic table
 
 ```ftrace_dyn_table_alloc
 2750		count = __stop_mcount_loc - __start_mcount_loc;
@@ -559,7 +559,220 @@ Breakpoint 3, ftrace_dyn_table_alloc (num_to_init=<optimized out>)
 (gdb) 
 ```
 
+* Replaces code with nop code got in previous subroutine
+
+```
+2756		last_ftrace_enabled = ftrace_enabled = 1;
+(gdb) n
+2758		ret = ftrace_convert_nops(NULL,
+(gdb) s
+ftrace_convert_nops (mod=mod@entry=0x0, start=0xc1768530, end=0xc177cfbc)
+    at kernel/trace/ftrace.c:2645
+2645		mutex_lock(&ftrace_lock);
+(gdb) n
+2647		while (p < end) {
+(gdb) n
+2648			addr = ftrace_call_adjust(*p++);
+(gdb) 
+2655			if (!addr)
+(gdb) 
+2657			ftrace_record_ip(addr);
+(gdb) s
+ftrace_record_ip (ip=3238007027) at kernel/trace/ftrace.c:973
+973		if (ftrace_disabled)
+(gdb) n
+976		rec = ftrace_alloc_dyn_node(ip);
+(gdb) s
+ftrace_alloc_dyn_node (ip=<optimized out>) at kernel/trace/ftrace.c:940
+940		if (ftrace_free_records) {
+(gdb) p ftrace_free_records 
+$6 = (struct dyn_ftrace *) 0x0
+(gdb) n
+954		if (ftrace_pages->index == ENTRIES_PER_PAGE) {
+(gdb) p ftrace_pages->index 
+$7 = 0
+(gdb) n
+965		return &ftrace_pages->records[ftrace_pages->index++];
+(gdb) 
+ftrace_record_ip (ip=3238007027) at kernel/trace/ftrace.c:977
+977		if (!rec)
+(gdb) 
+981		rec->newlist = ftrace_new_addrs;
+(gdb) p ftrace_new_addrs 
+$8 = (struct dyn_ftrace *) 0x0
+(gdb) n
+ftrace_convert_nops (mod=mod@entry=0x0, start=<optimized out>, end=0xc177cfbc)
+    at kernel/trace/ftrace.c:2647
+2647		while (p < end) {
+(gdb) break if p>=end
+Breakpoint 4 at 0xc10b4836: file kernel/trace/ftrace.c, line 2647.
+(gdb) c
+Continuing.
+
+Breakpoint 4, ftrace_convert_nops (mod=mod@entry=0x0, start=<optimized out>, 
+    end=0xc177cfbc) at kernel/trace/ftrace.c:2647
+2647		while (p < end) {
+(gdb) n
+2661		local_irq_save(flags);
+(gdb) 
+2662		ftrace_update_code(mod);
+(gdb) s
+ftrace_update_code (mod=0x0) at kernel/trace/ftrace.c:1257
+1257		start = ftrace_now(raw_smp_processor_id());
+(gdb) s
+ftrace_now (cpu=0) at kernel/trace/trace.c:185
+185		if (!global_trace.buffer)
+(gdb) n
+186			return trace_clock_local();
+(gdb) s
+trace_clock_local () at kernel/trace/trace_clock.c:39
+39		raw_local_irq_save(flags);
+(gdb) n
+40		clock = sched_clock();
+(gdb) s
+native_sched_clock () at arch/x86/kernel/tsc.c:55
+55		if (unlikely(tsc_disabled)) {
+(gdb) n
+44	{
+(gdb) 
+61		rdtscll(this_offset);
+(gdb) 
+64		return __cycles_2_ns(this_offset);
+(gdb) 
+65	}
+(gdb) 
+trace_clock_local () at kernel/trace/trace_clock.c:41
+41		raw_local_irq_restore(flags);
+(gdb) 
+44	}
+(gdb) 
+ftrace_now (cpu=0) at kernel/trace/trace.c:192
+192	}
+(gdb) 
+ftrace_update_code (mod=0x0) at kernel/trace/ftrace.c:1258
+1258		ftrace_update_cnt = 0;
+(gdb) 
+1257		start = ftrace_now(raw_smp_processor_id());
+(gdb) 
+1260		while (ftrace_new_addrs) {
+(gdb) n
+1263			if (unlikely(ftrace_disabled))
+(gdb) p ftrace_new_addrs 
+$9 = (struct dyn_ftrace *) 0xc7063660
+(gdb) n
+1267			ftrace_new_addrs = p->newlist;
+(gdb) 
+1268			p->flags = 0L;
+(gdb) n
+1271			if (ftrace_code_disable(mod, p)) {
+(gdb) s
+ftrace_code_disable (rec=<optimized out>, mod=<optimized out>)
+    at kernel/trace/ftrace.c:1100
+1100		ip = rec->ip;
+(gdb) n
+1102		ret = ftrace_make_nop(mod, rec, MCOUNT_ADDR);
+(gdb) s
+ftrace_make_nop (mod=mod@entry=0x0, rec=rec@entry=0xc7063660, addr=3238017760)
+    at arch/x86/kernel/ftrace.c:260
+260	{
+(gdb) n
+262		unsigned long ip = rec->ip;
+(gdb) 
+264		old = ftrace_call_replace(ip, addr);
+(gdb) s
+ftrace_call_replace (addr=3238017760, ip=3242601459)
+    at arch/x86/kernel/ftrace.c:60
+60		calc.e8		= 0xe8;
+(gdb) n
+61		calc.offset	= ftrace_calc_offset(ip + MCOUNT_INSN_SIZE, addr);
+(gdb) 
+ftrace_make_nop (mod=mod@entry=0x0, rec=rec@entry=0xc7063660, 
+    addr=<optimized out>) at arch/x86/kernel/ftrace.c:264
+264		old = ftrace_call_replace(ip, addr);
+(gdb) n
+267		return ftrace_modify_code(rec->ip, old, new);
+(gdb) s
+ftrace_modify_code (ip=3242601459, 
+    old_code=old_code@entry=0xc18e62a0 <calc> "\350\350\016\272\377", 
+    new_code=new_code@entry=0xc18e62ac <ftrace_nop> "\017\037D")
+    at arch/x86/kernel/ftrace.c:242
+242		if (probe_kernel_read(replaced, (void *)ip, MCOUNT_INSN_SIZE))
+(gdb) n
+228	{
+(gdb) 
+242		if (probe_kernel_read(replaced, (void *)ip, MCOUNT_INSN_SIZE))
+(gdb) 
+246		if (memcmp(replaced, old_code, MCOUNT_INSN_SIZE) != 0)
+(gdb) 
+250		if (do_ftrace_mod_code(ip, new_code))
+(gdb) 
+253		sync_core();
+(gdb) 
+256	}
+(gdb) 
+ftrace_make_nop (mod=mod@entry=0x0, rec=rec@entry=0xc7063660, 
+    addr=<optimized out>) at arch/x86/kernel/ftrace.c:268
+268	}
+(gdb) n
+ftrace_code_disable (rec=0xc7063660, mod=0x0) at kernel/trace/ftrace.c:1103
+1103		if (ret) {
+(gdb) 
+ftrace_update_code (mod=0x0) at kernel/trace/ftrace.c:1272
+1272				p->flags |= FTRACE_FL_CONVERTED;
+(gdb) 
+1273				ftrace_update_cnt++;
+1260		while (ftrace_new_addrs) {
+(gdb) 
+(gdb) break if ftrace_new_addrs == 0
+Breakpoint 5 at 0xc10b48b1: file kernel/trace/ftrace.c, line 1273.
+(gdb) c
+Continuing.
+
+Breakpoint 5, ftrace_update_code (mod=0x0) at kernel/trace/ftrace.c:1273
+1273				ftrace_update_cnt++;
+(gdb) n
+1260		while (ftrace_new_addrs) {
+(gdb) 
+1278		stop = ftrace_now(raw_smp_processor_id());
+(gdb) 
+1279		ftrace_update_time = stop - start;
+(gdb) 
+1280		ftrace_update_tot_cnt += ftrace_update_cnt;
+(gdb) 
+ftrace_convert_nops (mod=mod@entry=0x0, start=<optimized out>, 
+    end=<optimized out>) at kernel/trace/ftrace.c:2663
+2663		local_irq_restore(flags);
+(gdb) 
+2664		mutex_unlock(&ftrace_lock);
+(gdb) 
+2667	}
+(gdb) 
+```
+
+* Registers notifier to module notify list and sets ftrace early filter
+
+```
+(gdb) 
+ftrace_init () at kernel/trace/ftrace.c:2762
+2762		ret = register_module_notifier(&ftrace_module_nb);
+(gdb) 
+2763		if (ret)
+(gdb) 
+2766		set_ftrace_early_filters();
+(gdb) s
+set_ftrace_early_filters () at kernel/trace/ftrace.c:2335
+2335		if (ftrace_filter_buf[0])
+(gdb) 
+2337		if (ftrace_notrace_buf[0])
+(gdb) 
+ftrace_init () at kernel/trace/ftrace.c:2771
+2771	}
+(gdb) 
+```
+
 ## _rest of kernel initailization_
+
+End of `start_kernel`, rest of kernel initialization will be introduced in new chapter.
 
 # Links
 
