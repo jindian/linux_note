@@ -467,7 +467,9 @@ init_hw_perf_events () at arch/x86/kernel/cpu/perf_event.c:2190
 
 `acpi_early_init` reallocates the root table if the host provided a static buffer for the table array in the call to acpi_initialize_tables; initializes acpi global variables; loads the ACPI tables from the RSDT/XSDT; completes the subsystem initialization including hardware, puts system into ACPI mode if it isn't already.
 
-## _late initialize of sfi_
+## _late initialize sfi_
+
+If sfi is enabled, unmapps early mapped memory with early_ioremap, uses ioremap instead after it is ready; parses sfi table and update sfi table.
 
 ## _initialze ftrace_
 
