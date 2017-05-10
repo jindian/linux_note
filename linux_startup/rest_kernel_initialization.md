@@ -96,7 +96,9 @@ kernel_thread (fn=fn@entry=0xc16fa7e8 <kernel_init>, arg=arg@entry=0x0,
 223		return do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0, &regs, 0, NULL, NULL);
 ```
 
+
     - `do_fork` does some preliminary argument and permissions checking before actually start allocating stuff
+
 
 ```argument_and_permission_checking
 223		return do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0, &regs, 0, NULL, NULL);
@@ -133,7 +135,9 @@ do_fork (clone_flags=clone_flags@entry=8391424,
 (gdb) 
 ```
 
+
     - `copy_process` is used to create a new process as a copy of old one, but doesn't actually start it yet. It copies the registers, and all the appropriate parts of the process environment(as per clone flags). Before copying stuff, do some argument checking, it's failed when checking `CLONE_PARENT`
+
 
 ```copy_process
 1417		p = copy_process(clone_flags, stack_start, regs, stack_size,
