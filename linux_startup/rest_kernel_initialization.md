@@ -133,6 +133,30 @@ do_fork (clone_flags=clone_flags@entry=8391424,
 (gdb) 
 ```
 
+    - `copy_process` is used to create a new process as a copy of old one, but doesn't actually start it yet. It copies the registers, and all the appropriate parts of the process environment(as per clone flags). Before copying stuff, do some argument checking, it's failed when checking `CLONE_PARENT`
+
+```copy_process
+1417		p = copy_process(clone_flags, stack_start, regs, stack_size,
+(gdb) s
+copy_process (trace=0, pid=0x0, child_tidptr=0x0, stack_size=0, 
+    regs=0xc168bf64 <init_thread_union+8036>, stack_start=0, 
+    clone_flags=8391424) at kernel/fork.c:993
+993		if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS))
+(gdb) n
+1000		if ((clone_flags & CLONE_THREAD) && !(clone_flags & CLONE_SIGHAND))
+(gdb) 
+1008		if ((clone_flags & CLONE_SIGHAND) && !(clone_flags & CLONE_VM))
+(gdb) 
+1017		if ((clone_flags & CLONE_PARENT) &&
+(gdb) 
+do_fork (clone_flags=clone_flags@entry=8391424, 
+    stack_start=stack_start@entry=0, 
+    regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+    stack_size=stack_size@entry=0, parent_tidptr=parent_tidptr@entry=0x0, 
+    child_tidptr=child_tidptr@entry=0x0) at kernel/fork.c:1423
+1423		if (!IS_ERR(p)) {
+```
+
 # Links
 
 * [User-space lockdep](https://lwn.net/Articles/536363/)
