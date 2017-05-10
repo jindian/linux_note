@@ -5,3 +5,7 @@
 Detail steps of `rest_init`:
 
 * 
+
+# Links
+
+* [User-space lockdep](https://lwn.net/Articles/536363/)
