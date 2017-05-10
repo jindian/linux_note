@@ -60,6 +60,7 @@ rcu_scheduler_starting () at kernel/rcupdate.c:186
 (gdb) 
 ```
 * Creates a kernel thread.
+    ** `kernel_thread` initializes register parameters and invoke `do_fork` to create new process. `do_fork` do some preliminary     argument and permissions checking before actually start allocating stuff;
 
 
 
