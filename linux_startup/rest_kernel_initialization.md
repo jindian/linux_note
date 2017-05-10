@@ -63,9 +63,75 @@ rcu_scheduler_starting () at kernel/rcupdate.c:186
 * Creates a kernel thread.
 
     - `kernel_thread` initializes register parameters and invoke `do_fork` to create new process.
-    - `do_fork` do some preliminary argument and permissions checking before actually start allocating stuff
 
+```kernel_thread
+423		kernel_thread(kernel_init, NULL, CLONE_FS | CLONE_SIGHAND);
+(gdb) s
+kernel_thread (fn=fn@entry=0xc16fa7e8 <kernel_init>, arg=arg@entry=0x0, 
+    flags=flags@entry=2560) at arch/x86/kernel/process_32.c:205
+205	{
+(gdb) n
+208		memset(&regs, 0, sizeof(regs));
+(gdb) 
+210		regs.bx = (unsigned long) fn;
+(gdb) 
+211		regs.dx = (unsigned long) arg;
+(gdb) 
+213		regs.ds = __USER_DS;
+(gdb) 
+214		regs.es = __USER_DS;
+(gdb) 
+215		regs.fs = __KERNEL_PERCPU;
+(gdb) 
+216		regs.gs = __KERNEL_STACK_CANARY;
+(gdb) 
+217		regs.orig_ax = -1;
+(gdb) 
+218		regs.ip = (unsigned long) kernel_thread_helper;
+(gdb) 
+219		regs.cs = __KERNEL_CS | get_kernel_rpl();
+(gdb) 
+220		regs.flags = X86_EFLAGS_IF | X86_EFLAGS_SF | X86_EFLAGS_PF | 0x2;
+(gdb) 
+223		return do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0, &regs, 0, NULL, NULL);
+```
 
+    - `do_fork` does some preliminary argument and permissions checking before actually start allocating stuff
+
+```argument_and_permission_checking
+223		return do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0, &regs, 0, NULL, NULL);
+(gdb) s
+do_fork (clone_flags=clone_flags@entry=8391424, 
+    stack_start=stack_start@entry=0, 
+    regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+    stack_size=stack_size@entry=0, parent_tidptr=parent_tidptr@entry=0x0, 
+    child_tidptr=child_tidptr@entry=0x0) at kernel/fork.c:1374
+1374	{
+(gdb) n
+1383		if (clone_flags & CLONE_NEWUSER) {
+(gdb) 
+1397		if (unlikely(clone_flags & CLONE_STOPPED)) {
+(gdb) 
+1414		if (likely(user_mode(regs)))
+(gdb) p *regs
+$2 = {bx = 3245320168, cx = 0, dx = 0, si = 0, di = 0, bp = 0, ax = 0, 
+  ds = 123, es = 123, fs = 216, gs = 224, orig_ax = 4294967295, 
+  ip = 3238017744, cs = 96, flags = 646, sp = 0, ss = 0}
+(gdb) s
+user_mode (regs=0xc168bf64 <init_thread_union+8036>)
+    at /home/start-kernel/work_space/github/linux_startup/linux-2.6.32.69/arch/x86/include/asm/ptrace.h:160
+160		return (regs->cs & SEGMENT_RPL_MASK) == USER_RPL;
+(gdb) n
+do_fork (clone_flags=clone_flags@entry=8391424, 
+    stack_start=stack_start@entry=0, 
+    regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+    stack_size=stack_size@entry=0, parent_tidptr=parent_tidptr@entry=0x0, 
+    child_tidptr=child_tidptr@entry=0x0) at kernel/fork.c:1414
+1414		if (likely(user_mode(regs)))
+(gdb) 
+1417		p = copy_process(clone_flags, stack_start, regs, stack_size,
+(gdb) 
+```
 
 # Links
 
