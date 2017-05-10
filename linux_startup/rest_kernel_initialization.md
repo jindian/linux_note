@@ -59,6 +59,9 @@ rcu_scheduler_starting () at kernel/rcupdate.c:186
 187	}
 (gdb) 
 ```
+* Creates a kernel thread.
+
+
 
 # Links
 
