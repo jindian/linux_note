@@ -143,12 +143,6 @@ rcu_scheduler_starting () at kernel/rcupdate.c:186
      (gdb) 
      1017        if ((clone_flags & CLONE_PARENT) &&
      (gdb) 
-     do_fork (clone_flags=clone_flags@entry=8391424, 
-         stack_start=stack_start@entry=0, 
-         regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
-         stack_size=stack_size@entry=0, parent_tidptr=parent_tidptr@entry=0x0, 
-         child_tidptr=child_tidptr@entry=0x0) at kernel/fork.c:1423
-     1423        if (!IS_ERR(p)) {
      ```
 
 
