@@ -157,6 +157,9 @@ rcu_scheduler_starting () at kernel/rcupdate.c:186
 
 * [User-space lockdep](https://lwn.net/Articles/536363/)
 * [The kernel lock validator](https://lwn.net/Articles/185666/)
+* [Using the TRACE_EVENT() macro (Part 1)](https://lwn.net/Articles/379903/)
+* [Using the TRACE_EVENT() macro (Part 2)](https://lwn.net/Articles/381064/)
+* [Using the TRACE_EVENT() macro (Part 3)](https://lwn.net/Articles/383362/)
 
 
 
