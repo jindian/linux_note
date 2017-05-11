@@ -128,32 +128,166 @@ rcu_scheduler_starting () at kernel/rcupdate.c:186
      1417        p = copy_process(clone_flags, stack_start, regs, stack_size,
      (gdb)
      ```
-  3. `copy_process` is used to create a new process as a copy of old one, but doesn't actually start it yet. It copies the registers, and all the appropriate parts of the process environment\(as per clone flags\). Before copying stuff, do some argument checking, it's failed when checking `CLONE_PARENT`.
+  3. `copy_process` is used to create a new process as a copy of old one, but doesn't actually start it yet. It copies the registers, and all the appropriate parts of the process environment\(as per clone flags\). 
+
+
+     Before copying stuff, do some argument checking is executed, after that calls `security_task_create` which invokes `cap_task_create` of `default_security_ops`; 
      ```
-     1417        p = copy_process(clone_flags, stack_start, regs, stack_size,
+     1417		p = copy_process(clone_flags, stack_start, regs, stack_size,
+     (gdb) break copy_process
+     Breakpoint 3 at 0xc1044a60: copy_process. (3 locations)
      (gdb) s
      copy_process (trace=0, pid=0x0, child_tidptr=0x0, stack_size=0, 
          regs=0xc168bf64 <init_thread_union+8036>, stack_start=0, 
          clone_flags=8391424) at kernel/fork.c:993
-     993        if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS))
+     993		if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS))
      (gdb) n
-     1000        if ((clone_flags & CLONE_THREAD) && !(clone_flags & CLONE_SIGHAND))
+     1000		if ((clone_flags & CLONE_THREAD) && !(clone_flags & CLONE_SIGHAND))
      (gdb) 
-     1008        if ((clone_flags & CLONE_SIGHAND) && !(clone_flags & CLONE_VM))
+     1008		if ((clone_flags & CLONE_SIGHAND) && !(clone_flags & CLONE_VM))
      (gdb) 
-     1017        if ((clone_flags & CLONE_PARENT) &&
+     1017		if ((clone_flags & CLONE_PARENT) &&
+     (gdb) 
+     1021		retval = security_task_create(clone_flags);
+     (gdb) s
+     security_task_create (clone_flags=clone_flags@entry=8391424)
+         at security/security.c:683
+     683		return security_ops->task_create(clone_flags);
+     (gdb) s
+     cap_task_create (clone_flags=8391424) at security/capability.c:374
+     374	}
+     (gdb) n
+     security_task_create (clone_flags=clone_flags@entry=8391424)
+         at security/security.c:684
+     684	}
+     (gdb) p security_ops 
+     $1 = (struct security_operations *) 0xc16aeee0 <default_security_ops>
+     (gdb) n
+     copy_process (clone_flags=clone_flags@entry=8391424, 
+         stack_start=stack_start@entry=0, 
+         regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+         stack_size=stack_size@entry=0, child_tidptr=child_tidptr@entry=0x0, 
+         pid=pid@entry=0x0, trace=trace@entry=0) at kernel/fork.c:1022
+     1022		if (retval)
      (gdb) 
      ```
 
+     Duplicates task\_struct of `init_task`; 
 
+     ```
+     1026		p = dup_task_struct(current);
+     (gdb) s
+     get_current ()
+         at /home/start-kernel/work_space/github/linux_startup/linux-2.6.32.69/arch/x86/include/asm/current.h:14
+     14		return percpu_read_stable(current_task);
+     (gdb) n
+     copy_process (clone_flags=clone_flags@entry=8391424, 
+         stack_start=stack_start@entry=0, 
+         regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+         stack_size=stack_size@entry=0, child_tidptr=child_tidptr@entry=0x0, 
+         pid=pid@entry=0x0, trace=trace@entry=0) at kernel/fork.c:1026
+     1026		p = dup_task_struct(current);
+     (gdb) s
+     dup_task_struct (orig=0xc1692440 <init_task>) at kernel/fork.c:230
+     230		prepare_to_copy(orig);
+     (gdb) s
+     prepare_to_copy (tsk=tsk@entry=0xc1692440 <init_task>)
+         at arch/x86/kernel/process_32.c:238
+     238	{
+     (gdb) p tsk
+     $2 = (struct task_struct *) 0xc1692440 <init_task>   
+     (gdb) p tsk->pid
+     $3 = 0
+     (gdb) n
+     239		unlazy_fpu(tsk);
+     (gdb) s
+     unlazy_fpu (tsk=0xc1692440 <init_task>) at arch/x86/kernel/process_32.c:239
+     239		unlazy_fpu(tsk);
+     (gdb) s
+     __unlazy_fpu (tsk=0xc1692440 <init_task>)
+         at /home/start-kernel/work_space/github/linux_startup/linux-2.6.32.69/arch/x86/include/asm/i387.h:274
+     274		if (task_thread_info(tsk)->status & TS_USEDFPU) {
+     (gdb) p ((struct thread_info *)(tsk)->stack)->status
+     $4 = 1
+     (gdb) n
+     prepare_to_copy (tsk=tsk@entry=0xc1692440 <init_task>)
+         at arch/x86/kernel/process_32.c:239
+     239		unlazy_fpu(tsk);
+     (gdb) s
+     unlazy_fpu (tsk=0xc1692440 <init_task>) at arch/x86/kernel/process_32.c:239
+     239		unlazy_fpu(tsk);
+     (gdb) s
+     __unlazy_fpu (tsk=0xc1692440 <init_task>) at arch/x86/kernel/process_32.c:239
+     239		unlazy_fpu(tsk);
+     (gdb) s
+     __save_init_fpu (tsk=0xc1692440 <init_task>)
+         at /home/start-kernel/work_space/github/linux_startup/linux-2.6.32.69/arch/x86/include/asm/i387.h:211
+     211		if (task_thread_info(tsk)->status & TS_XSAVE) {
+     (gdb) n
+     234		alternative_input(
+     (gdb) 
+     245		if (unlikely(boot_cpu_has(X86_FEATURE_FXSAVE_LEAK))) {
+     (gdb) 
+     253		task_thread_info(tsk)->status &= ~TS_USEDFPU;
+     (gdb) 
+     __unlazy_fpu (tsk=0xc1692440 <init_task>)
+         at /home/start-kernel/work_space/github/linux_startup/linux-2.6.32.69/arch/x86/include/asm/i387.h:276
+     276			stts();
+     (gdb) 
+     prepare_to_copy (tsk=tsk@entry=0xc1692440 <init_task>)
+         at arch/x86/kernel/process_32.c:240
+     240	}
+     (gdb) 
+     dup_task_struct (orig=0xc1692440 <init_task>) at kernel/fork.c:232
+     232		tsk = alloc_task_struct();
+     (gdb) s
+     kmem_cache_alloc (s=0xc70024b0, gfpflags=gfpflags@entry=208) at mm/slub.c:1749
+     1749		void *ret = slab_alloc(s, gfpflags, -1, _RET_IP_);
+     (gdb) n
+     1751		trace_kmem_cache_alloc(_RET_IP_, ret, s->objsize, s->size, gfpflags);
+     (gdb) 
+     1754	}
+     (gdb) 
+     dup_task_struct (orig=0xc1692440 <init_task>) at kernel/fork.c:233
+     233		if (!tsk)
+     (gdb) 
+     236		ti = alloc_thread_info(tsk);
+     (gdb) s
+     __get_free_pages (gfp_mask=gfp_mask@entry=32976, order=order@entry=1)
+         at mm/page_alloc.c:1994
+     1994		VM_BUG_ON((gfp_mask & __GFP_HIGHMEM) != 0);
+     (gdb) n
+     1996		page = alloc_pages(gfp_mask, order);
+     (gdb) s
+     alloc_pages_node (order=1, gfp_mask=32976, nid=0) at mm/page_alloc.c:1996
+     1996		page = alloc_pages(gfp_mask, order);
+     (gdb) s
+     __alloc_pages (zonelist=0xc16dca60 <contig_page_data+5376>, order=1, 
+         gfp_mask=32976) at include/linux/gfp.h:276
+     276		return __alloc_pages_nodemask(gfp_mask, order, zonelist, NULL);
+     (gdb) n
+     __get_free_pages (gfp_mask=gfp_mask@entry=32976, order=order@entry=1)
+         at mm/page_alloc.c:1997
+
+     1997		if (!page)
+     (gdb) 
+     1999		return (unsigned long) page_address(page);
+     (gdb) 
+     2000	}
+     (gdb) 
+     dup_task_struct (orig=0xc1692440 <init_task>) at kernel/fork.c:237
+     237		if (!ti) {
+     (gdb) 
+
+     ```
 
 # Links
 
 * [User-space lockdep](https://lwn.net/Articles/536363/)
 * [The kernel lock validator](https://lwn.net/Articles/185666/)
-* [Using the TRACE_EVENT() macro (Part 1)](https://lwn.net/Articles/379903/)
-* [Using the TRACE_EVENT() macro (Part 2)](https://lwn.net/Articles/381064/)
-* [Using the TRACE_EVENT() macro (Part 3)](https://lwn.net/Articles/383362/)
+* [Using the TRACE\_EVENT\(\) macro \(Part 1\)](https://lwn.net/Articles/379903/)
+* [Using the TRACE\_EVENT\(\) macro \(Part 2\)](https://lwn.net/Articles/381064/)
+* [Using the TRACE\_EVENT\(\) macro \(Part 3\)](https://lwn.net/Articles/383362/)
 
 
 
