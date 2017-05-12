@@ -175,7 +175,7 @@ rcu_scheduler_starting () at kernel/rcupdate.c:186
      Duplicates task\_struct of `init_task`; 
 
      ```
-     1026        p = dup_task_struct(current);
+      1026        p = dup_task_struct(current);
       (gdb) s
       get_current ()
           at /home/start-kernel/work_space/github/linux_startup/linux-2.6.32.69/arch/x86/include/asm/current.h:14
@@ -405,8 +405,69 @@ rcu_scheduler_starting () at kernel/rcupdate.c:186
       147	}
       (gdb) 
      ```
+     
+     Allocates return stack for newly created task if `ftrace_graph_active` is true; initializes lock for pi data.
+     
+     ```
+      (gdb) 
+      copy_process (clone_flags=clone_flags@entry=8391424, 
+          stack_start=stack_start@entry=0, 
+          regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+          stack_size=stack_size@entry=0, child_tidptr=child_tidptr@entry=0x0, 
+          pid=pid@entry=0x0, trace=trace@entry=0) at kernel/fork.c:1030
+      1030		ftrace_graph_init_task(p);
+      (gdb) s
+      ftrace_graph_init_task (t=t@entry=0xc7070000) at kernel/trace/ftrace.c:3313
+      3313		t->ret_stack = NULL;
+      (gdb) n
+      3314		t->curr_ret_stack = -1;
+      (gdb) 
+      3316		if (ftrace_graph_active) {
+      (gdb) 
+      3326	}
+      (gdb) 
+      copy_process (clone_flags=clone_flags@entry=8391424, 
+          stack_start=stack_start@entry=0, 
+          regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+          stack_size=stack_size@entry=0, child_tidptr=child_tidptr@entry=0x0, 
+          pid=pid@entry=0x0, trace=trace@entry=0) at kernel/fork.c:1032
+      1032		rt_mutex_init_task(p);
+      (gdb) s
+      rt_mutex_init_task (p=<optimized out>) at kernel/fork.c:946
+      946		spin_lock_init(&p->pi_lock);
+      (gdb) n
+      948		plist_head_init(&p->pi_waiters, &p->pi_lock);
+      (gdb) s
+      plist_head_init (lock=0xc7070468, head=<optimized out>)
+          at include/linux/plist.h:133
+      133		INIT_LIST_HEAD(&head->prio_list);
+      (gdb) n
+      134		INIT_LIST_HEAD(&head->node_list);
+      (gdb) 
+      136		head->lock = lock;
+      (gdb) 
+      rt_mutex_init_task (p=<optimized out>) at kernel/fork.c:949
+      949		p->pi_blocked_on = NULL;
+      (gdb) 
+      copy_process (clone_flags=clone_flags@entry=8391424, 
+          stack_start=stack_start@entry=0, 
+          regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+          stack_size=stack_size@entry=0, child_tidptr=child_tidptr@entry=0x0, 
+          pid=pid@entry=0x0, trace=trace@entry=0) at kernel/fork.c:1035
+      1035		DEBUG_LOCKS_WARN_ON(!p->hardirqs_enabled);
+      (gdb) 
+      1036		DEBUG_LOCKS_WARN_ON(!p->softirqs_enabled);
+      (gdb) 
+      1039		if (atomic_read(&p->real_cred->user->processes) >=
+      (gdb) 
+      1040				p->signal->rlim[RLIMIT_NPROC].rlim_cur) {
+      (gdb) 
+      1039		if (atomic_read(&p->real_cred->user->processes) >=
+      (gdb) 
 
-  
+     ```
+
+
 
  
 
