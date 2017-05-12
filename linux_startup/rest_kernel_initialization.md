@@ -467,7 +467,7 @@ rcu_scheduler_starting () at kernel/rcupdate.c:186
 
      ```
 
-     Copy credentials for the new process
+     Copies credentials for the new process
      
      ```
      1046		retval = copy_creds(p, clone_flags);
