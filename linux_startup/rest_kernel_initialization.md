@@ -278,6 +278,132 @@ rcu_scheduler_starting () at kernel/rcupdate.c:186
       dup_task_struct (orig=0xc1692440 <init_task>) at kernel/fork.c:237
       237        if (!ti) {
       (gdb) 
+      242	 	err = arch_dup_task_struct(tsk, orig);
+      (gdb) s
+      arch_dup_task_struct (dst=0xc7070000, src=0xc1692440 <init_task>)
+          at arch/x86/kernel/process.c:30
+      30		*dst = *src;
+      (gdb) 
+      31		if (src->thread.xstate) {
+      (gdb) p src->thread.xstate 
+      $5 = (union thread_xstate *) 0xc7028000
+      (gdb) n
+      32			dst->thread.xstate = kmem_cache_alloc(task_xstate_cachep,
+      (gdb) 
+      34			if (!dst->thread.xstate)
+      (gdb) 
+      36			WARN_ON((unsigned long)dst->thread.xstate & 15);
+      (gdb) 
+      37			memcpy(dst->thread.xstate, src->thread.xstate, xstate_size);
+      (gdb) 
+      39		return 0;
+      (gdb) 
+      40	}
+      (gdb) 
+      dup_task_struct (orig=0xc1692440 <init_task>) at kernel/fork.c:243
+      243		if (err)
+      (gdb) 
+      246		tsk->stack = ti;
+      (gdb) 
+      248		err = prop_local_init_single(&tsk->dirties);
+      (gdb) s
+      prop_local_init_single (pl=pl@entry=0xc7070d74) at lib/proportions.c:327
+      327		spin_lock_init(&pl->lock);
+      (gdb) n
+      328		pl->shift = 0;
+      (gdb) 
+      329		pl->period = 0;
+      (gdb) 
+      330		pl->events = 0;
+      (gdb) 
+      332	}
+      (gdb) 
+      dup_task_struct (orig=0xc1692440 <init_task>) at kernel/fork.c:249
+      249		if (err)
+      (gdb) 
+      252		setup_thread_stack(tsk, orig);
+      (gdb) s
+      setup_thread_stack (org=0xc1692440 <init_task>, p=0xc7070000)
+          at include/linux/sched.h:2280
+      2280		*task_thread_info(p) = *task_thread_info(org);
+      (gdb) n
+      2281		task_thread_info(p)->task = p;
+      (gdb) 
+      dup_task_struct (orig=<optimized out>) at kernel/fork.c:253
+      253		stackend = end_of_stack(tsk);
+      (gdb) 
+      254		*stackend = STACK_END_MAGIC;	/* for overflow detection */
+      (gdb) 
+      257		tsk->stack_canary = get_random_int();
+      (gdb) s
+      get_random_int () at drivers/char/random.c:1481
+      1481		if (arch_get_random_int(&ret))
+      (gdb) s
+      1484		hash = get_cpu_var(get_random_int_hash);
+      (gdb) n
+      1486		hash[0] += current->pid + jiffies + get_cycles();
+      (gdb) 
+      1487		md5_transform(hash, random_int_secret);
+      (gdb) 
+      1488		ret = hash[0];
+      (gdb) p hash[0]
+      $9 = 3166209240
+      (gdb) n
+      1492	}
+      (gdb) 
+      dup_task_struct (orig=<optimized out>) at kernel/fork.c:261
+      261		atomic_set(&tsk->usage,2);
+      (gdb) n
+      262		atomic_set(&tsk->fs_excl, 0);
+      (gdb) 
+      264		tsk->btrace_seq = 0;
+      (gdb) 
+      266		tsk->splice_pipe = NULL;
+      (gdb) 
+      268		account_kernel_stack(ti, 1);
+      (gdb) s
+      account_kernel_stack (ti=ti@entry=0xc706a000, account=account@entry=1)
+          at kernel/fork.c:144
+      144		struct zone *zone = page_zone(virt_to_page(ti));
+      (gdb) n
+      146		mod_zone_page_state(zone, NR_KERNEL_STACK, account);
+      (gdb) s
+      mod_zone_page_state (zone=0xc16dbaa0 <contig_page_data+1344>, 
+          item=item@entry=NR_KERNEL_STACK, delta=delta@entry=1) at mm/vmstat.c:184
+      184	{
+      (gdb) n
+      187		local_irq_save(flags);
+      (gdb) 
+      188		__mod_zone_page_state(zone, item, delta);
+      (gdb) s
+      __mod_zone_page_state (zone=zone@entry=0xc16dbaa0 <contig_page_data+1344>, 
+          item=item@entry=NR_KERNEL_STACK, delta=delta@entry=1) at mm/vmstat.c:165
+      165		struct per_cpu_pageset *pcp = zone_pcp(zone, smp_processor_id());
+      (gdb) n
+      169		x = delta + *p;
+      (gdb) 
+      171		if (unlikely(x > pcp->stat_threshold || x < -pcp->stat_threshold)) {
+      (gdb) p x
+      $10 = 1
+      (gdb) n
+      172			zone_page_state_add(x, zone, item);
+      (gdb) 
+      173			x = 0;
+      (gdb) 
+      175		*p = x;
+      (gdb) 
+      176	}
+      (gdb) 
+      mod_zone_page_state (zone=0xc16dbaa0 <contig_page_data+1344>, 
+          item=item@entry=NR_KERNEL_STACK, delta=delta@entry=1) at mm/vmstat.c:189
+      189		local_irq_restore(flags);
+      (gdb) 
+      190	}
+      (gdb) 
+      account_kernel_stack (ti=ti@entry=0xc706a000, account=account@entry=1)
+          at kernel/fork.c:147
+      147	}
+      (gdb) 
      ```
 
   
