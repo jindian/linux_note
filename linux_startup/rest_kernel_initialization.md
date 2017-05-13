@@ -582,8 +582,181 @@ rcu_scheduler_starting () at kernel/rcupdate.c:186
      (gdb) 
      512	}
      ```
+     
+     Initializes rest of task variables
 
- 
+     ```
+    (gdb) 
+    copy_process (clone_flags=clone_flags@entry=8391424, 
+        stack_start=stack_start@entry=0, 
+        regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+        stack_size=stack_size@entry=0, child_tidptr=child_tidptr@entry=0x0, 
+        pid=pid@entry=0x0, trace=trace@entry=0) at kernel/fork.c:1047
+    1047		if (retval < 0)
+    (gdb) 
+    1056		if (nr_threads >= max_threads)
+    (gdb) 
+    1059		if (!try_module_get(task_thread_info(p)->exec_domain->module))
+    (gdb) 
+    1062		p->did_exec = 0;
+    (gdb) 
+    1063		delayacct_tsk_init(p);	/* Must remain after dup_task_struct() */
+    (gdb) s
+    delayacct_tsk_init (tsk=<optimized out>) at include/linux/delayacct.h:67
+    67		tsk->delays = NULL;
+    (gdb) n
+    68		if (delayacct_on)
+    (gdb) 
+    69			__delayacct_tsk_init(tsk);
+    (gdb) s
+    __delayacct_tsk_init (tsk=tsk@entry=0xc7070000) at kernel/delayacct.c:41
+    41		tsk->delays = kmem_cache_zalloc(delayacct_cache, GFP_KERNEL);
+    (gdb) n
+    42		if (tsk->delays)
+    (gdb) 
+    43			spin_lock_init(&tsk->delays->lock);
+    (gdb) 
+    44	}
+    (gdb) 
+    copy_process (clone_flags=clone_flags@entry=8391424, 
+        stack_start=stack_start@entry=0, 
+        regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+        stack_size=stack_size@entry=0, child_tidptr=child_tidptr@entry=0x0, 
+        pid=pid@entry=0x0, trace=trace@entry=0) at kernel/fork.c:1064
+    1064		copy_flags(clone_flags, p);
+    (gdb) s
+    copy_flags (clone_flags=<optimized out>, p=<optimized out>)
+        at kernel/fork.c:928
+    928		unsigned long new_flags = p->flags;
+    (gdb) n
+    930		new_flags &= ~PF_SUPERPRIV;
+    (gdb) 
+    932		new_flags |= PF_STARTING;
+    (gdb) 
+    934		clear_freeze_flag(p);
+    (gdb) s
+    clear_freeze_flag (p=<optimized out>) at kernel/fork.c:934
+    934		clear_freeze_flag(p);
+    (gdb) s
+    clear_tsk_thread_flag (flag=23, tsk=<optimized out>) at kernel/fork.c:934
+    934		clear_freeze_flag(p);
+    (gdb) s
+    clear_ti_thread_flag (flag=23, ti=0xc706a000) at kernel/fork.c:934
+    934		clear_freeze_flag(p);
+    (gdb) s
+    clear_bit (addr=0xc706a008, nr=23)
+        at /home/start-kernel/work_space/github/linux_startup/linux-2.6.32.69/arch/x86/include/asm/bitops.h:101
+    101			asm volatile(LOCK_PREFIX "andb %1,%0"
+    (gdb) n
+    102				: CONST_MASK_ADDR(nr, addr)
+    (gdb) 
+    copy_process (clone_flags=clone_flags@entry=8391424, 
+        stack_start=stack_start@entry=0, 
+        regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+        stack_size=stack_size@entry=0, child_tidptr=child_tidptr@entry=0x0, 
+        pid=pid@entry=0x0, trace=trace@entry=0) at kernel/fork.c:1065
+    1065		INIT_LIST_HEAD(&p->children);
+    (gdb) 
+    1066		INIT_LIST_HEAD(&p->sibling);
+    (gdb) 
+    1069		spin_lock_init(&p->alloc_lock);
+    (gdb) 
+    1068		p->vfork_done = NULL;
+    (gdb) 
+    1069		spin_lock_init(&p->alloc_lock);
+    (gdb) 
+    1071		init_sigpending(&p->pending);
+    (gdb) s
+    init_sigpending (sig=<optimized out>) at include/linux/signal.h:224
+    224		INIT_LIST_HEAD(&sig->list);
+    (gdb) n
+    copy_process (clone_flags=clone_flags@entry=8391424, 
+        stack_start=stack_start@entry=0, 
+        regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+        stack_size=stack_size@entry=0, child_tidptr=child_tidptr@entry=0x0, 
+        pid=pid@entry=0x0, trace=trace@entry=0) at kernel/fork.c:1071
+    1071		init_sigpending(&p->pending);
+    (gdb) 
+    1073		p->utime = cputime_zero;
+    (gdb) 
+    1074		p->stime = cputime_zero;
+    (gdb) 
+    1075		p->gtime = cputime_zero;
+    (gdb) 
+    1076		p->utimescaled = cputime_zero;
+    (gdb) 
+    1077		p->stimescaled = cputime_zero;
+    (gdb) 
+    1078		p->prev_utime = cputime_zero;
+    (gdb) 
+    1079		p->prev_stime = cputime_zero;
+    (gdb) 
+    1081		p->default_timer_slack_ns = current->timer_slack_ns;
+    (gdb) 
+    1083		task_io_accounting_init(&p->ioac);
+    (gdb) s
+    task_io_accounting_init (ioac=<optimized out>) at kernel/fork.c:1083
+    1083		task_io_accounting_init(&p->ioac);
+    (gdb) s
+       __constant_c_and_count_memset (count=56, pattern=0, s=0xc7070c90)
+        at /home/start-kernel/work_space/github/linux_startup/linux-2.6.32.69/arch/x86/include/asm/string_32.h:291
+    291				COMMON("");
+    (gdb) n
+    copy_process (clone_flags=clone_flags@entry=8391424, 
+        stack_start=stack_start@entry=0, 
+        regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+        stack_size=stack_size@entry=0, child_tidptr=child_tidptr@entry=0x0, 
+        pid=pid@entry=0x0, trace=trace@entry=0) at kernel/fork.c:1084
+    1084		acct_clear_integrals(p);
+    (gdb) s
+    acct_clear_integrals (tsk=tsk@entry=0xc7070000) at kernel/tsacct.c:151
+    151		tsk->acct_timexpd = 0;
+    (gdb) n
+    152		tsk->acct_rss_mem1 = 0;
+    (gdb) 
+    153		tsk->acct_vm_mem1 = 0;
+    (gdb) 
+    154	}
+    (gdb) 
+    copy_process (clone_flags=clone_flags@entry=8391424, 
+        stack_start=stack_start@entry=0, 
+        regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+        stack_size=stack_size@entry=0, child_tidptr=child_tidptr@entry=0x0, 
+        pid=pid@entry=0x0, trace=trace@entry=0) at kernel/fork.c:1086
+    1086		posix_cpu_timers_init(p);
+    (gdb) s
+    posix_cpu_timers_init (tsk=<optimized out>) at kernel/fork.c:965
+    965		tsk->cputime_expires.prof_exp = cputime_zero;
+    (gdb) n
+    966		tsk->cputime_expires.virt_exp = cputime_zero;
+    (gdb) 
+    967		tsk->cputime_expires.sched_exp = 0;
+    (gdb) 
+    968		INIT_LIST_HEAD(&tsk->cpu_timers[0]);
+    (gdb) n
+    969		INIT_LIST_HEAD(&tsk->cpu_timers[1]);
+    (gdb) 
+    970		INIT_LIST_HEAD(&tsk->cpu_timers[2]);
+    (gdb) 
+    copy_process (clone_flags=clone_flags@entry=8391424, 
+        stack_start=stack_start@entry=0, 
+        regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+        stack_size=stack_size@entry=0, child_tidptr=child_tidptr@entry=0x0, 
+        pid=pid@entry=0x0, trace=trace@entry=0) at kernel/fork.c:1088
+    1088		p->lock_depth = -1;		/* -1 = no lock */
+    (gdb) 
+    1089		do_posix_clock_monotonic_gettime(&p->start_time);
+    (gdb) s
+    ktime_get_ts (ts=ts@entry=0xc7070298) at kernel/time/timekeeping.c:313
+    313		WARN_ON(timekeeping_suspended);
+    (gdb) s
+    308	{
+    (gdb) n
+    313		WARN_ON(timekeeping_suspended);
+    (gdb) 
+    316			seq = read_seqbegin(&xtime_lock);
+    (gdb) 
+     ```
 
 # Links
 
