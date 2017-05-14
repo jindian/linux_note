@@ -747,7 +747,258 @@ rcu_scheduler_starting () at kernel/rcupdate.c:186
      (gdb) 
      316			seq = read_seqbegin(&xtime_lock);
      (gdb) 
+     317			*ts = xtime;
+     (gdb) 
+     319			nsecs = timekeeping_get_ns();
+     (gdb) 
+     317			*ts = xtime;
+     (gdb) 
+     318			tomono = wall_to_monotonic;
+     (gdb) 
+     319			nsecs = timekeeping_get_ns();
+     (gdb) 
+     323		} while (read_seqretry(&xtime_lock, seq));
      
+     ......
+     
+     325		set_normalized_timespec(ts, ts->tv_sec + tomono.tv_sec,
+     (gdb) 
+     326					ts->tv_nsec + tomono.tv_nsec + nsecs);
+     (gdb) 
+     (gdb) 
+     327	}
+     (gdb) 
+     copy_process (clone_flags=clone_flags@entry=8391424, 
+         stack_start=stack_start@entry=0, 
+         regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+         stack_size=stack_size@entry=0, child_tidptr=child_tidptr@entry=0x0, 
+         pid=pid@entry=0x0, trace=trace@entry=0) at kernel/fork.c:1090
+     1090		p->real_start_time = p->start_time;
+     1091		monotonic_to_bootbased(&p->real_start_time);
+     (gdb) 
+     1092		p->io_context = NULL;
+     (gdb) n
+     1093		p->audit_context = NULL;
+     (gdb) 
+     1094		cgroup_fork(p);
+     (gdb) s
+     cgroup_fork (child=child@entry=0xc7070000) at kernel/cgroup.c:3421
+     3421		task_lock(current);
+     (gdb) n
+     3422		child->cgroups = current->cgroups;
+     (gdb) 
+     3423		get_css_set(child->cgroups);
+     (gdb) 
+     3424		task_unlock(current);
+     (gdb) 
+     3425		INIT_LIST_HEAD(&child->cg_list);
+     (gdb) 
+     3426	}
+     (gdb) 
+     copy_process (clone_flags=clone_flags@entry=8391424, 
+         stack_start=stack_start@entry=0, 
+         regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+         stack_size=stack_size@entry=0, child_tidptr=child_tidptr@entry=0x0, 
+         pid=pid@entry=0x0, trace=trace@entry=0) at kernel/fork.c:1105
+     1105		p->irq_events = 0;
+     (gdb) 
+     1109		p->hardirqs_enabled = 0;
+     (gdb) 
+     1111		p->hardirq_enable_ip = 0;
+     (gdb) 
+     1112		p->hardirq_enable_event = 0;
+     (gdb) 
+     1113		p->hardirq_disable_ip = _THIS_IP_;
+     (gdb) 
+     1114		p->hardirq_disable_event = 0;
+     (gdb) 
+     1115		p->softirqs_enabled = 1;
+     (gdb) 
+     1116		p->softirq_enable_ip = _THIS_IP_;
+     (gdb) 
+     1117		p->softirq_enable_event = 0;
+     (gdb) 
+     1118		p->softirq_disable_ip = 0;
+     (gdb) 
+     1119		p->softirq_disable_event = 0;
+     (gdb) 
+     1120		p->hardirq_context = 0;
+     (gdb) 
+     1121		p->softirq_context = 0;
+     (gdb) 
+     1124		p->lockdep_depth = 0; /* no locks held yet */
+     (gdb) 
+     1125		p->curr_chain_key = 0;
+     (gdb) 
+     1126		p->lockdep_recursion = 0;
+     (gdb) 
+     1130		p->blocked_on = NULL; /* not blocked yet */
+     (gdb) 
+     1133		p->bts = NULL;
+     (gdb) 
+     1136		sched_fork(p, clone_flags);
+     sched_fork (p=p@entry=0xc7070000, 
+         clone_flags=clone_flags@entry=8391424) at kernel/sched.c:2696
+     2696		int cpu = get_cpu();
+     (gdb) n
+     2698		__sched_fork(p);
+     (gdb) 
+     2704		p->state = TASK_RUNNING;
+     (gdb) 
+     2709		if (unlikely(p->sched_reset_on_fork)) {
+     (gdb) 
+     2731		p->prio = current->normal_prio;
+     (gdb) 
+     2733		if (!rt_prio(p->prio))
+     (gdb) 
+     2734			p->sched_class = &fair_sched_class;
+     (gdb) 
+     2736		if (p->sched_class->task_fork)
+     (gdb) 
+     2737			p->sched_class->task_fork(p);
+     (gdb) 
+     2739		set_task_cpu(p, cpu);
+     (gdb) 
+     2743			memset(&p->sched_info, 0, sizeof(p->sched_info));
+     (gdb) 
+     2752		plist_node_init(&p->pushable_tasks, MAX_PRIO);
+     (gdb) 
+     2755	}
+     (gdb) 
+     copy_process (clone_flags=clone_flags@entry=8391424, 
+         stack_start=stack_start@entry=0, 
+         regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+         stack_size=stack_size@entry=0, child_tidptr=child_tidptr@entry=0x0, 
+         pid=pid@entry=0x0, trace=trace@entry=0) at kernel/fork.c:1138
+     1138		retval = perf_event_init_task(p);
+     (gdb) s
+     perf_event_init_task (child=child@entry=0xc7070000) at kernel/perf_event.c:4900
+     4900		mutex_init(&child->perf_event_mutex);
+     (gdb) n
+     4901		INIT_LIST_HEAD(&child->perf_event_list);
+     (gdb) 
+     4903		if (likely(!parent->perf_event_ctxp))
+     (gdb) 
+     4904			return 0;
+     (gdb) 
+     copy_process (clone_flags=clone_flags@entry=8391424, 
+         stack_start=stack_start@entry=0, 
+         regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+         stack_size=stack_size@entry=0, child_tidptr=child_tidptr@entry=0x0, 
+         pid=pid@entry=0x0, trace=trace@entry=0) at kernel/fork.c:1139
+     1139		if (retval)
+     (gdb) 
+     1142		if ((retval = audit_alloc(p)))
+(gdb) s
+audit_alloc (tsk=tsk@entry=0xc7070000) at kernel/auditsc.c:887
+887		if (likely(!audit_ever_enabled))
+(gdb) n
+903		return 0;
+(gdb) 
+904	}
+(gdb) 
+copy_process (clone_flags=clone_flags@entry=8391424, 
+    stack_start=stack_start@entry=0, 
+    regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+    stack_size=stack_size@entry=0, child_tidptr=child_tidptr@entry=0x0, 
+    pid=pid@entry=0x0, trace=trace@entry=0) at kernel/fork.c:1145
+1145		if ((retval = copy_semundo(clone_flags, p)))
+(gdb) s
+copy_semundo (clone_flags=clone_flags@entry=8391424, tsk=tsk@entry=0xc7070000)
+    at ipc/sem.c:1254
+1254		if (clone_flags & CLONE_SYSVSEM) {
+(gdb) n
+1261			tsk->sysvsem.undo_list = NULL;
+(gdb) 
+1263		return 0;
+(gdb) 
+1264	}
+(gdb) 
+copy_process (clone_flags=clone_flags@entry=8391424, 
+    stack_start=stack_start@entry=0, 
+    regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+    stack_size=stack_size@entry=0, child_tidptr=child_tidptr@entry=0x0, 
+    pid=pid@entry=0x0, trace=trace@entry=0) at kernel/fork.c:1147
+1147		if ((retval = copy_files(clone_flags, p)))
+(gdb) 
+1149		if ((retval = copy_fs(clone_flags, p)))
+(gdb) 
+1151		if ((retval = copy_sighand(clone_flags, p)))
+(gdb) 
+1153		if ((retval = copy_signal(clone_flags, p)))
+(gdb) 
+1155		if ((retval = copy_mm(clone_flags, p)))
+(gdb) 
+1157		if ((retval = copy_namespaces(clone_flags, p)))
+(gdb) 
+1157		if ((retval = copy_namespaces(clone_flags, p)))
+(gdb) 
+1159		if ((retval = copy_io(clone_flags, p)))
+(gdb) s
+copy_io (tsk=0xc7070000, clone_flags=8391424) at kernel/fork.c:1159
+1159		if ((retval = copy_io(clone_flags, p)))
+(gdb) s
+get_current ()
+    at /home/start-kernel/work_space/github/linux_startup/linux-2.6.32.69/arch/x86/include/asm/current.h:14
+14		return percpu_read_stable(current_task);
+(gdb) n
+copy_io (tsk=0xc7070000, clone_flags=8391424) at kernel/fork.c:778
+778		struct io_context *ioc = current->io_context;
+(gdb) n
+780		if (!ioc)
+(gdb) 
+copy_process (clone_flags=clone_flags@entry=8391424, 
+    stack_start=stack_start@entry=0, 
+    regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+    stack_size=stack_size@entry=0, child_tidptr=child_tidptr@entry=0x0, 
+    pid=pid@entry=0x0, trace=trace@entry=0) at kernel/fork.c:1161
+1161		retval = copy_thread(clone_flags, stack_start, stack_size, p, regs);
+(gdb) s
+copy_thread (clone_flags=clone_flags@entry=8391424, sp=sp@entry=0, 
+    unused=unused@entry=0, p=p@entry=0xc7070000, 
+    regs=regs@entry=0xc168bf64 <init_thread_union+8036>)
+    at arch/x86/kernel/process_32.c:250
+250		childregs = task_pt_regs(p);
+(gdb) n
+251		*childregs = *regs;
+(gdb) 
+252		childregs->ax = 0;
+(gdb) 
+253		childregs->sp = sp;
+(gdb) 
+256		p->thread.sp0 = (unsigned long) (childregs+1);
+(gdb) 
+258		p->thread.ip = (unsigned long) ret_from_fork;
+(gdb) 
+260		task_user_gs(p) = get_user_gs(regs);
+(gdb) 
+262		tsk = current;
+(gdb) 
+263		if (unlikely(test_tsk_thread_flag(tsk, TIF_IO_BITMAP))) {
+(gdb) 
+273		err = 0;
+(gdb) 
+278		if (clone_flags & CLONE_SETTLS)
+(gdb) 
+287		clear_tsk_thread_flag(p, TIF_DS_AREA_MSR);
+(gdb) 
+288		p->thread.ds_ctx = NULL;
+(gdb) 
+290		clear_tsk_thread_flag(p, TIF_DEBUGCTLMSR);
+(gdb) 
+291		p->thread.debugctlmsr = 0;
+(gdb) 
+293		return err;
+(gdb) 
+294	}
+(gdb) 
+copy_process (clone_flags=clone_flags@entry=8391424, 
+    stack_start=stack_start@entry=0, 
+    regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+    stack_size=stack_size@entry=0, child_tidptr=child_tidptr@entry=0x0, 
+    pid=pid@entry=0x0, trace=trace@entry=0) at kernel/fork.c:1162
+1162		if (retval)
+
      ```
 
 # Links
