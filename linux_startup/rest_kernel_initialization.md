@@ -61,7 +61,7 @@ rcu_scheduler_starting () at kernel/rcupdate.c:186
 
 * Creates a kernel thread.
 
-1. `kernel_thread` initializes register parameters and invoke `do_fork` to create new process
+1. `kernel_thread` initializes register parameters and invokes `do_fork` to create new process
 ```
 423        kernel_thread(kernel_init, NULL, CLONE_FS | CLONE_SIGHAND);
 (gdb) s
@@ -1223,6 +1223,144 @@ do_fork (clone_flags=clone_flags@entry=8391424,
 	 stack_size=stack_size@entry=0, parent_tidptr=parent_tidptr@entry=0x0, 
 	 child_tidptr=child_tidptr@entry=0x0) at kernel/fork.c:1423
 1423		if (!IS_ERR(p)) {
+```
+
+4. After new task created successfully, wake it up if clone flag odesn't configured as start in stopped state.
+
+```
+1423		if (!IS_ERR(p)) {
+(gdb) 
+1426			trace_sched_process_fork(current, p);
+(gdb) 
+1428			nr = task_pid_vnr(p);
+(gdb) s
+task_pid_vnr (tsk=<optimized out>) at include/linux/sched.h:1639
+1639		return __task_pid_nr_ns(tsk, PIDTYPE_PID, NULL);
+(gdb) s
+__task_pid_nr_ns (task=task@entry=0xc7070000, type=type@entry=PIDTYPE_PID, 
+    ns=ns@entry=0x0) at kernel/pid.c:449
+449	{
+(gdb) n
+452		rcu_read_lock();
+(gdb) 
+453		if (!ns)
+(gdb) 
+454			ns = current->nsproxy->pid_ns;
+(gdb) 
+455		if (likely(pid_alive(task))) {
+(gdb) p ns
+$1 = (struct pid_namespace *) 0xc169dba0 <init_pid_ns>
+(gdb) p task->pids[PIDTYPE_PID].pid
+$2 = (struct pid *) 0xc7066000
+(gdb) n
+456			if (type != PIDTYPE_PID)
+(gdb) 
+458			nr = pid_nr_ns(task->pids[type].pid, ns);
+(gdb) s
+pid_nr_ns (ns=0xc169dba0 <init_pid_ns>, pid=0xc7066000) at kernel/pid.c:433
+433		if (pid && ns->level <= pid->level) {
+(gdb) p ns
+$3 = (struct pid_namespace *) 0xc169dba0 <init_pid_ns>
+(gdb) p ns->level 
+$4 = 0
+(gdb) p pid->level 
+$5 = 0
+(gdb) n
+434			upid = &pid->numbers[ns->level];
+(gdb) 
+435			if (upid->ns == ns)
+(gdb) p upid
+$6 = (struct upid *) 0xc706601c
+(gdb) p *upid
+$7 = {nr = 1, ns = 0xc169dba0 <init_pid_ns>, pid_chain = {next = 0x0, 
+    pprev = 0xc2129278}}
+(gdb) n
+436				nr = upid->nr;
+(gdb) n
+__task_pid_nr_ns (task=<optimized out>, task@entry=0xc7070000, 
+    type=type@entry=PIDTYPE_PID, ns=0xc169dba0 <init_pid_ns>, ns@entry=0x0)
+    at kernel/pid.c:460
+460		rcu_read_unlock();
+(gdb) 
+463	}
+do_fork (clone_flags=clone_flags@entry=8391424, 
+    stack_start=stack_start@entry=0, 
+    regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+    stack_size=stack_size@entry=0, parent_tidptr=parent_tidptr@entry=0x0, 
+    child_tidptr=child_tidptr@entry=0x0) at kernel/fork.c:1430
+1430			if (clone_flags & CLONE_PARENT_SETTID)
+(gdb) n
+1433			if (clone_flags & CLONE_VFORK) {
+(gdb) 
+1438			audit_finish_fork(p);
+(gdb) s
+audit_finish_fork (child=child@entry=0xc7070000) at kernel/auditsc.c:1661
+1661		struct audit_context *ctx = current->audit_context;
+(gdb) n
+1662		struct audit_context *p = child->audit_context;
+(gdb) 
+1663		if (!p || !ctx)
+(gdb) 
+1677	}
+(gdb) 
+do_fork (clone_flags=clone_flags@entry=8391424, 
+    stack_start=stack_start@entry=0, 
+    regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+    stack_size=stack_size@entry=0, parent_tidptr=parent_tidptr@entry=0x0, 
+    child_tidptr=child_tidptr@entry=0x0) at kernel/fork.c:1439
+1439			tracehook_report_clone(regs, clone_flags, nr, p);
+(gdb) 
+1447			p->flags &= ~PF_STARTING;
+(gdb) 
+1449			if (unlikely(clone_flags & CLONE_STOPPED)) {
+(gdb) 
+1457				wake_up_new_task(p, clone_flags);
+(gdb) s
+wake_up_new_task (p=p@entry=0xc7070000, clone_flags=clone_flags@entry=8391424)
+    at kernel/sched.c:2771
+2771		rq = task_rq_lock(p, &flags);
+(gdb) n
+2772		p->state = TASK_WAKING;
+(gdb) 
+2782		cpu = select_task_rq(rq, p, SD_BALANCE_FORK, 0);
+(gdb) 
+2783		set_task_cpu(p, cpu);
+(gdb) 
+2785		p->state = TASK_RUNNING;
+(gdb) 
+2786		task_rq_unlock(rq, &flags);
+(gdb) 
+2789		rq = task_rq_lock(p, &flags);
+(gdb) 
+2790		update_rq_clock(rq);
+(gdb) 
+2791		activate_task(rq, p, 0);
+(gdb) 
+2792		trace_sched_wakeup_new(rq, p, 1);
+(gdb) 
+2793		check_preempt_curr(rq, p, WF_FORK);
+(gdb) 
+2795		if (p->sched_class->task_woken)
+(gdb) 
+2798		task_rq_unlock(rq, &flags);
+(gdb) 
+2800	}
+(gdb) 
+do_fork (clone_flags=clone_flags@entry=8391424, 
+    stack_start=stack_start@entry=0, 
+    regs=regs@entry=0xc168bf64 <init_thread_union+8036>, 
+    stack_size=stack_size@entry=0, parent_tidptr=parent_tidptr@entry=0x0, 
+    child_tidptr=child_tidptr@entry=0x0) at kernel/fork.c:1460
+1460			tracehook_report_clone_complete(trace, regs,
+(gdb) 
+1463			if (clone_flags & CLONE_VFORK) {
+(gdb) 
+1473	}
+(gdb) 
+kernel_thread (fn=fn@entry=0xc16fa7e8 <kernel_init>, arg=arg@entry=0x0, 
+    flags=flags@entry=2560) at arch/x86/kernel/process_32.c:224
+224	}
+(gdb) 
 ```
 
 # Links
