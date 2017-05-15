@@ -1589,7 +1589,74 @@ $9 = {state = 0, stack = 0xc706e000, usage = {counter = 2}, flags = 2105408,
   tracing_graph_pause = {counter = 0}, trace = 0, trace_recursion = 0}
 ```
 
+* Signals `kernel_init` waiting on completion `kthreadd_done` which indicates all setup of kernel thread `kthreadd` is complete.
 
+```complete
+427		complete(&kthreadd_done);
+(gdb) s
+complete (x=x@entry=0xc1730480 <kthreadd_done>) at kernel/sched.c:6015
+6015		spin_lock_irqsave(&x->wait.lock, flags);
+(gdb) n
+6016		x->done++;
+(gdb) 
+6017		__wake_up_common(&x->wait, TASK_NORMAL, 1, 0, NULL);
+(gdb) s
+__wake_up_common (q=q@entry=0xc1730484 <kthreadd_done+4>, mode=mode@entry=3, 
+    nr_exclusive=nr_exclusive@entry=1, wake_flags=wake_flags@entry=0, 
+    key=key@entry=0x0) at kernel/sched.c:5912
+5912		list_for_each_entry_safe(curr, next, &q->task_list, task_list) {
+(gdb) n
+5919	}
+(gdb) 
+complete (x=x@entry=0xc1730480 <kthreadd_done>) at kernel/sched.c:6018
+6018		spin_unlock_irqrestore(&x->wait.lock, flags);
+(gdb) 
+6019	}
+(gdb) 
+rest_init () at init/main.c:428
+428		unlock_kernel();
+(gdb) p kthreadd_done.wait
+$2 = {lock = {raw_lock = {slock = 257}, magic = 3735899821, 
+    owner_cpu = 4294967295, owner = 0xffffffff, dep_map = {
+      key = 0xc1730494 <kthreadd_done+20>, 
+      class_cache = 0xc1b5f8d0 <lock_classes+151696>, 
+      name = 0xc15c53c4 "(kthreadd_done).wait.lock", cpu = 0, 
+      ip = 3238203194}}, task_list = {next = 0xc17304a8 <kthreadd_done+40>, 
+    prev = 0xc17304a8 <kthreadd_done+40>}}
+```
+
+* Unlocks kernel
+The 'big kernel lock': This spinlock is taken and released recursively by lock_kernel() and unlock_kernel().  It is transparently dropped and reacquired over schedule().  It is used to protect legacy code that hasn't been migrated to a proper locking design yet.
+
+```
+428		unlock_kernel();
+(gdb) s
+unlock_kernel () at lib/kernel_lock.c:126
+126		BUG_ON(current->lock_depth < 0);
+(gdb) n
+127		if (likely(--current->lock_depth < 0))
+(gdb) 
+128			__unlock_kernel();
+(gdb) s
+__unlock_kernel () at lib/kernel_lock.c:106
+106		_raw_spin_unlock(&kernel_flag);
+(gdb) s
+_raw_spin_unlock (lock=lock@entry=0xc1694880 <i8259A_lock>)
+    at lib/spinlock_debug.c:152
+152	{
+(gdb) n
+153		debug_spin_unlock(lock);
+(gdb) 
+154		__raw_spin_unlock(&lock->raw_lock);
+(gdb) s
+__ticket_spin_unlock (lock=0xc1694880 <i8259A_lock>)
+    at /home/start-kernel/work_space/github/linux_startup/linux-2.6.32.69/arch/x86/include/asm/spinlock.h:101
+101		asm volatile(UNLOCK_LOCK_PREFIX "incb %0"
+(gdb) n
+_raw_spin_unlock (lock=lock@entry=0xc1694880 <i8259A_lock>)
+    at lib/spinlock_debug.c:155
+155	}
+```
 
 # Links
 
