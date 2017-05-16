@@ -1625,8 +1625,19 @@ $2 = {lock = {raw_lock = {slock = 257}, magic = 3735899821,
     prev = 0xc17304a8 <kthreadd_done+40>}}
 ```
 
-* Unlocks kernel
-The 'big kernel lock': This spinlock is taken and released recursively by lock_kernel() and unlock_kernel().  It is transparently dropped and reacquired over schedule().  It is used to protect legacy code that hasn't been migrated to a proper locking design yet.
+* Release big kernel lock
+
+The 'big kernel lock': This spinlock is taken and released recursively by lock_kernel() and unlock_kernel().  It is transparently dropped and reacquired over schedule().
+
+Linux kernel 2.6.39 removed the final part of the BKL, the whole BKL locking mechanism. BKL is now finally totally gone! Hooray!
+
+The big kernel lock (BKL) is an old serialization method that we are trying to get rid of, replacing it with more fine-grained locking, in particular mutex, spinlock and RCU, where appropriate.
+
+The BKL is a recursive lock, meaning that you can take it from a thread that already holds it. This may sound convenient, but easily introduces all sorts of bugs. Another problem is that the BKL is automatically released when a thread sleeps. This avoids lock order problems with mutexes in some circumstances, but also creates more problems because it makes it really hard to track what code is executed under the lock.
+
+The BKL behaves like a spin lock, with the additions previously discussed. The function lock_kernel() acquires the lock and the function unlock_kernel() releases the lock. A single thread of execution may acquire the lock recursively, but must then call unlock_kernel() an equal number of times to release the lock. On the last unlock call the lock will be released. The function kernel_locked() returns nonzero if the lock is currently held; otherwise, it returns zero.
+
+The BKL also disables kernel preemption while it is held. On UP kernels, the BKL code does not actually perform any physical locking.
 
 ```
 428		unlock_kernel();
@@ -1665,6 +1676,8 @@ _raw_spin_unlock (lock=lock@entry=0xc1694880 <i8259A_lock>)
 * [Using the TRACE\_EVENT\(\) macro \(Part 1\)](https://lwn.net/Articles/379903/)
 * [Using the TRACE\_EVENT\(\) macro \(Part 2\)](https://lwn.net/Articles/381064/)
 * [Using the TRACE\_EVENT\(\) macro \(Part 3\)](https://lwn.net/Articles/383362/)
+* [BigKernelLock](https://kernelnewbies.org/BigKernelLock)
+* [The Big Kernel Lock](http://www.makelinux.net/books/lkd2/ch09lev1sec8)
 
 
 
