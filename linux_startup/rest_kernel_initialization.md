@@ -1429,167 +1429,9 @@ find_task_by_pid_ns (nr=<optimized out>, ns=<optimized out>)
 (gdb) 
 rest_init () at init/main.c:427
 427		complete(&kthreadd_done);
-(gdb) p *kthreadd_task
-$9 = {state = 0, stack = 0xc706e000, usage = {counter = 2}, flags = 2105408, 
-  ptrace = 0, lock_depth = -1, prio = 120, static_prio = 120, 
-  normal_prio = 120, rt_priority = 0, 
-  sched_class = 0xc1497b20 <fair_sched_class>, se = {load = {weight = 1024, 
-      inv_weight = 4194304}, run_node = {rb_parent_color = 3339124788, 
-      rb_right = 0x0, rb_left = 0x0}, group_node = {next = 0xc7070040, 
-      prev = 0xc234a35c}, on_rq = 1, exec_start = 0, sum_exec_runtime = 0, 
-    vruntime = 1450203, prev_sum_exec_runtime = 0, last_wakeup = 0, 
-    avg_overlap = 0, nr_migrations = 0, start_runtime = 0, 
-    avg_wakeup = 1000000, avg_running = 0, wait_start = 211460260, 
-    wait_max = 0, wait_count = 0, wait_sum = 0, iowait_count = 0, 
-    iowait_sum = 0, sleep_start = 0, sleep_max = 0, sum_sleep_runtime = 0, 
-    block_start = 0, block_max = 0, exec_max = 0, slice_max = 0, 
-    nr_migrations_cold = 0, nr_failed_migrations_affine = 0, 
-    nr_failed_migrations_running = 0, nr_failed_migrations_hot = 0, 
-    nr_forced_migrations = 0, nr_wakeups = 0, nr_wakeups_sync = 0, 
-    nr_wakeups_migrate = 0, nr_wakeups_local = 0, nr_wakeups_remote = 0, 
-    nr_wakeups_affine = 0, nr_wakeups_affine_attempts = 0, 
-    nr_wakeups_passive = 0, nr_wakeups_idle = 0}, rt = {run_list = {
-      next = 0xc70716f4, prev = 0xc70716f4}, timeout = 0, time_slice = 250, 
-    nr_cpus_allowed = 8, back = 0x0}, preempt_notifiers = {first = 0x0}, 
-  fpu_counter = 0 '\000', btrace_seq = 0, policy = 0, cpus_allowed = {bits = {
-      1}}, sched_info = {pcount = 0, run_delay = 0, last_arrival = 0, 
----Type <return> to continue, or q <return> to quit---
-    last_queued = 211460260, bkl_count = 0}, tasks = {
-    next = 0xc1692600 <init_task+448>, prev = 0xc70701c0}, pushable_tasks = {
-    prio = 140, plist = {prio_list = {next = 0xc707174c, prev = 0xc707174c}, 
-      node_list = {next = 0xc7071754, prev = 0xc7071754}, lock = 0x0}}, 
-  mm = 0x0, active_mm = 0x0, exit_state = 0, exit_code = 0, exit_signal = 0, 
-  pdeath_signal = 0, personality = 0, did_exec = 0, in_execve = 0, 
-  in_iowait = 0, sched_reset_on_fork = 0, pid = 2, tgid = 2, 
-  stack_canary = 1354951921, real_parent = 0xc1692440 <init_task>, 
-  parent = 0xc1692440 <init_task>, children = {next = 0xc7071794, 
-    prev = 0xc7071794}, sibling = {next = 0xc1692654 <init_task+532>, 
-    prev = 0xc707021c}, group_leader = 0xc7071580, ptraced = {
-    next = 0xc70717a8, prev = 0xc70717a8}, ptrace_entry = {next = 0xc70717b0, 
-    prev = 0xc70717b0}, bts = 0x0, pids = {{node = {next = 0x0, 
-        pprev = 0xc7066068}, pid = 0xc7066060}, {node = {next = 0xc7070248, 
-        pprev = 0xc169dbec <init_struct_pid+12>}, 
-      pid = 0xc169dbe0 <init_struct_pid>}, {node = {next = 0xc7070254, 
-        pprev = 0xc169dbf0 <init_struct_pid+16>}, 
-      pid = 0xc169dbe0 <init_struct_pid>}}, thread_group = {next = 0xc70717e0, 
-    prev = 0xc70717e0}, vfork_done = 0x0, set_child_tid = 0x0, 
-  clear_child_tid = 0x0, utime = 0, stime = 0, utimescaled = 0, 
-  stimescaled = 0, gtime = 0, prev_utime = 0, prev_stime = 0, nvcsw = 0, 
-  nivcsw = 0, start_time = {tv_sec = 0, tv_nsec = 208013000}, 
-  real_start_time = {tv_sec = 0, tv_nsec = 208013000}, min_flt = 0, 
----Type <return> to continue, or q <return> to quit---
-  maj_flt = 0, cputime_expires = {utime = 0, stime = 0, sum_exec_runtime = 0}, 
-  cpu_timers = {{next = 0xc7071840, prev = 0xc7071840}, {next = 0xc7071848, 
-      prev = 0xc7071848}, {next = 0xc7071850, prev = 0xc7071850}}, 
-  real_cred = 0xc70640c0, cred = 0xc70640c0, cred_guard_mutex = {count = {
-      counter = 1}, wait_lock = {raw_lock = {slock = 0}, magic = 3735899821, 
-      owner_cpu = 4294967295, owner = 0xffffffff, dep_map = {
-        key = 0xc190e388 <__key.15367>, class_cache = 0x0, 
-        name = 0xc15d6430 "&lock->wait_lock", cpu = 0, ip = 0}}, wait_list = {
-      next = 0xc7071888, prev = 0xc7071888}, owner = 0x0, name = 0x0, 
-    magic = 0xc7071860, dep_map = {key = 0xc190e45c <__key.26889>, 
-      class_cache = 0x0, name = 0xc15d671b "&p->cred_guard_mutex", cpu = 0, 
-      ip = 0}}, replacement_session_keyring = 0x0, 
-  comm = "swapper\000\000\000\000\000\000\000\000", link_count = 0, 
-  total_link_count = 0, sysvsem = {undo_list = 0x0}, last_switch_count = 0, 
-  thread = {tls_array = {{{{a = 0, b = 0}, {limit0 = 0, base0 = 0, base1 = 0, 
-            type = 0, s = 0, dpl = 0, p = 0, limit = 0, avl = 0, l = 0, d = 0, 
-            g = 0, base2 = 0}}}, {{{a = 0, b = 0}, {limit0 = 0, base0 = 0, 
-            base1 = 0, type = 0, s = 0, dpl = 0, p = 0, limit = 0, avl = 0, 
-            l = 0, d = 0, g = 0, base2 = 0}}}, {{{a = 0, b = 0}, {limit0 = 0, 
-            base0 = 0, base1 = 0, type = 0, s = 0, dpl = 0, p = 0, limit = 0, 
-            avl = 0, l = 0, d = 0, g = 0, base2 = 0}}}}, sp0 = 3339124728, 
-    sp = 3339124660, sysenter_cs = 96, ip = 3238014304, gs = 0, debugreg0 = 0, 
-    debugreg1 = 0, debugreg2 = 0, debugreg3 = 0, debugreg6 = 0, debugreg7 = 0, 
----Type <return> to continue, or q <return> to quit---
-    cr2 = 0, trap_no = 0, error_code = 0, xstate = 0xc7028480, 
-    vm86_info = 0x0, screen_bitmap = 0, v86flags = 0, v86mask = 0, 
-    saved_sp0 = 0, saved_fs = 0, saved_gs = 0, io_bitmap_ptr = 0x0, iopl = 0, 
-    io_bitmap_max = 0, debugctlmsr = 0, ds_ctx = 0x0}, 
-  fs = 0xc16aa620 <init_fs>, files = 0xc16a9480 <init_files>, 
-  nsproxy = 0xc169e2c8 <init_nsproxy>, signal = 0xc706c2c0, 
-  sighand = 0xc7078000, blocked = {sig = {0, 0}}, real_blocked = {sig = {0, 
-      0}}, saved_sigmask = {sig = {0, 0}}, pending = {list = {
-      next = 0xc7071984, prev = 0xc7071984}, signal = {sig = {0, 0}}}, 
-  sas_ss_sp = 0, sas_ss_size = 0, notifier = 0x0, notifier_data = 0x0, 
-  notifier_mask = 0x0, audit_context = 0x0, loginuid = 4294967295, 
-  sessionid = 4294967295, seccomp = {mode = 0}, parent_exec_id = 0, 
-  self_exec_id = 0, alloc_lock = {raw_lock = {slock = 0}, magic = 3735899821, 
-    owner_cpu = 4294967295, owner = 0xffffffff, dep_map = {
-      key = 0xc18ec404 <__key.36775>, class_cache = 0x0, 
-      name = 0xc15d3e40 "&p->alloc_lock", cpu = 0, ip = 3238286233}}, 
-  irqaction = 0x0, pi_lock = {raw_lock = {slock = 0}, magic = 3735899821, 
-    owner_cpu = 4294967295, owner = 0xffffffff, dep_map = {
-      key = 0xc18ec3fc <__key.36748>, class_cache = 0x0, 
-      name = 0xc15d3e34 "&p->pi_lock", cpu = 0, ip = 0}}, pi_waiters = {
-    prio_list = {next = 0xc7071a0c, prev = 0xc7071a0c}, node_list = {
-      next = 0xc7071a14, prev = 0xc7071a14}, lock = 0xc70719e8}, 
-  pi_blocked_on = 0x0, blocked_on = 0x0, irq_events = 0, hardirqs_enabled = 0, 
----Type <return> to continue, or q <return> to quit---
-  hardirq_enable_ip = 0, hardirq_enable_event = 0, 
-  hardirq_disable_ip = 3238284417, hardirq_disable_event = 0, 
-  softirqs_enabled = 1, softirq_disable_ip = 0, softirq_disable_event = 0, 
-  softirq_enable_ip = 3238284417, softirq_enable_event = 0, 
-  hardirq_context = 0, softirq_context = 0, curr_chain_key = 0, 
-  lockdep_depth = 0, lockdep_recursion = 0, held_locks = {{prev_chain_key = 0, 
-      acquire_ip = 0, instance = 0xc190cf50 <boot_tvec_bases+16>, 
-      nest_lock = 0x0, waittime_stamp = 0, holdtime_stamp = 208057924, 
-      class_idx = 0, irq_context = 0, trylock = 0, read = 0, check = 2, 
-      hardirqs_off = 1, references = 0}, {prev_chain_key = 0, acquire_ip = 0, 
-      instance = 0xc1694890 <i8259A_lock+16>, nest_lock = 0x0, 
-      waittime_stamp = 0, holdtime_stamp = 208049271, class_idx = 0, 
-      irq_context = 0, trylock = 0, read = 0, check = 2, hardirqs_off = 1, 
-      references = 0}, {prev_chain_key = 0, acquire_ip = 0, 
-      instance = 0xc1694890 <i8259A_lock+16>, nest_lock = 0x0, 
-      waittime_stamp = 0, holdtime_stamp = 188132819, class_idx = 0, 
-      irq_context = 0, trylock = 0, read = 0, check = 2, hardirqs_off = 1, 
-      references = 0}, {prev_chain_key = 0, acquire_ip = 0, 
-      instance = 0xc1eb61b4 <obj_hash+299860>, nest_lock = 0x0, 
-      waittime_stamp = 0, holdtime_stamp = 25522519, class_idx = 0, 
-      irq_context = 0, trylock = 0, read = 0, check = 2, hardirqs_off = 1, 
-      references = 0}, {prev_chain_key = 0, acquire_ip = 0, 
-      instance = 0xc1694890 <i8259A_lock+16>, nest_lock = 0x0, 
----Type <return> to continue, or q <return> to quit---
-      waittime_stamp = 0, holdtime_stamp = 16016691, class_idx = 0, 
-      irq_context = 0, trylock = 0, read = 0, check = 2, hardirqs_off = 1, 
-      references = 0}, {prev_chain_key = 0, acquire_ip = 0, instance = 0x0, 
-      nest_lock = 0x0, waittime_stamp = 0, holdtime_stamp = 0, class_idx = 0, 
-      irq_context = 0, trylock = 0, read = 0, check = 0, hardirqs_off = 0, 
-      references = 0} <repeats 43 times>}, lockdep_reclaim_gfp = 0, 
-  journal_info = 0x0, bio_list = 0x0, bio_tail = 0x0, reclaim_state = 0x0, 
-  backing_dev_info = 0x0, io_context = 0x0, ptrace_message = 0, 
-  last_siginfo = 0x0, ioac = {rchar = 0, wchar = 0, syscr = 0, syscw = 0, 
-    read_bytes = 0, write_bytes = 0, cancelled_write_bytes = 0}, 
-  acct_rss_mem1 = 0, acct_vm_mem1 = 0, acct_timexpd = 0, mems_allowed = {
-    bits = {1}}, cpuset_mem_spread_rotor = 0, 
-  cgroups = 0xc1e30b20 <init_css_set>, cg_list = {next = 0xc7072268, 
-    prev = 0xc7072268}, robust_list = 0x0, pi_state_list = {next = 0xc7072274, 
-    prev = 0xc7072274}, pi_state_cache = 0x0, perf_event_ctxp = 0x0, 
-  perf_event_mutex = {count = {counter = 1}, wait_lock = {raw_lock = {
-        slock = 0}, magic = 3735899821, owner_cpu = 4294967295, 
-      owner = 0xffffffff, dep_map = {key = 0xc190e388 <__key.15367>, 
-        class_cache = 0x0, name = 0xc15d6430 "&lock->wait_lock", cpu = 0, 
-        ip = 0}}, wait_list = {next = 0xc70722ac, prev = 0xc70722ac}, 
-    owner = 0x0, name = 0x0, magic = 0xc7072284, dep_map = {
-      key = 0xc1e5c5e4 <__key.25109>, class_cache = 0x0, 
-      name = 0xc15dca01 "&child->perf_event_mutex", cpu = 0, ip = 0}}, 
----Type <return> to continue, or q <return> to quit---
-  perf_event_list = {next = 0xc70722d4, prev = 0xc70722d4}, fs_excl = {
-    counter = 0}, rcu = {next = 0x0, func = 0x0}, splice_pipe = 0x0, 
-  delays = 0xc7026130, make_it_fail = 0, dirties = {events = 0, period = 0, 
-    shift = 0, lock = {raw_lock = {slock = 0}, magic = 3735899821, 
-      owner_cpu = 4294967295, owner = 0xffffffff, dep_map = {
-        key = 0xc1e6cca0 <__key.9654>, class_cache = 0x0, 
-        name = 0xc1612cec "&pl->lock", cpu = 0, ip = 0}}}, 
-  latency_record_count = 0, latency_record = {{backtrace = {
-        0 <repeats 12 times>}, count = 0, time = 0, 
-      max = 0} <repeats 32 times>}, timer_slack_ns = 50000, 
-  default_timer_slack_ns = 50000, scm_work_list = 0x0, curr_ret_stack = -1, 
-  ret_stack = 0x0, ftrace_timestamp = 0, trace_overrun = {counter = 0}, 
-  tracing_graph_pause = {counter = 0}, trace = 0, trace_recursion = 0}
 ```
 
-* Signals `kernel_init` waiting on completion `kthreadd_done` which indicates all setup of kernel thread `kthreadd` is complete.
+* Signals `kernel_init` waiting on completion `kthreadd_done` which indicates all setup of kernel thread `kthreadd` is completed.
 
 ```complete
 427		complete(&kthreadd_done);
@@ -1668,6 +1510,11 @@ _raw_spin_unlock (lock=lock@entry=0xc1694880 <i8259A_lock>)
     at lib/spinlock_debug.c:155
 155	}
 ```
+
+* Initializes schedule class of idle process with `idle_sched_class`
+* Decreases preemt counter of current thread with specified value if `CONFIG_PREEMT` enabled
+* The boot idle process executes schedule() to let other process scheduled by CPU, after that things will move on for example functions `kernel_init` and `kthreadd` are invoked to complete init thread and kernel daemon thread to run. schedle() will be introduced in process scheduler.
+
 
 # Links
 
