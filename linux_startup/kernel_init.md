@@ -121,6 +121,47 @@ kernel_init (unused=<optimized out>) at init/main.c:869
 * Change a given task's CPU affinity. Migrate the thread to a proper CPU and schedule it away if the CPU it's executing on is removed from the allowed bitmask.
 
 ```
+kernel_init (unused=<optimized out>) at init/main.c:869
+869		set_cpus_allowed_ptr(current, cpu_all_mask);
+(gdb) s
+set_cpus_allowed_ptr (p=p@entry=0xc7070000, new_mask=0xc1497fa4 <cpu_all_bits>)
+    at kernel/sched.c:7372
+7372		while (task_is_waking(p))                                           # check state of the task, if it's waking, wait here
+(gdb) p p->state
+$9 = 0
+(gdb) n
+7374		rq = task_rq_lock(p, &flags);
+(gdb) 
+7375		if (task_is_waking(p)) {
+(gdb) 
+7380		if (!cpumask_intersects(new_mask, cpu_active_mask)) {
+(gdb) 
+7385		if (unlikely((p->flags & PF_THREAD_BOUND) && p != current &&
+(gdb) p p->flags
+$10 = 2105408
+(gdb) n
+7391		if (p->sched_class->set_cpus_allowed)
+(gdb) p p->sched_class->set_cpus_allowed
+$11 = (void (*)(struct task_struct *, const struct cpumask *)) 0x0
+(gdb) n
+7394			cpumask_copy(&p->cpus_allowed, new_mask);
+(gdb) 
+7395			p->rt.nr_cpus_allowed = cpumask_weight(new_mask);
+(gdb) 
+7399		if (cpumask_test_cpu(task_cpu(p), new_mask))                        # test of task is allowed to executing with new mask
+                                                                                # if yes, complete the function execution
+(gdb) p p->rt.nr_cpus_allowed
+$12 = 8
+(gdb) p *new_mask
+$13 = {bits = {255}}
+(gdb) n
+7365		int ret = 0;
+(gdb) 
+7415		task_rq_unlock(rq, &flags);
+(gdb) 
+7417		return ret;
+(gdb) 
+7418	}
 ```
 
 # Links
