@@ -168,7 +168,7 @@ $13 = {bits = {255}}
 * Prepare for SMP bootup.  The MP table or ACPI has been read earlier.
 Just do some sanity checking here and enable APIC mode.
 
-```
+```smp_prepare_cpus
 882		smp_prepare_cpus(setup_max_cpus);
 (gdb) s
 smp_prepare_cpus (max_cpus=8)
@@ -346,6 +346,201 @@ set_mtrr_aps_delayed_init () at arch/x86/kernel/cpu/mtrr/main.c:768
 native_smp_prepare_cpus (max_cpus=<optimized out>)
     at arch/x86/kernel/smpboot.c:1140
 1140	}
+(gdb) 
+```
+
+* Invoke SMP init routines
+
+migration_init: create migration thread for boot cpu and wake up the created thread, registers notifier to response new added CPU.
+
+spawn_ksoftirqd: create ksoftirqd thread and wake up the created thread, register notifier to response added CPU.
+
+init_call_single_data: initialize per CPU variable `call_single_queue` and allocate CPU mask for up CPU, register notifier to response new added CPU.
+
+spawn_softlockup_task: create watch dog thread for CPU up and down, register notifier to response new added CPU
+
+relay_init: register CPU hotplug callback
+
+tracer_alloc_buffers: prepare trace for all possible CPU and register response routine
+
+init_trace_printk: register module notifier for treace printk
+
+
+```do_pre_smp_initcalls
+Breakpoint 3, kernel_init (unused=<optimized out>) at init/main.c:884
+884		do_pre_smp_initcalls();
+(gdb) s
+do_pre_smp_initcalls () at init/main.c:797
+797		for (call = __initcall_start; call < __early_initcall_end; call++)
+(gdb) p __initcall_start
+$1 = 0xc177d998
+(gdb) p *(initcall_t*)__initcall_start
+$3 = (initcall_t) 0xc170d5e3 <migration_init>
+(gdb) p __early_initcall_end
+$4 = 0xc177d9b4 <__initcall_init_mmap_min_addr0>
+(gdb) p __initcall_start+1
+$6 = (initcall_t *) 0xc177d99c <__initcall_spawn_ksoftirqdearly>
+(gdb) p __initcall_start+2
+$7 = (initcall_t *) 0xc177d9a0 <__initcall_init_call_single_dataearly>
+(gdb) p __initcall_start+3
+$8 = (initcall_t *) 0xc177d9a4 <__initcall_spawn_softlockup_taskearly>
+(gdb) p __initcall_start+4
+$9 = (initcall_t *) 0xc177d9a8 <__initcall_relay_initearly>
+(gdb) p __initcall_start+5
+$10 = (initcall_t *) 0xc177d9ac <__initcall_tracer_alloc_buffersearly>
+(gdb) p __initcall_start+6
+$11 = (initcall_t *) 0xc177d9b0 <__initcall_init_trace_printkearly>
+(gdb) 
+```
+
+* rest of initialization of SMP in boot CPU
+
+```smp_init
+887		smp_init();
+(gdb) s
+smp_init () at init/main.c:373
+373		for_each_present_cpu(cpu) {
+(gdb) 
+374			if (num_online_cpus() >= setup_max_cpus)
+(gdb) 
+376			if (!cpu_online(cpu))
+(gdb) p setup_max_cpus 
+$12 = 8
+(gdb) n
+381		printk(KERN_INFO "Brought up %ld CPUs\n", (long)num_online_cpus());
+(gdb) 
+382		smp_cpus_done(setup_max_cpus);
+(gdb) s
+smp_cpus_done (max_cpus=8)
+    at /home/start-kernel/work_space/github/linux_startup/linux-2.6.32.69/arch/x86/include/asm/smp.h:96
+96		smp_ops.smp_cpus_done(max_cpus);
+(gdb) s
+native_smp_cpus_done (max_cpus=8) at arch/x86/kernel/smpboot.c:1166
+1166		pr_debug("Boot done.\n");
+(gdb) n
+1168		impress_friends();
+(gdb) s
+impress_friends () at arch/x86/kernel/smpboot.c:483
+483		pr_debug("Before bogomips.\n");
+(gdb) n
+484		for_each_possible_cpu(cpu)
+(gdb) 
+485			if (cpumask_test_cpu(cpu, cpu_callout_mask))
+(gdb) 
+486				bogosum += cpu_data(cpu).loops_per_jiffy;
+(gdb) 
+484		for_each_possible_cpu(cpu)
+(gdb) 
+487		printk(KERN_INFO
+(gdb) p bogosum
+$14 = 13568592
+(gdb) n
+491			(bogosum/(5000/HZ))%100);
+(gdb) 
+493		pr_debug("Before bogocount - setting activated=1.\n");
+(gdb) 
+native_smp_cpus_done (max_cpus=<optimized out>)
+    at arch/x86/kernel/smpboot.c:1170
+1170		setup_ioapic_dest();
+(gdb) s
+setup_ioapic_dest () at arch/x86/kernel/apic/io_apic.c:4096
+4096		if (skip_ioapic_setup == 1)
+(gdb) p skip_ioapic_setup
+$15 = 0
+(gdb) n
+4099		for (ioapic = 0; ioapic < nr_ioapics; ioapic++)
+(gdb) p nr_ioapics
+$16 = 1
+(gdb) n
+4100		for (pin = 0; pin < nr_ioapic_registers[ioapic]; pin++) {
+(gdb) p nr_ioapic_registers[0]
+$17 = 24
+(gdb) n
+4101			irq_entry = find_irq_entry(ioapic, pin, mp_INT);
+(gdb) 
+4102			if (irq_entry == -1)
+(gdb) 
+4104			irq = pin_2_irq(irq_entry, ioapic, pin);
+(gdb) 
+4106			if ((ioapic > 0) && (irq > 16))
+(gdb) p irq
+$19 = 1
+(gdb) n
+4109			desc = irq_to_desc(irq);
+(gdb) 
+4114			if (desc->status &
+(gdb) p desc
+$21 = (struct irq_desc *) 0xc1690c00 <irq_desc_legacy+160>
+(gdb) p *desc
+$22 = {irq = 1, kstat_irqs = 0xc7001004, 
+  handle_irq = 0xc10ab4a0 <handle_edge_irq>, chip = 0xc16f7140 <ioapic_chip>, 
+  msi_desc = 0x0, handler_data = 0x0, chip_data = 0xc1697194 <irq_cfgx+20>, 
+  action = 0x0, status = 512, depth = 1, wake_depth = 0, irq_count = 0, 
+  last_unhandled = 0, irqs_unhandled = 0, lock = {raw_lock = {slock = 1028}, 
+    magic = 3735899821, owner_cpu = 4294967295, owner = 0xffffffff, dep_map = {
+      key = 0xc1e3376c <irq_desc_lock_class>, class_cache = 0x0, 
+      name = 0xc15dae6f "&irq_desc_lock_class", cpu = 0, ip = 3238703088}}, 
+  affinity = {{bits = {255}}}, node = 0, pending_mask = {{bits = {0}}}, 
+  threads_active = {counter = 0}, wait_for_threads = {lock = {raw_lock = {
+        slock = 0}, magic = 0, owner_cpu = 0, owner = 0x0, dep_map = {
+        key = 0x0, class_cache = 0x0, name = 0x0, cpu = 0, ip = 0}}, 
+    task_list = {next = 0x0, prev = 0x0}}, dir = 0x0, name = 0xc15d11ec "edge"}
+(gdb) n
+4118				mask = apic->target_cpus();
+(gdb) s
+default_target_cpus ()
+    at /home/start-kernel/work_space/github/linux_startup/linux-2.6.32.69/arch/x86/include/asm/apic.h:475
+475	}
+(gdb) n
+setup_ioapic_dest () at arch/x86/kernel/apic/io_apic.c:4123
+4123				set_ioapic_affinity_irq_desc(desc, mask);
+(gdb) p mask
+$23 = (const struct cpumask *) 0xc16f7260 <cpu_online_bits>
+(gdb) p *mask
+$24 = {bits = {1}}
+(gdb) s
+set_ioapic_affinity_irq_desc (
+    desc=desc@entry=0xc1690c00 <irq_desc_legacy+160>, 
+    mask=0xc16f7260 <cpu_online_bits>) at arch/x86/kernel/apic/io_apic.c:2366
+2366		cfg = desc->chip_data;
+(gdb) n
+2368		spin_lock_irqsave(&ioapic_lock, flags);
+(gdb) 
+2369		dest = set_desc_affinity(desc, mask);
+(gdb) 
+2370		if (dest != BAD_APICID) {
+(gdb) 
+2372			dest = SET_APIC_LOGICAL_ID(dest);
+(gdb) 
+2373			__target_IO_APIC_irq(irq, dest, cfg);
+(gdb) 
+2374			ret = 0;
+(gdb) 
+2376		spin_unlock_irqrestore(&ioapic_lock, flags);
+(gdb) 
+2379	}
+(gdb) break check_nmi_watchdog
+Breakpoint 9 at 0xc1707f40: file arch/x86/kernel/apic/nmi.c, line 134.
+(gdb) c
+Continuing.
+Error in testing breakpoint condition:
+value has been optimized out
+
+Breakpoint 9, check_nmi_watchdog () at arch/x86/kernel/apic/nmi.c:134
+134		if (!nmi_watchdog_active() || !atomic_read(&nmi_active))
+(gdb) n
+native_smp_cpus_done (max_cpus=<optimized out>)
+    at arch/x86/kernel/smpboot.c:1173
+1173		mtrr_aps_init();
+(gdb) s
+mtrr_aps_init () at arch/x86/kernel/cpu/mtrr/main.c:779
+779		if (!use_intel())
+(gdb) n
+792	}
+(gdb) 
+native_smp_cpus_done (max_cpus=<optimized out>)
+    at arch/x86/kernel/smpboot.c:1174
+1174	}
 (gdb) 
 ```
 
