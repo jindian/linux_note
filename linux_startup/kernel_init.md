@@ -544,6 +544,161 @@ native_smp_cpus_done (max_cpus=<optimized out>)
 (gdb) 
 ```
 
+* Initialize schedule variables and doamins, register callback function to response CPU come and go
+
+```sched_init_smp
+Breakpoint 3, sched_init_smp () at kernel/sched.c:9509
+9509		get_online_cpus();                                              # increase reference
+(gdb) s
+get_online_cpus () at kernel/cpu.c:48
+48		might_sleep();
+(gdb) n
+49		if (cpu_hotplug.active_writer == current)
+(gdb) p cpu_hotplug
+$3 = {active_writer = 0x0, lock = {count = {counter = 1}, wait_lock = {
+      raw_lock = {slock = 2056}, magic = 3735899821, owner_cpu = 4294967295, 
+      owner = 0xffffffff, dep_map = {key = 0x0, class_cache = 0x0, 
+        name = 0xc15d41ad "cpu_hotplug.lock.wait_lock", cpu = 0, ip = 0}}, 
+    wait_list = {next = 0xc1698eec <cpu_hotplug+44>, 
+      prev = 0xc1698eec <cpu_hotplug+44>}, owner = 0x0, name = 0x0, 
+    magic = 0xc1698ec4 <cpu_hotplug+4>, dep_map = {
+      key = 0xc1698f00 <cpu_hotplug+64>, 
+      class_cache = 0xc1b605e0 <lock_classes+155040>, 
+      name = 0xc15d41c8 "cpu_hotplug.lock", cpu = 0, ip = 3238298482}}, 
+  refcount = 0}
+(gdb) n
+51		mutex_lock(&cpu_hotplug.lock);
+(gdb) 
+52		cpu_hotplug.refcount++;
+(gdb) 
+53		mutex_unlock(&cpu_hotplug.lock);
+(gdb) 
+55	}
+(gdb) 
+sched_init_smp () at kernel/sched.c:9510
+9510		mutex_lock(&sched_domains_mutex);
+(gdb) 
+9511		arch_init_sched_domains(cpu_active_mask);
+(gdb) p *cpu_active_mask 
+$5 = {bits = {1}}
+(gdb) s
+arch_init_sched_domains (cpu_map=<optimized out>) at kernel/sched.c:9220
+9220		arch_update_cpu_topology();
+(gdb) s
+arch_update_cpu_topology () at kernel/sched.c:9209
+9209	}
+(gdb) n
+arch_init_sched_domains (cpu_map=<optimized out>) at kernel/sched.c:9221
+9221		ndoms_cur = 1;
+(gdb) 
+9222		doms_cur = kmalloc(cpumask_size(), GFP_KERNEL);
+(gdb) 
+9225		cpumask_andnot(doms_cur, cpu_map, cpu_isolated_map);
+(gdb) s
+cpumask_andnot (src2p=0xc18eb14c <cpu_isolated_map>, src1p=<optimized out>, 
+    dstp=<optimized out>) at kernel/sched.c:9225
+9225		cpumask_andnot(doms_cur, cpu_map, cpu_isolated_map);
+(gdb) s
+bitmap_andnot (src2=0xc18eb14c <cpu_isolated_map>, nbits=8, 
+    src1=<optimized out>, dst=<optimized out>) at include/linux/bitmap.h:204
+204			return (*dst = *src1 & ~(*src2)) != 0;
+(gdb) n
+arch_init_sched_domains (cpu_map=<optimized out>) at kernel/sched.c:9226
+9226		dattr_cur = NULL;
+(gdb) 
+9227		err = build_sched_domains(doms_cur);
+(gdb) s
+build_sched_domains (cpu_map=0xc7020188) at kernel/sched.c:9186
+9186		return __build_sched_domains(cpu_map, NULL);
+(gdb) n
+arch_init_sched_domains (cpu_map=<optimized out>) at kernel/sched.c:9228
+9228		register_sched_domain_sysctl();
+(gdb) s
+register_sched_domain_sysctl () at kernel/sched.c:7825
+7825		struct ctl_table *entry = sd_alloc_ctl_entry(cpu_num + 1);
+(gdb) n
+7828		WARN_ON(sd_ctl_dir[0].child);
+(gdb) 
+7829		sd_ctl_dir[0].child = entry;
+(gdb) 
+7831		if (entry == NULL)
+(gdb) 
+7834		for_each_possible_cpu(i) {
+(gdb) 
+7835			snprintf(buf, 32, "cpu%d", i);
+(gdb) 
+7836			entry->procname = kstrdup(buf, GFP_KERNEL);
+(gdb) 
+7837			entry->mode = 0555;
+(gdb) 
+7838			entry->child = sd_alloc_ctl_cpu_table(i);
+(gdb) 
+7839			entry++;
+(gdb) 
+7834		for_each_possible_cpu(i) {
+(gdb) 
+7842		WARN_ON(sd_sysctl_header);
+(gdb) 
+7843		sd_sysctl_header = register_sysctl_table(sd_ctl_root);
+(gdb) 
+7844	}
+(gdb) 
+sched_init_smp () at kernel/sched.c:9512
+9512		cpumask_andnot(non_isolated_cpus, cpu_possible_mask, cpu_isolated_map);
+(gdb) 
+9513		if (cpumask_empty(non_isolated_cpus))
+(gdb) p non_isolated_cpus 
+$14 = {{bits = {3245306464}}}
+(gdb) n
+9515		mutex_unlock(&sched_domains_mutex);
+(gdb) 
+9516		put_online_cpus();                                                  # decrease reference
+(gdb) s
+put_online_cpus () at kernel/cpu.c:60
+60		if (cpu_hotplug.active_writer == current)
+(gdb) n
+62		mutex_lock(&cpu_hotplug.lock);
+(gdb) 
+63		if (!--cpu_hotplug.refcount && unlikely(cpu_hotplug.active_writer))
+(gdb) 
+65		mutex_unlock(&cpu_hotplug.lock);
+(gdb) 
+67	}
+(gdb) 
+sched_init_smp () at kernel/sched.c:9524
+9524		hotcpu_notifier(update_runtime, 0);                                 # RT runtime code needs to handle some hotplug events
+(gdb) s
+register_cpu_notifier (nb=nb@entry=0xc16de1f0 <update_runtime_nb>) 
+    at kernel/cpu.c:131
+131		cpu_maps_update_begin();
+(gdb) n
+132		ret = raw_notifier_chain_register(&cpu_chain, nb);
+(gdb) 
+133		cpu_maps_update_done();
+(gdb) 
+135	}
+(gdb) 
+sched_init_smp () at kernel/sched.c:9526
+9526		init_hrtick();                                                      # high resolutuib time to handle hotplug events
+(gdb) s
+init_hrtick () at kernel/sched.c:1102
+1102		hotcpu_notifier(hotplug_hrtick, 0);
+(gdb) n
+sched_init_smp () at kernel/sched.c:9529
+9529		if (set_cpus_allowed_ptr(current, non_isolated_cpus) < 0)
+(gdb) 
+sched_init_smp () at kernel/sched.c:9531
+9531		sched_init_granularity();                                           # increase the granularity value when there are more CPUs
+(gdb) 
+9534		init_sched_rt_class();                                              # allocate cpu mask
+(gdb) 
+9535	}
+(gdb) 
+kernel_init (unused=<optimized out>) at init/main.c:890
+890		do_basic_setup();
+(gdb) 
+```
+
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
 * [completions - wait for completion handling](https://www.kernel.org/doc/Documentation/scheduler/completion.txt)
