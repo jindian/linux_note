@@ -699,6 +699,175 @@ kernel_init (unused=<optimized out>) at init/main.c:890
 (gdb) 
 ```
 
+* Initialize devices.
+init_workqueues: initialize work queue for all up CPUs
+
+```do_basic_setup
+kernel_init (unused=<optimized out>) at init/main.c:890
+890		do_basic_setup();
+(gdb) s
+do_basic_setup () at init/main.c:783
+783		init_workqueues();
+(gdb) s
+init_workqueues () at kernel/workqueue.c:1049
+1049		cpumask_copy(cpu_populated_map, cpu_online_mask);
+(gdb) p *cpu_online_mask 
+$5 = {bits = {1}}
+(gdb) n
+1050		singlethread_cpu = cpumask_first(cpu_possible_mask);
+(gdb) p *cpu_possible_mask
+$6 = {bits = {1}}
+(gdb) n
+1051		cpu_singlethread_map = cpumask_of(singlethread_cpu);
+(gdb) 
+1052		hotcpu_notifier(workqueue_cpu_callback, 0);
+(gdb) 
+1053		keventd_wq = create_workqueue("events");
+(gdb) p *cpu_singlethread_map
+$10 = {bits = {1}}
+(gdb) s
+__create_workqueue_key (name=name@entry=0xc1619d0a "events", 
+    singlethread=singlethread@entry=0, freezeable=freezeable@entry=0, 
+    rt=rt@entry=0, key=key@entry=0xc190e014 <__key.22871>, 
+    lock_name=lock_name@entry=0xc1619d0a "events") at kernel/workqueue.c:839
+839		wq = kzalloc(sizeof(*wq), GFP_KERNEL);
+(gdb) n
+840		if (!wq)
+(gdb) 
+843		wq->cpu_wq = alloc_percpu(struct cpu_workqueue_struct);
+(gdb) 
+844		if (!wq->cpu_wq) {
+(gdb) 
+849		wq->name = name;
+(gdb) 
+850		lockdep_init_map(&wq->lockdep_map, lock_name, key, 0);
+(gdb) s
+lockdep_init_map (lock=lock@entry=0xc7001e1c, 
+    name=name@entry=0xc1619d0a "events", 
+    key=key@entry=0xc190e014 <__key.22871>, subclass=subclass@entry=0)
+    at kernel/lockdep.c:2683
+2683		if (DEBUG_LOCKS_WARN_ON(!name)) {
+(gdb) n
+2678		lock->class_cache = NULL;
+(gdb) 
+2680		lock->cpu = raw_smp_processor_id();
+(gdb) 
+2683		if (DEBUG_LOCKS_WARN_ON(!name)) {
+(gdb) 
+2688		lock->name = name;
+(gdb) 
+2690		if (DEBUG_LOCKS_WARN_ON(!key))
+(gdb) 
+2695		if (!static_obj(key)) {
+(gdb) 
+2700		lock->key = key;
+(gdb) 
+2702		if (unlikely(!debug_locks))
+(gdb) 
+2705		if (subclass)
+(gdb) 
+2707	}
+(gdb) 
+__create_workqueue_key (name=name@entry=0xc1619d0a "events", 
+    singlethread=singlethread@entry=0, freezeable=freezeable@entry=0, 
+    rt=rt@entry=0, key=key@entry=0xc190e014 <__key.22871>, 
+    lock_name=lock_name@entry=0xc1619d0a "events") at kernel/workqueue.c:851
+851		wq->singlethread = singlethread;
+(gdb) 
+852		wq->freezeable = freezeable;
+(gdb) 
+853		wq->rt = rt;
+(gdb) 
+854		INIT_LIST_HEAD(&wq->list);
+(gdb) 
+856		if (singlethread) {
+(gdb) 
+861			cpu_maps_update_begin();
+(gdb) s
+cpu_maps_update_begin () at kernel/cpu.c:78
+78		mutex_lock(&cpu_add_remove_lock);
+(gdb) n
+79	}
+(gdb) 
+__create_workqueue_key (name=name@entry=0xc1619d0a "events", 
+    singlethread=singlethread@entry=0, freezeable=freezeable@entry=0, 
+    rt=rt@entry=0, key=key@entry=0xc190e014 <__key.22871>, 
+    lock_name=lock_name@entry=0xc1619d0a "events") at kernel/workqueue.c:868
+868			spin_lock(&workqueue_lock);
+(gdb) 
+869			list_add(&wq->list, &workqueues);
+(gdb) 
+870			spin_unlock(&workqueue_lock);
+(gdb) 
+877			for_each_possible_cpu(cpu) {
+(gdb) 
+878				cwq = init_cpu_workqueue(wq, cpu);
+(gdb) 
+879				if (err || !cpu_online(cpu))
+(gdb) 
+881				err = create_workqueue_thread(cwq, cpu);
+(gdb) s
+create_workqueue_thread (cwq=cwq@entry=0xc234a8c0, cpu=cpu@entry=0)
+    at kernel/workqueue.c:792
+792		struct sched_param param = { .sched_priority = MAX_RT_PRIO-1 };
+(gdb) 
+793		struct workqueue_struct *wq = cwq->wq;
+(gdb) n
+794		const char *fmt = is_wq_single_threaded(wq) ? "%s" : "%s/%d";
+(gdb) 
+797		p = kthread_create(worker_thread, cwq, fmt, wq->name, cpu);
+(gdb) 
+806		if (IS_ERR(p))
+(gdb) 
+808		if (cwq->wq->rt)
+(gdb) 
+812		trace_workqueue_creation(cwq->thread, cpu);
+(gdb) 
+810		cwq->thread = p;
+(gdb) 
+812		trace_workqueue_creation(cwq->thread, cpu);
+(gdb) 
+814		return 0;
+(gdb) 
+815	}
+(gdb) 
+__create_workqueue_key (name=name@entry=0xc1619d0a "events", 
+    singlethread=singlethread@entry=0, freezeable=freezeable@entry=0, 
+    rt=rt@entry=0, key=key@entry=0xc190e014 <__key.22871>, 
+    lock_name=lock_name@entry=0xc1619d0a "events") at kernel/workqueue.c:882
+882				start_workqueue_thread(cwq, cpu);
+(gdb) s
+start_workqueue_thread (cpu=cpu@entry=0, cwq=0xc234a8c0)
+    at kernel/workqueue.c:821
+821		if (p != NULL) {
+(gdb) n
+822			if (cpu >= 0)
+(gdb) 
+823				kthread_bind(p, cpu);
+(gdb) 
+824			wake_up_process(p);
+(gdb) 
+826	}
+(gdb) 
+__create_workqueue_key (name=name@entry=0xc1619d0a "events", 
+    singlethread=singlethread@entry=0, freezeable=freezeable@entry=0, 
+    rt=rt@entry=0, key=key@entry=0xc190e014 <__key.22871>, 
+    lock_name=lock_name@entry=0xc1619d0a "events") at kernel/workqueue.c:877
+877			for_each_possible_cpu(cpu) {
+(gdb) n
+884			cpu_maps_update_done();
+(gdb) 
+887		if (err) {
+(gdb) 
+892	}
+(gdb) 
+init_workqueues () at kernel/workqueue.c:1054
+1054		BUG_ON(!keventd_wq);
+(gdb) 
+1055	}
+(gdb) 
+```
+
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
 * [completions - wait for completion handling](https://www.kernel.org/doc/Documentation/scheduler/completion.txt)
