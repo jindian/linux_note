@@ -899,6 +899,8 @@ usermodehelper_init () at kernel/kmod.c:640
 
 init_tmpfs: initialize tmp file system
 
+super block -> inode　-> dentry
+
 ```init_tmpfs
 786		init_tmpfs();
 (gdb) s
@@ -1543,6 +1545,59 @@ init_tmpfs () at mm/shmem.c:2549
 (gdb) 
 do_basic_setup () at init/main.c:787
 787		driver_init();
+```
+
+* initialize driver model
+
+```driver_init
+do_basic_setup () at init/main.c:787
+787		driver_init();
+(gdb) s
+driver_init () at drivers/base/init.c:23
+23		devtmpfs_init();                                                                           # initialize dev tmp filesystem
+(gdb) s
+devtmpfs_init () at drivers/base/devtmpfs.c:369
+369		char options[] = "mode=0755";
+(gdb) n
+371		err = register_filesystem(&dev_fs_type);
+(gdb) 
+372		if (err) {
+(gdb) 
+378		mnt = kern_mount_data(&dev_fs_type, options);
+(gdb) s
+kern_mount_data (type=type@entry=0xc16c7da0 <dev_fs_type>, 
+    data=data@entry=0xc706bfa6) at fs/super.c:1016
+1016		return vfs_kern_mount(type, MS_KERNMOUNT, type->name, data);                           # kern_mount_data invoke vfs_kern_mount, reference tmp file system
+(gdb) n
+1017	}
+(gdb) 
+devtmpfs_init () at drivers/base/devtmpfs.c:379
+379		if (IS_ERR(mnt)) {
+(gdb) 
+387		printk(KERN_INFO "devtmpfs: initialized\n");
+(gdb) p mnt
+$1 = (struct vfsmount *) 0xc701d3c0
+(gdb) p *mnt
+$2 = {mnt_hash = {next = 0xc701d3c0, prev = 0xc701d3c0}, 
+  mnt_parent = 0xc701d3c0, mnt_mountpoint = 0xc6c02410, mnt_root = 0xc6c02410, 
+  mnt_sb = 0xc7009d50, mnt_mounts = {next = 0xc701d3d8, prev = 0xc701d3d8}, 
+  mnt_child = {next = 0xc701d3e0, prev = 0xc701d3e0}, mnt_flags = 0, 
+  mnt_devname = 0xc7000700 "devtmpfs", mnt_list = {next = 0xc701d3f0, 
+    prev = 0xc701d3f0}, mnt_expire = {next = 0xc701d3f8, prev = 0xc701d3f8}, 
+  mnt_share = {next = 0xc701d400, prev = 0xc701d400}, mnt_slave_list = {
+    next = 0xc701d408, prev = 0xc701d408}, mnt_slave = {next = 0xc701d410, 
+    prev = 0xc701d410}, mnt_master = 0x0, mnt_ns = 0x0, mnt_id = 5, 
+  mnt_group_id = 0, mnt_count = {counter = 1}, mnt_expiry_mark = 0, 
+  mnt_pinned = 0, mnt_ghosts = 0, mnt_writers = 0xc18d3a50}
+(gdb) n
+385		dev_mnt = mnt;
+(gdb) 
+387		printk(KERN_INFO "devtmpfs: initialized\n");
+(gdb) 
+388		return 0;
+(gdb) 
+389	}
+(gdb) 
 ```
 
 # Links
