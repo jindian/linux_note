@@ -699,8 +699,13 @@ kernel_init (unused=<optimized out>) at init/main.c:890
 (gdb) 
 ```
 
-* Initialize devices.
+* Initialize some basic initialization
+
 init_workqueues: initialize work queue for all up CPUs
+
+cpuset_init_smp: intialize cpu and memory allowed, register notifier to response CPU hotplug, create work queue and work queue thread for cpuset
+
+usermodehelper_init: create work queue and work queue thread for khelper
 
 ```do_basic_setup
 kernel_init (unused=<optimized out>) at init/main.c:890
@@ -866,6 +871,678 @@ init_workqueues () at kernel/workqueue.c:1054
 (gdb) 
 1055	}
 (gdb) 
+do_basic_setup () at init/main.c:784
+784		cpuset_init_smp();
+(gdb)  s
+cpuset_init_smp () at kernel/cpuset.c:2127
+2127		cpumask_copy(top_cpuset.cpus_allowed, cpu_active_mask);
+(gdb) n
+2128		top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
+(gdb) 
+2130		hotcpu_notifier(cpuset_track_online_cpus, 0);
+(gdb) 
+2133		cpuset_wq = create_singlethread_workqueue("cpuset");
+(gdb) 
+2134		BUG_ON(!cpuset_wq);
+2135	}
+(gdb) 
+do_basic_setup () at init/main.c:785
+785		usermodehelper_init();
+(gdb) s
+usermodehelper_init () at kernel/kmod.c:640
+640		khelper_wq = create_singlethread_workqueue("khelper");
+(gdb) n
+641		BUG_ON(!khelper_wq);
+(gdb) 
+642	}
+```
+
+init_tmpfs: initialize tmp file system
+
+```init_tmpfs
+786		init_tmpfs();
+(gdb) s
+init_tmpfs () at mm/shmem.c:2533
+2533		error = bdi_init(&shmem_backing_dev_info);                              # initialize block device information
+(gdb) n
+2534		if (error)
+(gdb) 
+2537		error = init_inodecache();                                              # create shmem_inode_cache
+(gdb) s
+init_inodecache () at mm/shmem.c:2410
+2410		shmem_inode_cachep = kmem_cache_create("shmem_inode_cache",
+(gdb) n
+init_tmpfs () at mm/shmem.c:2541
+2541		error = register_filesystem(&tmpfs_fs_type);                            # register tmpfs_fs_type
+(gdb) 
+2542		if (error) {
+(gdb) 
+2547		shm_mnt = vfs_kern_mount(&tmpfs_fs_type, MS_NOUSER,
+(gdb) s
+vfs_kern_mount (type=type@entry=0xc16a4560 <tmpfs_fs_type>, 
+    flags=flags@entry=-2147483648, name=0xc1620c4e "tmpfs", 
+    data=data@entry=0x0) at fs/super.c:920
+920		if (!type)
+(gdb) n
+924		mnt = alloc_vfsmnt(name);
+(gdb) s
+alloc_vfsmnt (name=name@entry=0xc1620c4e "tmpfs") at fs/namespace.c:130
+130		struct vfsmount *mnt = kmem_cache_zalloc(mnt_cache, GFP_KERNEL);
+(gdb) n
+131		if (mnt) {
+(gdb) 
+134			err = mnt_alloc_id(mnt);
+(gdb) s
+mnt_alloc_id (mnt=<optimized out>) at fs/namespace.c:73
+73		ida_pre_get(&mnt_id_ida, GFP_KERNEL);
+(gdb) s
+ida_pre_get (ida=ida@entry=0xc16a98c0 <mnt_id_ida>, 
+    gfp_mask=gfp_mask@entry=208) at lib/idr.c:737
+737		if (!idr_pre_get(&ida->idr, gfp_mask))
+(gdb) s
+idr_pre_get (idp=idp@entry=0xc16a98c0 <mnt_id_ida>, 
+    gfp_mask=gfp_mask@entry=208) at lib/idr.c:122
+122		while (idp->id_free_cnt < IDR_FREE_MAX) {
+(gdb) 
+124			new = kmem_cache_zalloc(idr_layer_cache, gfp_mask);
+(gdb) 
+125			if (new == NULL)
+(gdb) 
+127			move_to_free_list(idp, new);
+(gdb) s
+move_to_free_list (p=0xc7024300, idp=0xc16a98c0 <mnt_id_ida>) at lib/idr.c:83
+83		spin_lock_irqsave(&idp->lock, flags);
+(gdb) n
+84		__move_to_free_list(idp, p);
+(gdb) s
+__move_to_free_list (idp=<optimized out>, idp=<optimized out>, p=0xc7024300)
+    at lib/idr.c:71
+71		p->ary[0] = idp->id_free;
+(gdb) n
+72		idp->id_free = p;
+(gdb) 
+73		idp->id_free_cnt++;
+(gdb) 
+move_to_free_list (p=0xc7024300, idp=0xc16a98c0 <mnt_id_ida>) at lib/idr.c:85
+85		spin_unlock_irqrestore(&idp->lock, flags);
+(gdb) 
+idr_pre_get (idp=idp@entry=0xc16a98c0 <mnt_id_ida>, 
+    gfp_mask=gfp_mask@entry=208) at lib/idr.c:122
+122		while (idp->id_free_cnt < IDR_FREE_MAX) {
+(gdb) p idp->id_free_cnt 
+$1 = 14
+(gdb) n
+129		return 1;
+(gdb) 
+130	}
+(gdb) 
+ida_pre_get (ida=ida@entry=0xc16a98c0 <mnt_id_ida>, 
+    gfp_mask=gfp_mask@entry=208) at lib/idr.c:741
+741		if (!ida->free_bitmap) {
+(gdb) 
+751		return 1;
+(gdb) 
+752	}
+(gdb) 
+mnt_alloc_id (mnt=<optimized out>) at fs/namespace.c:74
+74		spin_lock(&vfsmount_lock);
+(gdb) 
+75		res = ida_get_new_above(&mnt_id_ida, mnt_id_start, &mnt->mnt_id);
+(gdb) s
+ida_get_new_above (ida=ida@entry=0xc16a98c0 <mnt_id_ida>, starting_id=4, 
+    p_id=p_id@entry=0xc701d360) at lib/idr.c:775
+775		int idr_id = starting_id / IDA_BITMAP_BITS;
+(gdb) n
+776		int offset = starting_id % IDA_BITMAP_BITS;
+(gdb) 
+781		t = idr_get_empty_slot(&ida->idr, idr_id, pa);
+(gdb) s
+idr_get_empty_slot (idp=idp@entry=0xc16a98c0 <mnt_id_ida>, 
+    starting_id=starting_id@entry=0, pa=pa@entry=0xc706bf38) at lib/idr.c:204
+204	{
+(gdb) n
+211		p = idp->top;
+(gdb) 
+213		if (unlikely(!p)) {
+(gdb) 
+223		while ((layers < (MAX_LEVEL - 1)) && (id >= (1 << (layers*IDR_BITS)))) {
+(gdb) p *idp
+$3 = {top = 0xc701e9c0, id_free = 0xc7024300, layers = 1, id_free_cnt = 14, 
+  lock = {raw_lock = {slock = 6939}, magic = 3735899821, 
+    owner_cpu = 4294967295, owner = 0xffffffff, dep_map = {
+      key = 0xc16a98e0 <mnt_id_ida+32>, 
+      class_cache = 0xc1b5d070 <lock_classes+141360>, 
+      name = 0xc15ef581 "mnt_id_ida.lock", cpu = 0, ip = 3240328551}}}
+(gdb) n
+255		rcu_assign_pointer(idp->top, p);
+(gdb) 
+256		idp->layers = layers;
+(gdb) 
+257		v = sub_alloc(idp, &id, pa);
+(gdb) s
+sub_alloc (pa=0xc706bf38, starting_id=<synthetic pointer>, 
+    idp=0xc16a98c0 <mnt_id_ida>) at lib/idr.c:144
+144		pa[l--] = NULL;
+(gdb) n
+149			n = (id >> (IDR_BITS*l)) & IDR_MASK;
+(gdb) p p
+$4 = (struct idr_layer *) 0xc701e9c0
+(gdb) p l
+$5 = 0
+(gdb) n
+149			n = (id >> (IDR_BITS*l)) & IDR_MASK;
+(gdb) 
+150			bm = ~p->bitmap;
+(gdb) 
+151			m = find_next_bit(&bm, IDR_SIZE, n);
+(gdb) p /t p->bitmap
+$6 = 0
+(gdb) n
+152			if (m == IDR_SIZE) {
+(gdb) p m
+$7 = 0
+(gdb) n
+175			if (m != n) {
+(gdb) 
+179			if ((id >= MAX_ID_BIT) || (id < 0))
+(gdb) 
+181			if (l == 0)
+(gdb) 
+idr_get_empty_slot (idp=idp@entry=0xc16a98c0 <mnt_id_ida>, 
+    starting_id=starting_id@entry=0, pa=pa@entry=0xc706bf38) at lib/idr.c:257
+257		v = sub_alloc(idp, &id, pa);
+(gdb) 
+261	}
+(gdb) p pa[0]
+$8 = (struct idr_layer *) 0xc701e9c0
+(gdb) n
+ida_get_new_above (ida=ida@entry=0xc16a98c0 <mnt_id_ida>, 
+    starting_id=<optimized out>, p_id=p_id@entry=0xc701d360) at lib/idr.c:782
+782		if (t < 0)
+(gdb) 
+785		if (t * IDA_BITMAP_BITS >= MAX_ID_BIT)
+(gdb) 
+789			offset = 0;
+(gdb) 
+793		bitmap = (void *)pa[0]->ary[idr_id & IDR_MASK];
+(gdb) 
+794		if (!bitmap) {
+(gdb) 
+810		t = find_next_zero_bit(bitmap->bitmap, IDA_BITMAP_BITS, offset);
+(gdb) p *bitmap
+$10 = {nr_busy = 4, bitmap = {15, 0 <repeats 30 times>}}
+(gdb) n
+811		if (t == IDA_BITMAP_BITS) {
+(gdb) p t
+$11 = 4
+(gdb) n
+819		if (id >= MAX_ID_BIT)
+(gdb) 
+822		__set_bit(t, bitmap->bitmap);
+(gdb) p bitmap->bitmap 
+$12 = {15, 0 <repeats 30 times>}
+(gdb) n
+823		if (++bitmap->nr_busy == IDA_BITMAP_BITS)
+(gdb) p bitmap->bitmap 
+$13 = {31, 0 <repeats 30 times>}
+(gdb) n
+826		*p_id = id;
+(gdb) 
+833		if (ida->idr.id_free_cnt || ida->free_bitmap) {
+(gdb) 
+834			struct idr_layer *p = get_from_free_list(&ida->idr);
+(gdb) 
+835			if (p)
+(gdb) 
+836				kmem_cache_free(idr_layer_cache, p);
+(gdb) 
+840	}
+(gdb) p p_id
+$14 = (int *) 0xc701d360
+(gdb) p *p_id
+$15 = 4
+(gdb) n
+839		return 0;
+(gdb) 
+840	}
+(gdb) 
+mnt_alloc_id (mnt=<optimized out>) at fs/namespace.c:76
+76		if (!res)
+(gdb) 
+77			mnt_id_start = mnt->mnt_id + 1;
+(gdb) 
+78		spin_unlock(&vfsmount_lock);
+(gdb) 
+alloc_vfsmnt (name=name@entry=0xc1620c4e "tmpfs") at fs/namespace.c:138
+138			if (name) {
+(gdb) 
+139				mnt->mnt_devname = kstrdup(name, GFP_KERNEL);
+(gdb) 
+140				if (!mnt->mnt_devname)
+(gdb) 
+144			atomic_set(&mnt->mnt_count, 1);
+(gdb) 
+145			INIT_LIST_HEAD(&mnt->mnt_hash);
+(gdb) 
+146			INIT_LIST_HEAD(&mnt->mnt_child);
+(gdb) 
+147			INIT_LIST_HEAD(&mnt->mnt_mounts);
+(gdb) 
+148			INIT_LIST_HEAD(&mnt->mnt_list);
+(gdb) 
+149			INIT_LIST_HEAD(&mnt->mnt_expire);
+(gdb) 
+150			INIT_LIST_HEAD(&mnt->mnt_share);
+(gdb) 
+151			INIT_LIST_HEAD(&mnt->mnt_slave_list);
+(gdb) 
+152			INIT_LIST_HEAD(&mnt->mnt_slave);
+(gdb) 
+154			mnt->mnt_writers = alloc_percpu(int);
+(gdb) 
+155			if (!mnt->mnt_writers)
+(gdb) 
+172	}
+(gdb) 
+vfs_kern_mount (type=type@entry=0xc16a4560 <tmpfs_fs_type>, 
+    flags=flags@entry=-2147483648, name=0xc1620c4e "tmpfs", 
+    data=data@entry=0x0) at fs/super.c:925
+925		if (!mnt)
+(gdb) 
+928		if (data && !(type->fs_flags & FS_BINARY_MOUNTDATA)) {
+(gdb) 
+938		error = type->get_sb(type, flags, name, data, mnt);
+(gdb) s
+shmem_get_sb (fs_type=0xc16a4560 <tmpfs_fs_type>, flags=-2147483648, 
+    dev_name=0xc1620c4e "tmpfs", data=0x0, mnt=0xc701d300) at mm/shmem.c:2519
+2519		return get_sb_nodev(fs_type, flags, data, shmem_fill_super, mnt);
+(gdb) s
+get_sb_nodev (fs_type=0xc16a4560 <tmpfs_fs_type>, flags=-2147483648, 
+    data=data@entry=0x0, fill_super=0xc10e49b0 <shmem_fill_super>, 
+    mnt=mnt@entry=0xc701d300) at fs/super.c:859
+859	{
+(gdb) n
+861		struct super_block *s = sget(fs_type, NULL, set_anon_super, NULL);
+(gdb) 
+863		if (IS_ERR(s))
+(gdb) 
+866		s->s_flags = flags;
+(gdb) 
+868		error = fill_super(s, data, flags & MS_SILENT ? 1 : 0);
+(gdb) s
+shmem_fill_super (sb=0xc7009920, data=0x0, silent=0) at mm/shmem.c:2319
+2319		sbinfo = kzalloc(max((int)sizeof(struct shmem_sb_info),
+(gdb) 
+2321		if (!sbinfo)
+(gdb) 
+2324		sbinfo->mode = S_IRWXUGO | S_ISVTX;
+(gdb) 
+2325		sbinfo->uid = current_fsuid();
+(gdb) 
+2326		sbinfo->gid = current_fsgid();
+(gdb) 
+2327		sb->s_fs_info = sbinfo;
+(gdb) 
+2335		if (!(sb->s_flags & MS_NOUSER)) {
+(gdb) 
+2343		sb->s_export_op = &shmem_export_ops;
+(gdb) 
+2348		spin_lock_init(&sbinfo->stat_lock);
+(gdb) 
+2349		sbinfo->free_blocks = sbinfo->max_blocks;
+(gdb) 
+2350		sbinfo->free_inodes = sbinfo->max_inodes;
+(gdb) 
+2352		sb->s_maxbytes = SHMEM_MAX_BYTES;
+(gdb) 
+2353		sb->s_blocksize = PAGE_CACHE_SIZE;
+(gdb) 
+2354		sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
+(gdb) 
+2355		sb->s_magic = TMPFS_MAGIC;
+(gdb) 
+2356		sb->s_op = &shmem_ops;
+(gdb) 
+2357		sb->s_time_gran = 1;
+(gdb) 
+2359		sb->s_xattr = shmem_xattr_handlers;
+(gdb) 
+2360		sb->s_flags |= MS_POSIXACL;
+(gdb) 
+2363		inode = shmem_get_inode(sb, S_IFDIR | sbinfo->mode, 0, VM_NORESERVE);
+(gdb) s
+shmem_get_inode (sb=sb@entry=0xc7009920, mode=17407, dev=dev@entry=0, 
+    flags=flags@entry=2097152) at mm/shmem.c:1548
+1548		if (shmem_reserve_inode(sb))
+(gdb) s
+shmem_reserve_inode (sb=sb@entry=0xc7009920) at mm/shmem.c:245
+245		struct shmem_sb_info *sbinfo = SHMEM_SB(sb);
+(gdb) n
+246		if (sbinfo->max_inodes) {
+(gdb) 
+255		return 0;
+(gdb) 
+256	}
+(gdb) 
+shmem_get_inode (sb=sb@entry=0xc7009920, mode=17407, dev=dev@entry=0, 
+    flags=flags@entry=2097152) at mm/shmem.c:1551
+1551		inode = new_inode(sb);
+(gdb) s
+new_inode (sb=sb@entry=0xc7009920) at fs/inode.c:677
+677		spin_lock_prefetch(&inode_lock);
+(gdb) n
+679		inode = alloc_inode(sb);
+(gdb) s
+alloc_inode (sb=sb@entry=0xc7009920) at fs/inode.c:213
+213	{
+(gdb) n
+216		if (sb->s_op->alloc_inode)
+(gdb) 
+217			inode = sb->s_op->alloc_inode(sb);
+(gdb) s
+shmem_alloc_inode (sb=0xc7009920) at mm/shmem.c:2386
+2386		p = (struct shmem_inode_info *)kmem_cache_alloc(shmem_inode_cachep, GFP_KERNEL);
+(gdb) n
+2387		if (!p)
+(gdb) 
+2389		return &p->vfs_inode;
+(gdb) 
+2390	}
+(gdb) 
+alloc_inode (sb=sb@entry=0xc7009920) at fs/inode.c:221
+221		if (!inode)
+(gdb) 
+224		if (unlikely(inode_init_always(sb, inode))) {
+(gdb) 
+233	}
+(gdb) 
+new_inode (sb=sb@entry=0xc7009920) at fs/inode.c:680
+680		if (inode) {
+(gdb) 
+679		inode = alloc_inode(sb);
+(gdb) 
+680		if (inode) {
+(gdb) 
+681			spin_lock(&inode_lock);
+(gdb) 
+682			__inode_add_to_lists(sb, NULL, inode);
+(gdb) 
+683			inode->i_ino = ++last_ino;
+(gdb) 
+684			inode->i_state = 0;
+(gdb) 
+685			spin_unlock(&inode_lock);
+(gdb) 
+688	}
+(gdb) 
+shmem_get_inode (sb=sb@entry=0xc7009920, mode=17407, dev=dev@entry=0, 
+    flags=flags@entry=2097152) at mm/shmem.c:1552
+1552		if (inode) {
+(gdb) 
+1553			inode->i_mode = mode;
+(gdb) 
+1554			inode->i_uid = current_fsuid();
+(gdb) 
+1555			inode->i_gid = current_fsgid();
+(gdb) 
+1556			inode->i_blocks = 0;
+(gdb) 
+1557			inode->i_mapping->backing_dev_info = &shmem_backing_dev_info;
+(gdb) 
+1558			inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+(gdb) 
+1559			inode->i_generation = get_seconds();
+(gdb) 
+1560			info = SHMEM_I(inode);
+(gdb) 
+1561			memset(info, 0, (char *)inode - (char *)info);
+(gdb) 
+1562			spin_lock_init(&info->lock);
+(gdb) 
+1563			info->flags = flags & VM_NORESERVE;
+(gdb) 
+1564			INIT_LIST_HEAD(&info->swaplist);
+(gdb) 
+1565			cache_no_acl(inode);
+(gdb) 
+1567			switch (mode & S_IFMT) {
+(gdb) 
+1580				inc_nlink(inode);
+(gdb) 
+1582				inode->i_size = 2 * BOGO_DIRENT_SIZE;
+(gdb) 
+1583				inode->i_op = &shmem_dir_inode_operations;                      # operations of inode
+(gdb) 
+1584				inode->i_fop = &simple_dir_operations;
+(gdb) 
+1597	}
+(gdb) 
+shmem_fill_super (sb=0xc7009920, data=0x0, silent=<optimized out>)
+    at mm/shmem.c:2364
+2364		if (!inode)
+(gdb) 
+2366		inode->i_uid = sbinfo->uid;
+(gdb) 
+2367		inode->i_gid = sbinfo->gid;
+(gdb) 
+2368		root = d_alloc_root(inode);
+(gdb) 
+(gdb) s
+d_alloc_root (root_inode=root_inode@entry=0xc709e080) at fs/dcache.c:1098
+1098		if (root_inode) {
+(gdb) n
+1101			res = d_alloc(NULL, &name);
+(gdb) s
+d_alloc (parent=parent@entry=0x0, name=name@entry=0xc149fbb8 <name>)
+    at fs/dcache.c:922
+922		dentry = kmem_cache_alloc(dentry_cache, GFP_KERNEL);
+(gdb) 
+923		if (!dentry)
+(gdb) 
+926		if (name->len > DNAME_INLINE_LEN-1) {
+(gdb) 
+933			dname = dentry->d_iname;
+(gdb) 
+935		dentry->d_name.name = dname;
+(gdb) 
+937		dentry->d_name.len = name->len;
+(gdb) 
+938		dentry->d_name.hash = name->hash;
+(gdb) 
+939		memcpy(dname, name->name, name->len);
+(gdb) 
+940		dname[name->len] = 0;
+(gdb) 
+942		atomic_set(&dentry->d_count, 1);
+(gdb) 
+943		dentry->d_flags = DCACHE_UNHASHED;
+(gdb) 
+944		spin_lock_init(&dentry->d_lock);
+(gdb) 
+945		dentry->d_inode = NULL;
+(gdb) 
+946		dentry->d_parent = NULL;
+(gdb) 
+947		dentry->d_sb = NULL;
+(gdb) 
+948		dentry->d_op = NULL;
+(gdb) 
+949		dentry->d_fsdata = NULL;
+(gdb) 
+950		dentry->d_mounted = 0;
+(gdb) 
+951		INIT_HLIST_NODE(&dentry->d_hash);
+(gdb) 
+952		INIT_LIST_HEAD(&dentry->d_lru);
+(gdb) 
+953		INIT_LIST_HEAD(&dentry->d_subdirs);
+(gdb) 
+954		INIT_LIST_HEAD(&dentry->d_alias);
+(gdb) 
+956		if (parent) {
+(gdb) 
+960			INIT_LIST_HEAD(&dentry->d_u.d_child);
+(gdb) 
+963		spin_lock(&dcache_lock);
+(gdb) 
+966		dentry_stat.nr_dentry++;
+(gdb) 
+967		spin_unlock(&dcache_lock);
+(gdb) 
+969		return dentry;
+(gdb) 
+970	}
+(gdb) 
+d_alloc_root (root_inode=root_inode@entry=0xc709e080) at fs/dcache.c:1102
+1102			if (res) {
+(gdb) 
+1103				res->d_sb = root_inode->i_sb;
+(gdb) 
+1104				res->d_parent = res;
+(gdb) 
+1105				d_instantiate(res, root_inode);
+(gdb) s
+d_instantiate (entry=0xc6c02340, inode=0xc709e080) at fs/dcache.c:1007
+1007	{
+(gdb) n
+1008		BUG_ON(!list_empty(&entry->d_alias));
+(gdb) 
+1009		spin_lock(&dcache_lock);
+(gdb) 
+1010		__d_instantiate(entry, inode);
+(gdb) s
+__d_instantiate (dentry=dentry@entry=0xc6c02340, inode=inode@entry=0xc709e080)
+    at fs/dcache.c:985
+985		if (inode)
+(gdb) n
+986			list_add(&dentry->d_alias, &inode->i_dentry);
+(gdb) 
+987		dentry->d_inode = inode;
+(gdb) 
+988		fsnotify_d_instantiate(dentry, inode);
+(gdb) s
+fsnotify_d_instantiate (inode=0xc709e080, entry=0xc6c02340) at fs/dcache.c:988
+988		fsnotify_d_instantiate(dentry, inode);
+(gdb) s
+__fsnotify_d_instantiate (inode=0xc709e080, dentry=0xc6c02340)
+    at fs/dcache.c:988
+988		fsnotify_d_instantiate(dentry, inode);
+(gdb) n
+989	}
+(gdb) 
+d_instantiate (entry=0xc6c02340, inode=0xc709e080) at fs/dcache.c:1011
+1011		spin_unlock(&dcache_lock);
+(gdb) 
+1012		security_d_instantiate(entry, inode);
+(gdb) 
+1013	}
+(gdb) 
+d_alloc_root (root_inode=root_inode@entry=0xc709e080) at fs/dcache.c:1109
+1109	}
+(gdb) 
+shmem_fill_super (sb=0xc7009920, data=<optimized out>, silent=<optimized out>)
+    at mm/shmem.c:2369
+2369		if (!root)
+(gdb) 
+2371		sb->s_root = root;
+(gdb) p root
+$2 = (struct dentry *) 0xc6c02340
+(gdb) p *root
+$3 = {d_count = {counter = 1}, d_flags = 16, d_lock = {raw_lock = {
+      slock = 514}, magic = 3735899821, owner_cpu = 4294967295, 
+    owner = 0xffffffff, dep_map = {key = 0xc1e6248c <__key.26347>, 
+      class_cache = 0x0, name = 0xc15ef0b2 "&dentry->d_lock", cpu = 0, 
+      ip = 3239351818}}, d_mounted = 0, d_inode = 0xc709e080, d_hash = {
+    next = 0x0, pprev = 0x0}, d_parent = 0xc6c02340, d_name = {hash = 0, 
+    len = 1, name = 0xc6c023bc "/"}, d_lru = {next = 0xc6c0238c, 
+    prev = 0xc6c0238c}, d_u = {d_child = {next = 0xc6c02394, 
+      prev = 0xc6c02394}, d_rcu = {next = 0xc6c02394, func = 0xc6c02394}}, 
+  d_subdirs = {next = 0xc6c0239c, prev = 0xc6c0239c}, d_alias = {
+    next = 0xc709e098, prev = 0xc709e098}, d_time = 1802201963, d_op = 0x0, 
+  d_sb = 0xc7009920, d_fsdata = 0x0, 
+  d_iname = "/\000", 'k' <repeats 37 times>, "\245"}
+(gdb) n
+2372		return 0;
+(gdb) 
+2379	}
+(gdb) 
+get_sb_nodev (fs_type=<optimized out>, flags=<optimized out>, 
+    data=data@entry=0x0, fill_super=0xc10e49b0 <shmem_fill_super>, 
+    mnt=mnt@entry=0xc701d300) at fs/super.c:869
+869		if (error) {
+(gdb) 
+873		s->s_flags |= MS_ACTIVE;
+(gdb) n
+874		simple_set_mnt(mnt, s);
+(gdb) s
+simple_set_mnt (mnt=mnt@entry=0xc701d300, sb=sb@entry=0xc7009920)
+    at fs/namespace.c:394
+394		mnt->mnt_sb = sb;
+(gdb) n
+395		mnt->mnt_root = dget(sb->s_root);
+(gdb) 
+396	}
+(gdb) 
+get_sb_nodev (fs_type=<optimized out>, flags=<optimized out>, 
+    data=data@entry=0x0, fill_super=0xc10e49b0 <shmem_fill_super>, 
+    mnt=mnt@entry=0xc701d300) at fs/super.c:875
+875		return 0;
+(gdb) 
+876	}
+(gdb) 
+shmem_get_sb (fs_type=<optimized out>, flags=<optimized out>, 
+    dev_name=<optimized out>, data=0x0, mnt=0xc701d300) at mm/shmem.c:2520
+2520	}
+(gdb) 
+vfs_kern_mount (type=type@entry=0xc16a4560 <tmpfs_fs_type>, 
+    flags=flags@entry=-2147483648, name=<optimized out>, data=data@entry=0x0)
+    at fs/super.c:939
+939		if (error < 0)
+(gdb) 
+941		BUG_ON(!mnt->mnt_sb);
+(gdb) 
+943	 	error = security_sb_kern_mount(mnt->mnt_sb, flags, secdata);
+(gdb) s
+security_sb_kern_mount (sb=0xc7009920, flags=flags@entry=-2147483648, 
+    data=data@entry=0x0) at security/security.c:273
+273		return security_ops->sb_kern_mount(sb, flags, data);
+(gdb) s
+cap_sb_kern_mount (sb=0xc7009920, flags=-2147483648, data=0x0)
+    at security/capability.c:65
+65	}
+(gdb) n
+security_sb_kern_mount (sb=<optimized out>, flags=flags@entry=-2147483648, 
+    data=data@entry=0x0) at security/security.c:274
+274	}
+(gdb) 
+vfs_kern_mount (type=type@entry=0xc16a4560 <tmpfs_fs_type>, 
+    flags=flags@entry=-2147483648, name=<optimized out>, data=data@entry=0x0)
+    at fs/super.c:944
+944	 	if (error)
+(gdb) 
+954		WARN((mnt->mnt_sb->s_maxbytes < 0), "%s set sb->s_maxbytes to "
+(gdb) 
+957		mnt->mnt_mountpoint = mnt->mnt_root;
+(gdb) 
+958		mnt->mnt_parent = mnt;
+(gdb) 
+959		up_write(&mnt->mnt_sb->s_umount);
+(gdb) 
+960		free_secdata(secdata);
+(gdb) 
+961		return mnt;
+(gdb) 
+971	}
+(gdb) 
+init_tmpfs () at mm/shmem.c:2549
+2549		if (IS_ERR(shm_mnt)) {
+(gdb) 
+2554		return 0;
+(gdb) 
+2565	}
+(gdb) 
+do_basic_setup () at init/main.c:787
+787		driver_init();
 ```
 
 # Links
