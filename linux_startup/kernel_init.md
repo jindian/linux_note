@@ -1553,8 +1553,6 @@ do_basic_setup () at init/main.c:787
 
 `devices_init`: initialize devices, it involke `kset_create_and_add` to create kset data. struct kset - a set of kobjects of a specific type, belonging to a specific subsystem. A kset defines a group of kobjects.  They can be individually different "types" but overall these kobjects all want to be grouped together and operated on in the same manner.  ksets are used to define the attribute callbacks and other common events that happen to a kobject.
 
-After kset created, `device_init` invoke `kobject_create_and_add` to create kernel objects and register it with sysfs.
-
 ```driver_init
 do_basic_setup () at init/main.c:787
 787		driver_init();
@@ -2088,6 +2086,366 @@ devices_init () at drivers/base/core.c:1276
 1275		devices_kset = kset_create_and_add("devices", &device_uevent_ops, NULL);
 (gdb) 
 1276		if (!devices_kset)
+(gdb) 
+```
+
+After kset created, `device_init` invoke `kobject_create_and_add` to create kernel objects and register it with sysfs. 3 Types of kobject created, `dev` for normal device, `block` for block device and `char` for charactor device. Below debug information is the procedue of creating kobject `dev`.
+
+```kobject_create_and_add
+1278		dev_kobj = kobject_create_and_add("dev", NULL);
+(gdb) s
+kobject_create_and_add (name=name@entry=0xc1629db5 "dev", 
+    parent=parent@entry=0x0) at lib/kobject.c:652
+652		kobj = kobject_create();
+(gdb) s
+kobject_create () at lib/kobject.c:626
+626		kobj = kzalloc(sizeof(*kobj), GFP_KERNEL);
+(gdb) n
+627		if (!kobj)
+(gdb) 
+630		kobject_init(kobj, &dynamic_kobj_ktype);
+(gdb) s
+kobject_init (kobj=kobj@entry=0xc70860e0, 
+    ktype=ktype@entry=0xc16bb114 <dynamic_kobj_ktype>) at lib/kobject.c:274
+274		if (!kobj) {
+(gdb) n
+278		if (!ktype) {
+(gdb) 
+282		if (kobj->state_initialized) {
+(gdb) 
+289		kobject_init_internal(kobj);
+(gdb) s
+kobject_init_internal (kobj=0xc70860e0) at lib/kobject.c:149
+149		kref_init(&kobj->kref);
+(gdb) s
+kref_init (kref=kref@entry=0xc70860fc) at lib/kref.c:34
+34		kref_set(kref, 1);
+(gdb) n
+35	}
+(gdb) 
+kobject_init_internal (kobj=0xc70860e0) at lib/kobject.c:150
+150		INIT_LIST_HEAD(&kobj->entry);
+(gdb) 
+151		kobj->state_in_sysfs = 0;
+(gdb) 
+153		kobj->state_remove_uevent_sent = 0;
+(gdb) n
+154		kobj->state_initialized = 1;
+(gdb) 
+kobject_init (kobj=kobj@entry=0xc70860e0, 
+    ktype=ktype@entry=0xc16bb114 <dynamic_kobj_ktype>) at lib/kobject.c:290
+290		kobj->ktype = ktype;
+(gdb) 
+296	}
+(gdb) 
+kobject_create () at lib/kobject.c:631
+631		return kobj;
+(gdb) 
+632	}
+(gdb) 
+kobject_create_and_add (name=name@entry=0xc1629db5 "dev", 
+    parent=parent@entry=0x0) at lib/kobject.c:653
+653		if (!kobj)
+(gdb) 
+656		retval = kobject_add(kobj, parent, "%s", name);
+(gdb) s
+kobject_add (kobj=kobj@entry=0xc70860e0, parent=parent@entry=0x0, 
+    fmt=fmt@entry=0xc1627337 "%s") at lib/kobject.c:344
+344		if (!kobj)
+(gdb) n
+347		if (!kobj->state_initialized) {
+(gdb) 
+355		retval = kobject_add_varg(kobj, parent, fmt, args);
+(gdb) s
+kobject_add_varg (
+    vargs=0xc706bfa4 "\265\235b\301\360\021v\301`ro\301\\ro\301\274\277\006Q;\r\3
+01L\\006\307G@r\301\340\277\006\307\340\250o\301\254S\\\301\001",
+    fmt=0xc1627337 "%s", parent=0x0, kobj=0xc70860e0) at lib/kobject.c:304
+304		retval = kobject_set_name_vargs(kobj, fmt, vargs);
+(gdb) n
+305		if (retval) {
+(gdb) 
+309		kobj->parent = parent;
+(gdb) 
+310		return kobject_add_internal(kobj);
+(gdb) s
+kobject_add_internal (kobj=0xc70860e0) at lib/kobject.c:163
+163		if (!kobj)
+(gdb) p kobj
+$1 = (struct kobject *) 0xc70860e0
+(gdb) p *kobj
+$2 = {name = 0xc70202a0 "dev", entry = {next = 0xc70860e4, prev = 0xc70860e4}, 
+  parent = 0x0, kset = 0x0, ktype = 0xc16bb114 <dynamic_kobj_ktype>, sd = 0x0, 
+  kref = {refcount = {counter = 1}}, state_initialized = 1, 
+  state_in_sysfs = 0, state_add_uevent_sent = 0, state_remove_uevent_sent = 0, 
+  uevent_suppress = 0}
+(gdb) n
+166		if (!kobj->name || !kobj->name[0]) {
+(gdb) 
+172		parent = kobject_get(kobj->parent);
+(gdb) 
+175		if (kobj->kset) {
+(gdb) 
+182		pr_debug("kobject: '%s' (%p): %s: parent: '%s', set: '%s'\n",
+(gdb) 
+187		error = create_dir(kobj);
+(gdb) s
+create_dir (kobj=0xc70860e0) at lib/kobject.c:50
+50		if (kobject_name(kobj)) {
+(gdb) n
+51			error = sysfs_create_dir(kobj);
+(gdb) s
+sysfs_create_dir (kobj=kobj@entry=0xc70860e0) at fs/sysfs/dir.c:715
+715		BUG_ON(!kobj);
+(gdb) n
+717		if (kobj->parent)
+(gdb) 
+720			parent_sd = &sysfs_root;
+(gdb) 
+722		error = create_dir(kobj, parent_sd, kobject_name(kobj), &sd);
+(gdb) s
+create_dir (kobj=kobj@entry=0xc70860e0, parent_sd=0xc16ac580 <sysfs_root>, 
+    name=0xc70202a0 "dev", p_sd=p_sd@entry=0xc706bf38) at fs/sysfs/dir.c:675
+675	{
+(gdb) n
+682		sd = sysfs_new_dirent(name, mode, SYSFS_DIR);
+(gdb) s
+sysfs_new_dirent (name=0xc70202a0 "dev", mode=mode@entry=16877, 
+    type=type@entry=1) at fs/sysfs/dir.c:318
+318		if (type & SYSFS_COPY_NAME) {
+(gdb) 
+319			name = dup_name = kstrdup(name, GFP_KERNEL);
+(gdb) 
+320			if (!name)
+(gdb) 
+324		sd = kmem_cache_zalloc(sysfs_dir_cachep, GFP_KERNEL);
+(gdb) 
+325		if (!sd)
+(gdb) 
+328		if (sysfs_alloc_ino(&sd->s_ino))
+(gdb) 
+331		atomic_set(&sd->s_count, 1);
+(gdb) 
+332		atomic_set(&sd->s_active, 0);
+(gdb) 
+334		sd->s_name = name;
+(gdb) 
+335		sd->s_mode = mode;
+(gdb) 
+336		sd->s_flags = type;
+(gdb) 
+338		return sd;
+(gdb) 
+345	}
+(gdb) 
+create_dir (kobj=kobj@entry=0xc70860e0, parent_sd=0xc16ac580 <sysfs_root>, 
+    name=<optimized out>, p_sd=p_sd@entry=0xc706bf38) at fs/sysfs/dir.c:683
+683		if (!sd)
+(gdb) n
+685		sd->s_dir.kobj = kobj;
+(gdb) 
+688		sysfs_addrm_start(&acxt, parent_sd);
+(gdb) s
+sysfs_addrm_start (acxt=acxt@entry=0xc706bf10, 
+    parent_sd=parent_sd@entry=0xc16ac580 <sysfs_root>) at fs/sysfs/dir.c:374
+374		memset(acxt, 0, sizeof(*acxt));
+(gdb) n
+375		acxt->parent_sd = parent_sd;
+(gdb) 
+381		mutex_lock(&sysfs_mutex);
+(gdb) 
+383		inode = ilookup5(sysfs_sb, parent_sd->s_ino, sysfs_ilookup_test,
+(gdb) s
+ilookup5 (sb=0xc7008430, hashval=1, 
+    test=test@entry=0xc1170180 <sysfs_ilookup_test>, 
+    data=data@entry=0xc16ac580 <sysfs_root>) at fs/inode.c:1001
+1001		struct hlist_head *head = inode_hashtable + hash(sb, hashval);
+(gdb) n
+1003		return ifind(sb, head, test, data, 1);
+(gdb) s
+ifind (sb=0xc7008430, head=0xc213e004, 
+    test=test@entry=0xc1170180 <sysfs_ilookup_test>, 
+    data=data@entry=0xc16ac580 <sysfs_root>, wait=wait@entry=1)
+    at fs/inode.c:904
+904		spin_lock(&inode_lock);
+(gdb) 
+905		inode = find_inode(sb, head, test, data);
+(gdb) s
+find_inode (sb=sb@entry=0xc7008430, head=head@entry=0xc213e004, 
+    test=test@entry=0xc1170180 <sysfs_ilookup_test>, 
+    data=data@entry=0xc16ac580 <sysfs_root>) at fs/inode.c:573
+573		hlist_for_each_entry(inode, node, head, i_hash) {
+(gdb) 
+574			if (inode->i_sb != sb)
+(gdb) p inode->i_sb
+$3 = (struct super_block *) 0xc7008430
+(gdb) n
+576			if (!test(inode, data))
+(gdb) 
+578			if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE)) {
+(gdb) p inode->i_state 
+$4 = 0
+(gdb) n
+579				__wait_on_freeing_inode(inode);
+(gdb) 
+585	}
+(gdb) 
+ifind (sb=0xc7008430, head=0xc213e004, 
+    test=test@entry=0xc1170180 <sysfs_ilookup_test>, 
+    data=data@entry=0xc16ac580 <sysfs_root>, wait=wait@entry=1)
+    at fs/inode.c:906
+906		if (inode) {
+(gdb) 
+907			__iget(inode);
+(gdb) 
+908			spin_unlock(&inode_lock);
+(gdb) 
+909			if (likely(wait))
+(gdb) 
+910				wait_on_inode(inode);
+(gdb) 
+915	}
+(gdb) 
+ilookup5 (sb=<optimized out>, hashval=<optimized out>, 
+    test=test@entry=0xc1170180 <sysfs_ilookup_test>, 
+    data=data@entry=0xc16ac580 <sysfs_root>) at fs/inode.c:1004
+1004	}
+(gdb) 
+sysfs_addrm_start (acxt=acxt@entry=0xc706bf10, 
+    parent_sd=parent_sd@entry=0xc16ac580 <sysfs_root>) at fs/sysfs/dir.c:385
+385		if (inode) {
+(gdb) 
+386			WARN_ON(inode->i_state & I_NEW);
+(gdb) 
+389			acxt->parent_inode = inode;
+(gdb) 
+395			if (!mutex_trylock(&inode->i_mutex)) {
+(gdb) 
+401	}
+(gdb) 
+create_dir (kobj=kobj@entry=0xc70860e0, parent_sd=0xc16ac580 <sysfs_root>, 
+    name=<optimized out>, p_sd=p_sd@entry=0xc706bf38) at fs/sysfs/dir.c:689
+689		rc = sysfs_add_one(&acxt, sd);
+(gdb) s
+sysfs_add_one (acxt=acxt@entry=0xc706bf10, sd=sd@entry=0xc70220b0)
+    at fs/sysfs/dir.c:482
+482		ret = __sysfs_add_one(acxt, sd);
+(gdb) s
+__sysfs_add_one (acxt=acxt@entry=0xc706bf10, sd=sd@entry=0xc70220b0)
+    at fs/sysfs/dir.c:425
+425		if (sysfs_find_dirent(acxt->parent_sd, sd->s_name))
+(gdb) s
+sysfs_find_dirent (parent_sd=0xc16ac580 <sysfs_root>, name=0xc70202d8 "dev")
+    at fs/sysfs/dir.c:639
+639		for (sd = parent_sd->s_dir.children; sd; sd = sd->s_sibling)
+(gdb) n
+640			if (!strcmp(sd->s_name, name))
+(gdb) p sd->s_name 
+$5 = 0xc7020070 "fs"
+(gdb) n
+642		return NULL;
+(gdb) 
+643	}
+(gdb) 
+__sysfs_add_one (acxt=acxt@entry=0xc706bf10, sd=sd@entry=0xc70220b0)
+    at fs/sysfs/dir.c:428
+428		sd->s_parent = sysfs_get(acxt->parent_sd);
+(gdb) 
+430		if (sysfs_type(sd) == SYSFS_DIR && acxt->parent_inode)
+(gdb) 
+431			inc_nlink(acxt->parent_inode);
+(gdb) 
+433		acxt->cnt++;
+(gdb) 
+435		sysfs_link_sibling(sd);
+(gdb) s
+sysfs_link_sibling (sd=0xc70220b0) at fs/sysfs/dir.c:46
+46		struct sysfs_dirent *parent_sd = sd->s_parent;
+(gdb) 
+49		BUG_ON(sd->s_sibling);
+(gdb) 
+55		for (pos = &parent_sd->s_dir.children; *pos; pos = &(*pos)->s_sibling) {
+(gdb) 
+56			if (sd->s_ino < (*pos)->s_ino)
+(gdb) 
+55		for (pos = &parent_sd->s_dir.children; *pos; pos = &(*pos)->s_sibling) {
+(gdb) 
+59		sd->s_sibling = *pos;
+(gdb) 
+60		*pos = sd;
+(gdb) 
+61	}
+(gdb) 
+__sysfs_add_one (acxt=acxt@entry=0xc706bf10, sd=sd@entry=0xc70220b0)
+    at fs/sysfs/dir.c:437
+437		return 0;
+(gdb) 
+438	}
+(gdb) 
+sysfs_add_one (acxt=acxt@entry=0xc706bf10, sd=sd@entry=0xc70220b0)
+    at fs/sysfs/dir.c:483
+483		if (ret == -EEXIST) {
+(gdb) 
+496	}
+(gdb) 
+create_dir (kobj=kobj@entry=0xc70860e0, parent_sd=<optimized out>, 
+    name=<optimized out>, p_sd=p_sd@entry=0xc706bf38) at fs/sysfs/dir.c:690
+690		sysfs_addrm_finish(&acxt);
+(gdb) s
+sysfs_addrm_finish (acxt=acxt@entry=0xc706bf10) at fs/sysfs/dir.c:595
+595		mutex_unlock(&sysfs_mutex);
+(gdb) n
+596		if (acxt->parent_inode) {
+(gdb) 
+600			if (acxt->cnt)
+(gdb) 
+601				inode->i_ctime = inode->i_mtime = CURRENT_TIME;
+(gdb) 
+603			mutex_unlock(&inode->i_mutex);
+(gdb) 
+604			iput(inode);
+(gdb) 
+608		while (acxt->removed) {
+(gdb) 
+619	}
+(gdb) 
+create_dir (kobj=kobj@entry=0xc70860e0, parent_sd=<optimized out>, 
+    name=<optimized out>, p_sd=p_sd@entry=0xc706bf38) at fs/sysfs/dir.c:692
+692		if (rc == 0)
+(gdb) 
+693			*p_sd = sd;
+(gdb) 
+698	}
+(gdb) 
+sysfs_create_dir (kobj=kobj@entry=0xc70860e0) at fs/sysfs/dir.c:723
+723		if (!error)
+(gdb) 
+724			kobj->sd = sd;
+(gdb) 
+726	}
+(gdb) 
+create_dir (kobj=0xc70860e0) at lib/kobject.c:52
+52			if (!error) {
+(gdb) 
+kobject_add_internal (kobj=0xc70860e0) at lib/kobject.c:187
+187		error = create_dir(kobj);
+(gdb) 
+204			kobj->state_in_sysfs = 1;
+(gdb) 
+207	}
+(gdb) 
+kobject_add (kobj=kobj@entry=0xc70860e0, parent=parent@entry=0x0, 
+    fmt=fmt@entry=0xc1627337 "%s") at lib/kobject.c:359
+359	}
+(gdb) 
+kobject_create_and_add (name=name@entry=0xc1629db5 "dev", 
+    parent=parent@entry=0x0) at lib/kobject.c:657
+657		if (retval) {
+(gdb) 
+664	}
+(gdb) 
+devices_init () at drivers/base/core.c:1279
+1279		if (!dev_kobj)
 (gdb) 
 ```
 
