@@ -2449,6 +2449,436 @@ devices_init () at drivers/base/core.c:1279
 (gdb) 
 ```
 
+`buses_init`, `classes_init` create respoective kset.
+`firmware_init`, `hypervisor_init` create respective kobject.
+
+`platform_bus_init` create platform bus and register it.
+
+```platform_bus_init
+33		platform_bus_init();
+(gdb) s
+platform_bus_init () at drivers/base/platform.c:959
+959		early_platform_cleanup();                                               # clean up platform device resource from list
+(gdb) s
+early_platform_cleanup () at drivers/base/platform.c:1221
+1221		list_for_each_entry_safe(pd, pd2, &early_platform_device_list,
+(gdb) p early_platform_device_list 
+$6 = {next = 0xc1748758 <early_platform_device_list>, 
+  prev = 0xc1748758 <early_platform_device_list>}
+(gdb) n
+1226	}
+(gdb) 
+platform_bus_init () at drivers/base/platform.c:961
+961		error = device_register(&platform_bus);
+(gdb) s
+device_register (dev=dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/core.c:1042
+1042		device_initialize(dev);
+(gdb) p *dev
+$7 = {parent = 0x0, p = 0x0, kobj = {name = 0x0, entry = {next = 0x0, 
+      prev = 0x0}, parent = 0x0, kset = 0x0, ktype = 0x0, sd = 0x0, kref = {
+      refcount = {counter = 0}}, state_initialized = 0, state_in_sysfs = 0, 
+    state_add_uevent_sent = 0, state_remove_uevent_sent = 0, 
+    uevent_suppress = 0}, init_name = 0xc15d9d57 "platform", type = 0x0, 
+  sem = {lock = {raw_lock = {slock = 0}, magic = 0, owner_cpu = 0, 
+      owner = 0x0, dep_map = {key = 0x0, class_cache = 0x0, name = 0x0, 
+        cpu = 0, ip = 0}}, count = 0, wait_list = {next = 0x0, prev = 0x0}}, 
+  bus = 0x0, driver = 0x0, platform_data = 0x0, power = {power_state = {
+      event = 0}, can_wakeup = 0, should_wakeup = 0, status = DPM_INVALID, 
+    entry = {next = 0x0, prev = 0x0}}, dma_mask = 0x0, coherent_dma_mask = 0, 
+  dma_parms = 0x0, dma_pools = {next = 0x0, prev = 0x0}, dma_mem = 0x0, 
+  archdata = {acpi_handle = 0x0}, devt = 0, devres_lock = {raw_lock = {
+      slock = 0}, magic = 0, owner_cpu = 0, owner = 0x0, dep_map = {key = 0x0, 
+      class_cache = 0x0, name = 0x0, cpu = 0, ip = 0}}, devres_head = {
+    next = 0x0, prev = 0x0}, knode_class = {n_klist = 0x0, n_node = {
+      next = 0x0, prev = 0x0}, n_ref = {refcount = {counter = 0}}}, 
+  class = 0x0, groups = 0x0, release = 0x0}
+(gdb) s
+device_initialize (dev=dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/core.c:560
+560		dev->kobj.kset = devices_kset;
+(gdb) n
+561		kobject_init(&dev->kobj, &device_ktype);
+(gdb) s
+kobject_init (kobj=kobj@entry=0xc16c7b28 <platform_bus+8>, 
+    ktype=ktype@entry=0xc16c7904 <device_ktype>) at lib/kobject.c:274
+274		if (!kobj) {
+(gdb) n
+278		if (!ktype) {
+(gdb) 
+282		if (kobj->state_initialized) {
+(gdb) 
+289		kobject_init_internal(kobj);
+(gdb) s
+kobject_init_internal (kobj=0xc16c7b28 <platform_bus+8>) at lib/kobject.c:149
+149		kref_init(&kobj->kref);
+(gdb) s
+kref_init (kref=kref@entry=0xc16c7b44 <platform_bus+36>) at lib/kref.c:34
+34		kref_set(kref, 1);
+(gdb) n
+35	}
+(gdb) 
+kobject_init_internal (kobj=0xc16c7b28 <platform_bus+8>) at lib/kobject.c:150
+150		INIT_LIST_HEAD(&kobj->entry);
+(gdb) n
+151		kobj->state_in_sysfs = 0;
+(gdb) 
+153		kobj->state_remove_uevent_sent = 0;
+(gdb) 
+154		kobj->state_initialized = 1;
+(gdb) 
+kobject_init (kobj=kobj@entry=0xc16c7b28 <platform_bus+8>, 
+    ktype=ktype@entry=0xc16c7904 <device_ktype>) at lib/kobject.c:290
+290		kobj->ktype = ktype;
+(gdb) 
+296	}
+(gdb) 
+device_initialize (dev=dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/core.c:562
+562		INIT_LIST_HEAD(&dev->dma_pools);
+(gdb) 
+563		init_MUTEX(&dev->sem);
+(gdb) 
+564		spin_lock_init(&dev->devres_lock);
+(gdb) 
+565		INIT_LIST_HEAD(&dev->devres_head);
+(gdb) 
+566		device_init_wakeup(dev, 0);
+(gdb) s
+device_init_wakeup (val=0, dev=<optimized out>) at include/linux/pm_wakeup.h:35
+35		dev->power.can_wakeup = dev->power.should_wakeup = !!val;
+(gdb) n
+device_initialize (dev=dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/core.c:567
+567		device_pm_init(dev);
+(gdb) s
+device_pm_init (dev=dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/power/main.c:58
+58		dev->power.status = DPM_ON;
+(gdb) n
+60	}
+(gdb) 
+device_initialize (dev=dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/core.c:569
+569	}
+(gdb) 
+device_register (dev=dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/core.c:1043
+1043		return device_add(dev);
+(gdb) s
+device_add (dev=dev@entry=0xc16c7b20 <platform_bus>) at drivers/base/core.c:897
+897		dev = get_device(dev);
+(gdb) n
+898		if (!dev)
+(gdb) 
+901		if (!dev->p) {
+(gdb) 
+902			error = device_private_init(dev);
+(gdb) s
+device_private_init (dev=0xc16c7b20 <platform_bus>) at drivers/base/core.c:867
+867		dev->p = kzalloc(sizeof(*dev->p), GFP_KERNEL);
+(gdb) 
+868		if (!dev->p)
+(gdb) 
+870		dev->p->device = dev;
+(gdb) 
+871		klist_init(&dev->p->klist_children, klist_children_get,
+(gdb) 
+873		return 0;
+(gdb) 
+874	}
+(gdb) 
+device_add (dev=<optimized out>, dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/core.c:903
+903			if (error)
+(gdb) 
+912		if (dev->init_name) {
+(gdb) 
+913			dev_set_name(dev, "%s", dev->init_name);
+(gdb) 
+914			dev->init_name = NULL;
+(gdb) 
+917		if (!dev_name(dev))
+(gdb) s
+dev_name (dev=0xc16c7b20 <platform_bus>) at drivers/base/core.c:917
+917		if (!dev_name(dev))
+(gdb) 
+kobject_name (kobj=0xc16c7b28 <platform_bus+8>) at include/linux/kobject.h:81
+81		return kobj->name;
+(gdb) n
+device_add (dev=<optimized out>, dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/core.c:920
+920		pr_debug("device: '%s': %s\n", dev_name(dev), __func__);
+(gdb) 
+922		parent = get_device(dev->parent);
+(gdb) 
+923		setup_parent(dev, parent);
+(gdb) s
+setup_parent (parent=0x0, dev=0xc16c7b20 <platform_bus>)
+    at drivers/base/core.c:680
+680		kobj = get_device_parent(dev, parent);
+(gdb) s
+get_device_parent (dev=dev@entry=0xc16c7b20 <platform_bus>, 
+    parent=parent@entry=0x0) at drivers/base/core.c:605
+605		if (dev->class) {
+(gdb) p dev->class
+$8 = (struct class *) 0x0
+(gdb) n
+656		if (parent)
+(gdb) 
+658		return NULL;
+(gdb) 
+659	}
+(gdb) 
+setup_parent (parent=0x0, dev=0xc16c7b20 <platform_bus>)
+    at drivers/base/core.c:681
+681		if (kobj)
+(gdb) 
+device_add (dev=<optimized out>, dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/core.c:931
+931		error = kobject_add(&dev->kobj, dev->kobj.parent, NULL);
+(gdb) s
+kobject_add (kobj=kobj@entry=0xc16c7b28 <platform_bus+8>, parent=0x0, 
+    fmt=fmt@entry=0x0) at lib/kobject.c:344
+344		if (!kobj)
+(gdb) n
+347		if (!kobj->state_initialized) {
+(gdb) 
+355		retval = kobject_add_varg(kobj, parent, fmt, args);
+(gdb) s
+kobject_add_varg (vargs=0xc706bf64 "W/", fmt=0x0, parent=0x0, 
+    kobj=0xc16c7b28 <platform_bus+8>) at lib/kobject.c:304
+304		retval = kobject_set_name_vargs(kobj, fmt, vargs);
+(gdb) n
+305		if (retval) {
+(gdb) 
+309		kobj->parent = parent;
+(gdb) 
+310		return kobject_add_internal(kobj);
+(gdb) s
+kobject_add_internal (kobj=0xc16c7b28 <platform_bus+8>) at lib/kobject.c:163
+163		if (!kobj)
+(gdb) n
+166		if (!kobj->name || !kobj->name[0]) {
+(gdb) 
+172		parent = kobject_get(kobj->parent);
+(gdb) 
+175		if (kobj->kset) {
+(gdb) 
+177				parent = kobject_get(&kobj->kset->kobj);
+(gdb) 
+178			kobj_kset_join(kobj);                                                   # add the kobject to its kset's list
+(gdb) 
+179			kobj->parent = parent;
+(gdb) 
+182		pr_debug("kobject: '%s' (%p): %s: parent: '%s', set: '%s'\n",
+(gdb) 
+187		error = create_dir(kobj);
+(gdb) p *kobj
+$9 = {name = 0xc70007c0 "platform", entry = {next = 0xc70851b0, 
+    prev = 0xc70851b0}, parent = 0xc70851dc, kset = 0xc70851b0, 
+  ktype = 0xc16c7904 <device_ktype>, sd = 0x0, kref = {refcount = {
+      counter = 2}}, state_initialized = 1, state_in_sysfs = 0, 
+  state_add_uevent_sent = 0, state_remove_uevent_sent = 0, uevent_suppress = 0}
+(gdb) s
+create_dir (kobj=0xc16c7b28 <platform_bus+8>) at lib/kobject.c:50
+50		if (kobject_name(kobj)) {
+(gdb) n
+51			error = sysfs_create_dir(kobj);
+(gdb) s
+sysfs_create_dir (kobj=kobj@entry=0xc16c7b28 <platform_bus+8>)
+    at fs/sysfs/dir.c:715
+715		BUG_ON(!kobj);
+(gdb) n
+717		if (kobj->parent)
+(gdb) 
+718			parent_sd = kobj->parent->sd;
+(gdb) 
+722		error = create_dir(kobj, parent_sd, kobject_name(kobj), &sd);
+(gdb) s
+create_dir (kobj=kobj@entry=0xc16c7b28 <platform_bus+8>, parent_sd=0xc7022058, 
+    name=0xc70007c0 "platform", p_sd=p_sd@entry=0xc706bef8)
+    at fs/sysfs/dir.c:682
+682		sd = sysfs_new_dirent(name, mode, SYSFS_DIR);
+(gdb) s
+sysfs_new_dirent (name=0xc70007c0 "platform", mode=mode@entry=16877, 
+    type=type@entry=1) at fs/sysfs/dir.c:318
+318		if (type & SYSFS_COPY_NAME) {
+(gdb) 
+319			name = dup_name = kstrdup(name, GFP_KERNEL);
+(gdb) 
+320			if (!name)
+(gdb) 
+324		sd = kmem_cache_zalloc(sysfs_dir_cachep, GFP_KERNEL);
+(gdb) 
+325		if (!sd)
+(gdb) 
+328		if (sysfs_alloc_ino(&sd->s_ino))
+(gdb) 
+331		atomic_set(&sd->s_count, 1);
+(gdb) 
+332		atomic_set(&sd->s_active, 0);
+(gdb) 
+334		sd->s_name = name;
+(gdb) 
+335		sd->s_mode = mode;
+(gdb) 
+336		sd->s_flags = type;
+(gdb) 
+338		return sd;
+(gdb) 
+345	}
+(gdb) 
+create_dir (kobj=kobj@entry=0xc16c7b28 <platform_bus+8>, parent_sd=0xc7022058, 
+    name=<optimized out>, p_sd=p_sd@entry=0xc706bef8) at fs/sysfs/dir.c:683
+683		if (!sd)
+(gdb) 
+682		sd = sysfs_new_dirent(name, mode, SYSFS_DIR);
+(gdb) 
+683		if (!sd)
+(gdb) 
+685		sd->s_dir.kobj = kobj;
+(gdb) n
+688		sysfs_addrm_start(&acxt, parent_sd);
+(gdb) s
+sysfs_addrm_start (acxt=acxt@entry=0xc706bed0, 
+    parent_sd=parent_sd@entry=0xc7022058) at fs/sysfs/dir.c:374
+374		memset(acxt, 0, sizeof(*acxt));
+(gdb) n
+375		acxt->parent_sd = parent_sd;
+(gdb) 
+381		mutex_lock(&sysfs_mutex);
+(gdb) 
+383		inode = ilookup5(sysfs_sb, parent_sd->s_ino, sysfs_ilookup_test,
+(gdb) 
+385		if (inode) {
+(gdb) 
+401	}
+(gdb) n
+create_dir (kobj=kobj@entry=0xc16c7b28 <platform_bus+8>, parent_sd=0xc7022058, 
+    name=<optimized out>, p_sd=p_sd@entry=0xc706bef8) at fs/sysfs/dir.c:689
+689		rc = sysfs_add_one(&acxt, sd);
+(gdb) s
+sysfs_add_one (acxt=acxt@entry=0xc706bed0, sd=sd@entry=0xc70222c0)
+    at fs/sysfs/dir.c:482
+482		ret = __sysfs_add_one(acxt, sd);
+(gdb) s
+__sysfs_add_one (acxt=acxt@entry=0xc706bed0, sd=sd@entry=0xc70222c0)
+    at fs/sysfs/dir.c:425
+425		if (sysfs_find_dirent(acxt->parent_sd, sd->s_name))
+(gdb) s
+sysfs_find_dirent (parent_sd=0xc7022058, name=0xc7000800 "platform")
+    at fs/sysfs/dir.c:639
+639		for (sd = parent_sd->s_dir.children; sd; sd = sd->s_sibling)
+(gdb) n
+642		return NULL;
+(gdb) 
+643	}
+(gdb) 
+__sysfs_add_one (acxt=acxt@entry=0xc706bed0, sd=sd@entry=0xc70222c0)
+    at fs/sysfs/dir.c:428
+428		sd->s_parent = sysfs_get(acxt->parent_sd);
+(gdb) s
+__sysfs_get (sd=0xc7022058) at fs/sysfs/sysfs.h:138
+138		if (sd) {
+(gdb) n
+139			WARN_ON(!atomic_read(&sd->s_count));
+(gdb) 
+140			atomic_inc(&sd->s_count);
+(gdb) 
+__sysfs_add_one (acxt=acxt@entry=0xc706bed0, sd=sd@entry=0xc70222c0)
+    at fs/sysfs/dir.c:428
+428		sd->s_parent = sysfs_get(acxt->parent_sd);
+(gdb) 
+430		if (sysfs_type(sd) == SYSFS_DIR && acxt->parent_inode)
+(gdb) 
+433		acxt->cnt++;
+(gdb) 
+435		sysfs_link_sibling(sd);
+(gdb) s
+sysfs_link_sibling (sd=0xc70222c0) at fs/sysfs/dir.c:46
+46		struct sysfs_dirent *parent_sd = sd->s_parent;
+(gdb) 
+49		BUG_ON(sd->s_sibling);
+(gdb) 
+55		for (pos = &parent_sd->s_dir.children; *pos; pos = &(*pos)->s_sibling) {
+(gdb) 
+59		sd->s_sibling = *pos;
+(gdb) 
+60		*pos = sd;
+(gdb) 
+61	}
+(gdb) 
+__sysfs_add_one (acxt=acxt@entry=0xc706bed0, sd=sd@entry=0xc70222c0)
+    at fs/sysfs/dir.c:437
+437		return 0;
+(gdb) 
+438	}
+(gdb) 
+sysfs_add_one (acxt=acxt@entry=0xc706bed0, sd=sd@entry=0xc70222c0)
+    at fs/sysfs/dir.c:483
+483		if (ret == -EEXIST) {
+(gdb) 
+496	}
+(gdb) 
+create_dir (kobj=kobj@entry=0xc16c7b28 <platform_bus+8>, 
+    parent_sd=<optimized out>, name=<optimized out>, 
+    p_sd=p_sd@entry=0xc706bef8) at fs/sysfs/dir.c:690
+690		sysfs_addrm_finish(&acxt);
+(gdb) s
+sysfs_addrm_finish (acxt=acxt@entry=0xc706bed0) at fs/sysfs/dir.c:595
+595		mutex_unlock(&sysfs_mutex);
+(gdb) 
+596		if (acxt->parent_inode) {
+(gdb) 
+608		while (acxt->removed) {
+(gdb) 
+619	}
+(gdb) 
+create_dir (kobj=kobj@entry=0xc16c7b28 <platform_bus+8>, 
+    parent_sd=<optimized out>, name=<optimized out>, 
+    p_sd=p_sd@entry=0xc706bef8) at fs/sysfs/dir.c:692
+692		if (rc == 0)
+(gdb) 
+693			*p_sd = sd;
+(gdb) 
+698	}
+(gdb) 
+sysfs_create_dir (kobj=kobj@entry=0xc16c7b28 <platform_bus+8>)
+    at fs/sysfs/dir.c:723
+723		if (!error)
+(gdb) 
+724			kobj->sd = sd;
+(gdb) 
+726	}
+(gdb) 
+create_dir (kobj=0xc16c7b28 <platform_bus+8>) at lib/kobject.c:52
+52			if (!error) {
+(gdb) 
+kobject_add_internal (kobj=0xc16c7b28 <platform_bus+8>) at lib/kobject.c:187
+187		error = create_dir(kobj);
+(gdb) 
+204			kobj->state_in_sysfs = 1;
+(gdb) 
+207	}
+(gdb) 
+kobject_add (kobj=kobj@entry=0xc16c7b28 <platform_bus+8>, parent=0x0, 
+    fmt=fmt@entry=0x0) at lib/kobject.c:359
+359	}
+(gdb) 
+device_add (dev=<optimized out>, dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/core.c:932
+932		if (error)
+(gdb) 
+936		if (platform_notify)
+(gdb) p platform_notify
+$11 = (int (*)(struct device *)) 0x0
+(gdb) n
+939		error = device_create_file(dev, &uevent_attr);
+```
+
+
+
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
 * [completions - wait for completion handling](https://www.kernel.org/doc/Documentation/scheduler/completion.txt)
