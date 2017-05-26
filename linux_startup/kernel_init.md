@@ -2874,7 +2874,390 @@ device_add (dev=<optimized out>, dev@entry=0xc16c7b20 <platform_bus>)
 (gdb) p platform_notify
 $11 = (int (*)(struct device *)) 0x0
 (gdb) n
-939		error = device_create_file(dev, &uevent_attr);
+939		error = device_create_file(dev, &uevent_attr);                                      # create file for new device
+(gdb) s
+device_create_file (attr=0xc16c78e4 <uevent_attr>, 
+    dev=0xc16c7b20 <platform_bus>) at drivers/base/core.c:453
+453			error = sysfs_create_file(&dev->kobj, &attr->attr);
+(gdb) s
+sysfs_create_file (kobj=kobj@entry=0xc16c7b28 <platform_bus+8>, 
+    attr=attr@entry=0xc16c78e4 <uevent_attr>) at fs/sysfs/file.c:539
+539		BUG_ON(!kobj || !kobj->sd || !attr);
+(gdb) n
+541		return sysfs_add_file(kobj->sd, attr, SYSFS_KOBJ_ATTR);
+(gdb) s
+sysfs_add_file (type=2, attr=0xc16c78e4 <uevent_attr>, dir_sd=0xc70222c0)
+    at fs/sysfs/file.c:527
+527		return sysfs_add_file_mode(dir_sd, attr, type, attr->mode);
+(gdb) s
+sysfs_add_file_mode (dir_sd=0xc70222c0, 
+    attr=attr@entry=0xc16c78e4 <uevent_attr>, type=type@entry=2, amode=420)
+    at fs/sysfs/file.c:508
+508		sd = sysfs_new_dirent(attr->name, mode, type);
+(gdb) 
+503		umode_t mode = (amode & S_IALLUGO) | S_IFREG;
+(gdb) 
+508		sd = sysfs_new_dirent(attr->name, mode, type);
+(gdb) 
+509		if (!sd)
+(gdb) 
+508		sd = sysfs_new_dirent(attr->name, mode, type);
+(gdb) 
+509		if (!sd)
+(gdb) 
+511		sd->s_attr.attr = (void *)attr;
+(gdb) 
+513		sysfs_addrm_start(&acxt, dir_sd);
+(gdb) 
+514		rc = sysfs_add_one(&acxt, sd);
+(gdb) 
+515		sysfs_addrm_finish(&acxt);
+(gdb) 
+517		if (rc)
+(gdb) 
+521	}
+(gdb) 
+sysfs_create_file (kobj=kobj@entry=0xc16c7b28 <platform_bus+8>, 
+    attr=attr@entry=0xc16c78e4 <uevent_attr>) at fs/sysfs/file.c:543
+543	}
+(gdb) 
+device_add (dev=<optimized out>, dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/core.c:940
+940		if (error)
+(gdb) 
+943		if (MAJOR(dev->devt)) {
+(gdb) 
+955		error = device_add_class_symlinks(dev);                                             # add class symbol link for device
+(gdb) s
+device_add_class_symlinks (dev=0xc16c7b20 <platform_bus>)
+    at drivers/base/core.c:689
+689		if (!dev->class)
+(gdb) n
+device_add (dev=<optimized out>, dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/core.c:958
+958		error = device_add_attrs(dev);
+(gdb) s
+device_add_attrs (dev=0xc16c7b20 <platform_bus>) at drivers/base/core.c:386
+386		struct device_type *type = dev->type;
+(gdb) n
+395		if (type) {
+(gdb) p *dev
+$12 = {parent = 0x0, p = 0xc7025420, kobj = {name = 0xc70007c0 "platform", 
+    entry = {next = 0xc70851b0, prev = 0xc70851b0}, parent = 0xc70851dc, 
+    kset = 0xc70851b0, ktype = 0xc16c7904 <device_ktype>, sd = 0xc70222c0, 
+    kref = {refcount = {counter = 2}}, state_initialized = 1, 
+    state_in_sysfs = 1, state_add_uevent_sent = 0, 
+    state_remove_uevent_sent = 0, uevent_suppress = 0}, init_name = 0x0, 
+  type = 0x0, sem = {lock = {raw_lock = {slock = 0}, magic = 3735899821, 
+      owner_cpu = 4294967295, owner = 0xffffffff, dep_map = {
+        key = 0xc1f26d64 <__key.10624>, class_cache = 0x0, 
+        name = 0xc15d4080 "semaphore->lock", cpu = 0, ip = 0}}, count = 1, 
+    wait_list = {next = 0xc16c7b7c <platform_bus+92>, 
+      prev = 0xc16c7b7c <platform_bus+92>}}, bus = 0x0, driver = 0x0, 
+  platform_data = 0x0, power = {power_state = {event = 0}, can_wakeup = 0, 
+    should_wakeup = 0, status = DPM_ON, entry = {next = 0x0, prev = 0x0}}, 
+  dma_mask = 0x0, coherent_dma_mask = 0, dma_parms = 0x0, dma_pools = {
+    next = 0xc16c7bb4 <platform_bus+148>, 
+    prev = 0xc16c7bb4 <platform_bus+148>}, dma_mem = 0x0, archdata = {
+    acpi_handle = 0x0}, devt = 0, devres_lock = {raw_lock = {slock = 0}, 
+    magic = 3735899821, owner_cpu = 4294967295, owner = 0xffffffff, dep_map = {
+      key = 0xc1f26d6c <__key.15167>, class_cache = 0x0, 
+      name = 0xc16207a9 "&dev->devres_lock", cpu = 0, ip = 0}}, devres_head = {
+    next = 0xc16c7bec <platform_bus+204>, 
+    prev = 0xc16c7bec <platform_bus+204>}, knode_class = {n_klist = 0x0, 
+---Type <return> to continue, or q <return> to quit---
+    n_node = {next = 0x0, prev = 0x0}, n_ref = {refcount = {counter = 0}}}, 
+  class = 0x0, groups = 0x0, release = 0x0}
+(gdb) n
+401		error = device_add_groups(dev, dev->groups);
+(gdb) s
+device_add_groups (dev=dev@entry=0xc16c7b20 <platform_bus>, groups=0x0)
+    at drivers/base/core.c:359
+359		if (groups) {
+(gdb) n
+371	}
+(gdb) 
+device_add_attrs (dev=0xc16c7b20 <platform_bus>) at drivers/base/core.c:402
+402		if (error)
+(gdb) 
+device_add (dev=<optimized out>, dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/core.c:961
+961		error = bus_add_device(dev);
+(gdb) s
+bus_add_device (dev=dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/bus.c:468
+468		struct bus_type *bus = bus_get(dev->bus);
+(gdb) n
+489		return 0;
+(gdb) 
+500	}
+(gdb) 
+device_add (dev=<optimized out>, dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/core.c:962
+962		if (error)
+(gdb) 
+964		error = dpm_sysfs_add(dev);                                                     # addl dynamic power management directory
+(gdb) s
+dpm_sysfs_add (dev=dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/power/sysfs.c:92
+92		return sysfs_create_group(&dev->kobj, &pm_attr_group);
+(gdb) s
+sysfs_create_group (kobj=kobj@entry=0xc16c7b28 <platform_bus+8>, 
+    grp=grp@entry=0xc16c7e00 <pm_attr_group>) at fs/sysfs/group.c:100
+100		return internal_create_group(kobj, 0, grp);
+(gdb) s
+internal_create_group (kobj=kobj@entry=0xc16c7b28 <platform_bus+8>, 
+    update=update@entry=0, grp=grp@entry=0xc16c7e00 <pm_attr_group>)
+    at fs/sysfs/group.c:65
+65		BUG_ON(!kobj || (!update && !kobj->sd));
+(gdb) n
+71		if (grp->name) {
+(gdb) p grp
+$13 = (const struct attribute_group *) 0xc16c7e00 <pm_attr_group>
+(gdb) p *grp
+$14 = {name = 0xc16218a4 "power", is_visible = 0x0, 
+  attrs = 0xc16c7e0c <power_attrs>}
+(gdb) n
+72			error = sysfs_create_subdir(kobj, grp->name, &sd);
+(gdb) s
+sysfs_create_subdir (kobj=kobj@entry=0xc16c7b28 <platform_bus+8>, 
+    name=0xc16218a4 "power", p_sd=p_sd@entry=0xc706bf30) at fs/sysfs/dir.c:703
+703		return create_dir(kobj, kobj->sd, name, p_sd);
+(gdb) n
+704	}
+(gdb) 
+internal_create_group (kobj=kobj@entry=0xc16c7b28 <platform_bus+8>, 
+    update=update@entry=0, grp=grp@entry=0xc16c7e00 <pm_attr_group>)
+    at fs/sysfs/group.c:73
+73			if (error)
+(gdb) 
+77		sysfs_get(sd);
+(gdb) 
+78		error = create_files(sd, kobj, grp, update);
+(gdb) s
+create_files (update=0, grp=0xc16c7e00 <pm_attr_group>, 
+    kobj=0xc16c7b28 <platform_bus+8>, dir_sd=0xc7022370) at fs/sysfs/group.c:35
+35		for (i = 0, attr = grp->attrs; *attr && !error; i++, attr++) {
+(gdb) n
+41			if (update)
+(gdb) 
+43			if (grp->is_visible) {
+(gdb) 
+36			mode_t mode = 0;
+(gdb) 
+48			error = sysfs_add_file_mode(dir_sd, *attr, SYSFS_KOBJ_ATTR,
+(gdb) s
+sysfs_add_file_mode (dir_sd=dir_sd@entry=0xc7022370, 
+    attr=0xc16c7e14 <dev_attr_wakeup>, type=type@entry=2, amode=420)
+    at fs/sysfs/file.c:502
+502	{
+(gdb) n
+503		umode_t mode = (amode & S_IALLUGO) | S_IFREG;
+(gdb) 
+508		sd = sysfs_new_dirent(attr->name, mode, type);
+(gdb) 
+509		if (!sd)
+(gdb) 
+511		sd->s_attr.attr = (void *)attr;
+(gdb) 
+513		sysfs_addrm_start(&acxt, dir_sd);
+(gdb) 
+514		rc = sysfs_add_one(&acxt, sd);
+(gdb) 
+515		sysfs_addrm_finish(&acxt);
+(gdb) 
+517		if (rc)
+(gdb) 
+521	}
+(gdb) 
+create_files (update=0, grp=0xc16c7e00 <pm_attr_group>, 
+    kobj=0xc16c7b28 <platform_bus+8>, dir_sd=0xc7022370) at fs/sysfs/group.c:50
+50			if (unlikely(error))
+(gdb) 
+35		for (i = 0, attr = grp->attrs; *attr && !error; i++, attr++) {
+(gdb) 
+internal_create_group (kobj=kobj@entry=0xc16c7b28 <platform_bus+8>, 
+    update=update@entry=0, grp=grp@entry=0xc16c7e00 <pm_attr_group>)
+    at fs/sysfs/group.c:78
+78		error = create_files(sd, kobj, grp, update);
+(gdb) 
+83		sysfs_put(sd);
+(gdb) 
+85	}
+(gdb) 
+sysfs_create_group (kobj=kobj@entry=0xc16c7b28 <platform_bus+8>, 
+    grp=grp@entry=0xc16c7e00 <pm_attr_group>) at fs/sysfs/group.c:101
+101	}
+(gdb) 
+dpm_sysfs_add (dev=dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/power/sysfs.c:93
+93	}
+(gdb) 
+device_add (dev=<optimized out>, dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/core.c:999
+999		bus_remove_device(dev);
+(gdb) 
+965		if (error)
+(gdb) 
+967		device_pm_add(dev);                                                             # add device to dpm list
+(gdb) s
+device_pm_add (dev=dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/power/main.c:84
+84		pr_debug("PM: Adding info for %s:%s\n",
+(gdb) n
+83	{
+(gdb) 
+84		pr_debug("PM: Adding info for %s:%s\n",
+(gdb) 
+87		mutex_lock(&dpm_list_mtx);
+(gdb) 
+88		if (dev->parent) {
+(gdb) 
+92		} else if (transition_started) {
+(gdb) p transition_started 
+$15 = false
+(gdb) n
+101		list_add_tail(&dev->power.entry, &dpm_list);
+(gdb) 
+102		mutex_unlock(&dpm_list_mtx);
+(gdb) 
+103	}
+(gdb) 
+device_add (dev=<optimized out>, dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/core.c:972
+972		if (dev->bus)
+976		kobject_uevent(&dev->kobj, KOBJ_ADD);                                               # notify userspace by ending an uevent
+(gdb) 
+977		bus_probe_device(dev);                                                              # probe drivers for a new device
+(gdb) s
+bus_probe_device (dev=dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/bus.c:510
+510		struct bus_type *bus = dev->bus;
+(gdb) n
+513		if (bus && bus->p->drivers_autoprobe) {
+(gdb) 
+517	}
+(gdb) 
+device_add (dev=<optimized out>, dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/core.c:978
+978		if (parent)
+(gdb) 
+982		if (dev->class) {
+(gdb) 
+996		put_device(dev);
+(gdb) 
+1023	}
+(gdb) 
+device_register (dev=dev@entry=0xc16c7b20 <platform_bus>)
+    at drivers/base/core.c:1044
+1044	}
+(gdb) 
+platform_bus_init () at drivers/base/platform.c:962
+962		if (error)
+(gdb) 
+964		error =  bus_register(&platform_bus_type);
+(gdb) s
+bus_register (bus=bus@entry=0xc16c7aa0 <platform_bus_type>)
+    at drivers/base/bus.c:884
+884		priv = kzalloc(sizeof(struct bus_type_private), GFP_KERNEL);
+(gdb) 
+885		if (!priv)
+(gdb) 
+888		priv->bus = bus;
+(gdb) 
+889		bus->p = priv;
+(gdb) 
+891		BLOCKING_INIT_NOTIFIER_HEAD(&priv->bus_notifier);
+(gdb) 
+893		retval = kobject_set_name(&priv->subsys.kobj, "%s", bus->name);
+(gdb) 
+894		if (retval)
+(gdb) 
+897		priv->subsys.kobj.kset = bus_kset;
+(gdb) 
+898		priv->subsys.kobj.ktype = &bus_ktype;
+(gdb) 
+899		priv->drivers_autoprobe = 1;
+(gdb) 
+901		retval = kset_register(&priv->subsys);                                          # initialize and add a kset
+(gdb) 
+902		if (retval)
+(gdb) 
+905		retval = bus_create_file(bus, &bus_attr_uevent);
+(gdb) s
+bus_create_file (bus=bus@entry=0xc16c7aa0 <platform_bus_type>,                          # create file for bus
+    attr=attr@entry=0xc16c7998 <bus_attr_uevent>) at drivers/base/bus.c:126
+126		if (bus_get(bus)) {
+(gdb) n
+124	{
+(gdb) 
+126		if (bus_get(bus)) {
+(gdb) 
+127			error = sysfs_create_file(&bus->p->subsys.kobj, &attr->attr);
+(gdb) 
+128			bus_put(bus);
+(gdb) 
+132	}
+(gdb) 
+bus_register (bus=bus@entry=0xc16c7aa0 <platform_bus_type>)
+    at drivers/base/bus.c:906
+906		if (retval)
+(gdb) 
+909		priv->devices_kset = kset_create_and_add("devices", NULL,                           # create kset for devices and drivers associated with bus
+(gdb) 
+911		if (!priv->devices_kset) {
+(gdb) 
+916		priv->drivers_kset = kset_create_and_add("drivers", NULL,
+(gdb) 
+918		if (!priv->drivers_kset) {
+(gdb) 
+923		klist_init(&priv->klist_devices, klist_devices_get, klist_devices_put);             # initlialize klist which used to iterate over the @devices_kset or @drivers_kset
+(gdb) 
+924		klist_init(&priv->klist_drivers, NULL, NULL);
+(gdb) 
+926		retval = add_probe_files(bus);
+(gdb) s
+add_probe_files (bus=0xc16c7aa0 <platform_bus_type>) at drivers/base/bus.c:609
+609		retval = bus_create_file(bus, &bus_attr_drivers_probe);
+(gdb) s
+bus_create_file (bus=bus@entry=0xc16c7aa0 <platform_bus_type>, 
+    attr=attr@entry=0xc16c79d4 <bus_attr_drivers_probe>)
+    at drivers/base/bus.c:126
+126		if (bus_get(bus)) {
+(gdb) n
+127			error = sysfs_create_file(&bus->p->subsys.kobj, &attr->attr);
+(gdb) 
+128			bus_put(bus);
+(gdb) 
+132	}
+(gdb) 
+add_probe_files (bus=0xc16c7aa0 <platform_bus_type>) at drivers/base/bus.c:610
+610		if (retval)
+(gdb) 
+613		retval = bus_create_file(bus, &bus_attr_drivers_autoprobe);
+(gdb) 
+614		if (retval)
+(gdb) 
+bus_register (bus=bus@entry=0xc16c7aa0 <platform_bus_type>)
+    at drivers/base/bus.c:930
+930		retval = bus_add_attrs(bus);
+(gdb) s
+bus_add_attrs (bus=0xc16c7aa0 <platform_bus_type>) at drivers/base/bus.c:819
+819		if (bus->bus_attrs) {
+(gdb) n
+bus_register (bus=bus@entry=0xc16c7aa0 <platform_bus_type>)
+    at drivers/base/bus.c:935
+935		return 0;
+(gdb) 
+934		pr_debug("bus: '%s': registered\n", bus->name);
+(gdb) 
+951	}
+(gdb) 
+platform_bus_init () at drivers/base/platform.c:965
+965		if (error)
+(gdb) 
+968	}
+(gdb) 
 ```
 
 
@@ -2882,3 +3265,4 @@ $11 = (int (*)(struct device *)) 0x0
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
 * [completions - wait for completion handling](https://www.kernel.org/doc/Documentation/scheduler/completion.txt)
+* [Dynamic Power Management](http://www.sti.uniurb.it/events/sfm05moby/slides/sfm05-bogliolo.pdf)
