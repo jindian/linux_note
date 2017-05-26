@@ -1547,7 +1547,7 @@ do_basic_setup () at init/main.c:787
 787		driver_init();
 ```
 
-* initialize driver model
+initialize driver model
 
 `devtmpfs_init`: initialize dev tmp file system
 
@@ -3260,9 +3260,142 @@ platform_bus_init () at drivers/base/platform.c:965
 (gdb) 
 ```
 
+`system_bus_init` create kset for system bus
+
+`cpu_dev_init` initialize cpu
+
+```
+35		cpu_dev_init();
+(gdb) s
+cpu_dev_init () at drivers/base/cpu.c:240
+240		err = sysdev_class_register(&cpu_sysdev_class);
+(gdb) s
+sysdev_class_register (cls=cls@entry=0xc16c7cc0 <cpu_sysdev_class>)
+    at drivers/base/sys.c:136
+136		pr_debug("Registering sysdev class '%s'\n", cls->name);
+(gdb) n
+138		INIT_LIST_HEAD(&cls->drivers);
+(gdb) 
+139		memset(&cls->kset.kobj, 0x00, sizeof(struct kobject));
+(gdb) 
+140		cls->kset.kobj.parent = &system_kset->kobj;
+(gdb) 
+141		cls->kset.kobj.ktype = &ktype_sysdev_class;
+(gdb) 
+142		cls->kset.kobj.kset = system_kset;
+(gdb) 
+140		cls->kset.kobj.parent = &system_kset->kobj;
+(gdb) 
+144		retval = kobject_set_name(&cls->kset.kobj, "%s", cls->name);
+(gdb) 
+145		if (retval)
+(gdb) 
+148		return kset_register(&cls->kset);
+(gdb) s
+kset_register (k=k@entry=0xc16c7cd8 <cpu_sysdev_class+24>) at lib/kobject.c:716
+716		if (!k)
+(gdb) n
+719		kset_init(k);
+(gdb) 
+720		err = kobject_add_internal(&k->kobj);
+(gdb) 
+721		if (err)
+(gdb) 
+723		kobject_uevent(&k->kobj, KOBJ_ADD);
+(gdb) 
+725	}
+(gdb) 
+sysdev_class_register (cls=cls@entry=0xc16c7cc0 <cpu_sysdev_class>)
+    at drivers/base/sys.c:149
+149	}
+(gdb) 
+cpu_dev_init () at drivers/base/cpu.c:241
+241		if (!err)
+(gdb) 
+242			err = cpu_states_init();
+(gdb) s
+cpu_states_init () at drivers/base/cpu.c:188
+188			ret = sysdev_class_create_file(&cpu_sysdev_class,
+(gdb) s
+sysdev_class_create_file (c=c@entry=0xc16c7cc0 <cpu_sysdev_class>, 
+    a=a@entry=0xc16c7c70 <attr_online_map>) at drivers/base/sys.c:119
+119		return sysfs_create_file(&c->kset.kobj, &a->attr);
+(gdb) s
+sysfs_create_file (kobj=kobj@entry=0xc16c7d04 <cpu_sysdev_class+68>, 
+    attr=attr@entry=0xc16c7c70 <attr_online_map>) at fs/sysfs/file.c:539
+539		BUG_ON(!kobj || !kobj->sd || !attr);
+(gdb) n
+541		return sysfs_add_file(kobj->sd, attr, SYSFS_KOBJ_ATTR);
+(gdb) s
+sysfs_add_file (type=2, attr=0xc16c7c70 <attr_online_map>, dir_sd=0xc7022688)
+    at fs/sysfs/file.c:527
+527		return sysfs_add_file_mode(dir_sd, attr, type, attr->mode);
+(gdb) s
+sysfs_add_file_mode (dir_sd=0xc7022688, 
+    attr=attr@entry=0xc16c7c70 <attr_online_map>, type=type@entry=2, amode=292)
+    at fs/sysfs/file.c:503
+503		umode_t mode = (amode & S_IALLUGO) | S_IFREG;
+(gdb) 
+508		sd = sysfs_new_dirent(attr->name, mode, type);
+(gdb) 
+509		if (!sd)
+(gdb) 
+511		sd->s_attr.attr = (void *)attr;
+(gdb) 
+513		sysfs_addrm_start(&acxt, dir_sd);
+(gdb) 
+514		rc = sysfs_add_one(&acxt, sd);
+(gdb) 
+515		sysfs_addrm_finish(&acxt);
+(gdb) 
+517		if (rc)
+(gdb) 
+521	}
+(gdb) 
+sysfs_create_file (kobj=kobj@entry=0xc16c7d04 <cpu_sysdev_class+68>, 
+    attr=attr@entry=0xc16c7c70 <attr_online_map>) at fs/sysfs/file.c:543
+543	}
+(gdb) 
+sysdev_class_create_file (c=c@entry=0xc16c7cc0 <cpu_sysdev_class>, 
+    a=a@entry=0xc16c7c70 <attr_online_map>) at drivers/base/sys.c:120
+120	}
+(gdb) 
+cpu_states_init () at drivers/base/cpu.c:190
+190			if (!err)
+(gdb) 
+186		for (i = 0;  i < ARRAY_SIZE(cpu_state_attr); i++) {
+(gdb) 
+cpu_dev_init () at drivers/base/cpu.c:245
+245		if (!err)
+(gdb) 
+246			err = sched_create_sysfs_power_savings_entries(&cpu_sysdev_class);
+(gdb) s
+sched_create_sysfs_power_savings_entries (
+    cls=cls@entry=0xc16c7cc0 <cpu_sysdev_class>) at kernel/sched.c:9437
+9437		if (smt_capable())
+(gdb) n
+9442		if (!err && mc_capable())
+(gdb) 
+9433	{
+(gdb) 
+9447	}
+(gdb) 
+cpu_dev_init () at drivers/base/cpu.c:250
+250	}
+(gdb) 
+driver_init () at drivers/base/init.c:37
+37	}
+(gdb) 
+```
+
+`memory_dev_init`initialize the sysfs for memory devices
+
+`driver_init` is complete, let's continue other routines invoked in `do_basic_setup`, next in `do_basic_setup` is `init_irq_proc`
+
 
 
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
 * [completions - wait for completion handling](https://www.kernel.org/doc/Documentation/scheduler/completion.txt)
 * [Dynamic Power Management](http://www.sti.uniurb.it/events/sfm05moby/slides/sfm05-bogliolo.pdf)
+* [sysfs](https://en.wikipedia.org/wiki/Sysfs)
