@@ -3390,7 +3390,240 @@ driver_init () at drivers/base/init.c:37
 
 `memory_dev_init`initialize the sysfs for memory devices
 
-`driver_init` is complete, let's continue other routines invoked in `do_basic_setup`, next in `do_basic_setup` is `init_irq_proc`
+`driver_init` is complete, let's continue other routines invoked in `do_basic_setup`, next in `do_basic_setup` is `init_irq_proc` which is used to create folder under `/proc` for irq stuff.
+
+```init_irq_proc
+788		init_irq_proc();
+(gdb) s
+init_irq_proc () at kernel/irq/proc.c:256
+256		root_irq_dir = proc_mkdir("irq", NULL);
+(gdb) s
+proc_mkdir (name=name@entry=0xc1621630 "irq", parent=parent@entry=0x0)
+    at fs/proc/generic.c:701
+701		return proc_mkdir_mode(name, S_IRUGO | S_IXUGO, parent);
+(gdb) s
+proc_mkdir_mode (name=name@entry=0xc1621630 "irq", mode=mode@entry=365, 
+    parent=parent@entry=0x0) at fs/proc/generic.c:671
+671		ent = __proc_create(&parent, name, S_IFDIR | mode, 2);
+(gdb) s
+__proc_create (parent=parent@entry=0xc706bfa0, 
+    name=name@entry=0xc1621630 "irq", mode=16749, nlink=nlink@entry=2)                  # create directory under proc for irq
+    at fs/proc/generic.c:608
+608		const char *fn = name;
+(gdb) 
+612		if (!name || !strlen(name)) goto out;
+(gdb) 
+614		if (xlate_proc_name(name, parent, &fn) != 0)                                    # parse the name of to be created directory
+(gdb) p name
+$1 = 0xc1621630 "irq"
+(gdb) p parent
+$2 = (struct proc_dir_entry **) 0xc706bfa0
+(gdb) p *parent
+$3 = (struct proc_dir_entry *) 0x0
+(gdb) p fn
+$4 = 0xc1621630 "irq"
+(gdb) n
+618		if (strchr(fn, '/'))
+(gdb) p fn
+$5 = 0xc1621630 "irq"
+(gdb) n
+621		len = strlen(fn);
+(gdb) 
+623		ent = kmalloc(sizeof(struct proc_dir_entry) + len + 1, GFP_KERNEL);
+(gdb) 
+624		if (!ent) goto out;
+(gdb) 
+626		memset(ent, 0, sizeof(struct proc_dir_entry));
+(gdb) 
+627		memcpy(((char *) ent) + sizeof(struct proc_dir_entry), fn, len + 1);
+(gdb) 
+628		ent->name = ((char *) ent) + sizeof(*ent);
+(gdb) 
+629		ent->namelen = len;
+(gdb) 
+630		ent->mode = mode;
+(gdb) 
+631		ent->nlink = nlink;
+(gdb) 
+632		atomic_set(&ent->count, 1);
+(gdb) 
+633		ent->pde_users = 0;
+(gdb) 
+634		spin_lock_init(&ent->pde_unload_lock);
+(gdb) 
+635		ent->pde_unload_completion = NULL;
+(gdb) 
+636		INIT_LIST_HEAD(&ent->pde_openers);
+(gdb) 
+639	}
+(gdb) 
+proc_mkdir_mode (name=name@entry=0xc1621630 "irq", mode=mode@entry=365, 
+    parent=0xc16abe20 <proc_root>, parent@entry=0x0) at fs/proc/generic.c:672
+672		if (ent) {
+(gdb) 
+673			if (proc_register(parent, ent) < 0) {
+(gdb) s
+proc_register (dir=0xc16abe20 <proc_root>, dp=dp@entry=0xc70254d0)
+    at fs/proc/generic.c:560
+560	{
+(gdb) n
+564		i = get_inode_number();
+(gdb) 
+569		if (S_ISDIR(dp->mode)) {
+(gdb) 
+570			if (dp->proc_iops == NULL) {
+(gdb) 
+571				dp->proc_fops = &proc_dir_operations;
+(gdb) 
+572				dp->proc_iops = &proc_dir_inode_operations;
+(gdb) 
+574			dir->nlink++;
+(gdb) 
+585		spin_lock(&proc_subdir_lock);
+(gdb) 
+587		for (tmp = dir->subdir; tmp; tmp = tmp->next)
+(gdb) 
+588			if (strcmp(tmp->name, dp->name) == 0) {
+(gdb) 
+594		dp->next = dir->subdir;
+(gdb) 
+597		spin_unlock(&proc_subdir_lock);
+(gdb) 
+595		dp->parent = dir;
+(gdb) 
+596		dir->subdir = dp;
+(gdb) 
+597		spin_unlock(&proc_subdir_lock);
+(gdb) 
+599		return 0;
+(gdb) 
+600	}
+(gdb) 
+proc_mkdir_mode (name=name@entry=0xc1621630 "irq", mode=mode@entry=365, 
+    parent=0xc16abe20 <proc_root>, parent@entry=0x0) at fs/proc/generic.c:679
+679	}
+(gdb) 
+proc_mkdir (name=name@entry=0xc1621630 "irq", parent=parent@entry=0x0)
+    at fs/proc/generic.c:702
+702	}
+(gdb) 
+init_irq_proc () at kernel/irq/proc.c:257
+257		if (!root_irq_dir)
+(gdb) 
+260		register_default_affinity_proc();
+(gdb) s
+register_default_affinity_proc () at kernel/irq/proc.c:260
+260		register_default_affinity_proc();
+(gdb) s
+proc_create (proc_fops=0xc149ca20 <default_affinity_proc_fops>, parent=0x0, 
+    mode=384, name=0xc15dafe3 "irq/default_smp_affinity")
+    at include/linux/proc_fs.h:155
+155		return proc_create_data(name, mode, parent, proc_fops, NULL);
+(gdb) s
+proc_create_data (name=name@entry=0xc15dafe3 "irq/default_smp_affinity", 
+    mode=mode@entry=384, parent=parent@entry=0x0, 
+    proc_fops=proc_fops@entry=0xc149ca20 <default_affinity_proc_fops>, 
+    data=data@entry=0x0) at fs/proc/generic.c:740
+740		if (S_ISDIR(mode)) {
+(gdb) n
+746				mode |= S_IFREG;
+(gdb) 
+747			if ((mode & S_IALLUGO) == 0)
+(gdb) 
+752		pde = __proc_create(&parent, name, mode, nlink);                                           # create proc_dir_entry for default_smp_affinity, it's the subdirectory of irq
+(gdb) 
+753		if (!pde)
+(gdb) 
+755		pde->proc_fops = proc_fops;
+(gdb) 
+756		pde->data = data;
+(gdb) 
+757		if (proc_register(parent, pde) < 0)
+(gdb) 
+761		kfree(pde);
+(gdb) 
+764	}
+(gdb) 
+init_irq_proc () at kernel/irq/proc.c:265
+265		for_each_irq_desc(irq, desc) {                                                              # create other directories
+(gdb) 
+269			register_irq_proc(irq, desc);
+(gdb) p desc
+$6 = (struct irq_desc *) 0xc1690b60 <irq_desc_legacy>
+(gdb) p irq
+$7 = 0
+(gdb) n
+265		for_each_irq_desc(irq, desc) {
+(gdb) 
+269			register_irq_proc(irq, desc);
+(gdb) p desc
+$8 = (struct irq_desc *) 0xc1690c00 <irq_desc_legacy+160>
+(gdb) p irq
+$9 = 1
+(gdb) n
+265		for_each_irq_desc(irq, desc) {
+(gdb) 
+269			register_irq_proc(irq, desc);
+(gdb) p desc
+$10 = (struct irq_desc *) 0xc1690ca0 <irq_desc_legacy+320>
+(gdb) p *desc
+$11 = {irq = 2, kstat_irqs = 0xc7001008, 
+  handle_irq = 0xc10aaeb0 <handle_level_irq>, chip = 0xc1694820 <i8259A_chip>, 
+  msi_desc = 0x0, handler_data = 0x0, chip_data = 0xc16971a8 <irq_cfgx+40>, 
+  action = 0x0, status = 512, depth = 1, wake_depth = 0, irq_count = 0, 
+  last_unhandled = 0, irqs_unhandled = 0, lock = {raw_lock = {slock = 514}, 
+    magic = 3735899821, owner_cpu = 4294967295, owner = 0xffffffff, dep_map = {
+      key = 0xc1e3376c <irq_desc_lock_class>, class_cache = 0x0, 
+      name = 0xc15dae6f "&irq_desc_lock_class", cpu = 0, ip = 3238703088}}, 
+  affinity = {{bits = {255}}}, node = 0, pending_mask = {{bits = {0}}}, 
+  threads_active = {counter = 0}, wait_for_threads = {lock = {raw_lock = {
+        slock = 0}, magic = 0, owner_cpu = 0, owner = 0x0, dep_map = {
+        key = 0x0, class_cache = 0x0, name = 0x0, cpu = 0, ip = 0}}, 
+    task_list = {next = 0x0, prev = 0x0}}, dir = 0x0, name = 0xc162693c "XT"}
+(gdb) n
+265		for_each_irq_desc(irq, desc) {
+(gdb) 
+269			register_irq_proc(irq, desc);
+(gdb) p *desc
+$12 = {irq = 3, kstat_irqs = 0xc700100c, 
+  handle_irq = 0xc10ab4a0 <handle_edge_irq>, chip = 0xc16f7140 <ioapic_chip>, 
+  msi_desc = 0x0, handler_data = 0x0, chip_data = 0xc16971bc <irq_cfgx+60>, 
+  action = 0x0, status = 512, depth = 1, wake_depth = 0, irq_count = 0, 
+  last_unhandled = 0, irqs_unhandled = 0, lock = {raw_lock = {slock = 1028}, 
+    magic = 3735899821, owner_cpu = 4294967295, owner = 0xffffffff, dep_map = {
+      key = 0xc1e3376c <irq_desc_lock_class>, class_cache = 0x0, 
+      name = 0xc15dae6f "&irq_desc_lock_class", cpu = 0, ip = 3238703088}}, 
+  affinity = {{bits = {1}}}, node = 0, pending_mask = {{bits = {0}}}, 
+  threads_active = {counter = 0}, wait_for_threads = {lock = {raw_lock = {
+        slock = 0}, magic = 0, owner_cpu = 0, owner = 0x0, dep_map = {
+        key = 0x0, class_cache = 0x0, name = 0x0, cpu = 0, ip = 0}}, 
+    task_list = {next = 0x0, prev = 0x0}}, dir = 0x0, name = 0xc15d11ec "edge"}
+(gdb) n
+265		for_each_irq_desc(irq, desc) {
+(gdb) 
+269			register_irq_proc(irq, desc);
+(gdb) p *desc
+$13 = {irq = 4, kstat_irqs = 0xc7001010, 
+  handle_irq = 0xc10ab4a0 <handle_edge_irq>, chip = 0xc16f7140 <ioapic_chip>, 
+  msi_desc = 0x0, handler_data = 0x0, chip_data = 0xc16971d0 <irq_cfgx+80>, 
+  action = 0x0, status = 512, depth = 1, wake_depth = 0, irq_count = 0, 
+  last_unhandled = 0, irqs_unhandled = 0, lock = {raw_lock = {slock = 1028}, 
+    magic = 3735899821, owner_cpu = 4294967295, owner = 0xffffffff, dep_map = {
+      key = 0xc1e3376c <irq_desc_lock_class>, class_cache = 0x0, 
+      name = 0xc15dae6f "&irq_desc_lock_class", cpu = 0, ip = 3238703088}}, 
+  affinity = {{bits = {1}}}, node = 0, pending_mask = {{bits = {0}}}, 
+  threads_active = {counter = 0}, wait_for_threads = {lock = {raw_lock = {
+        slock = 0}, magic = 0, owner_cpu = 0, owner = 0x0, dep_map = {
+        key = 0x0, class_cache = 0x0, name = 0x0, cpu = 0, ip = 0}}, 
+    task_list = {next = 0x0, prev = 0x0}}, dir = 0x0, name = 0xc15d11ec "edge"}
+(gdb) n
+
+    ......
+
+271	}
+```
+
+
 
 
 
