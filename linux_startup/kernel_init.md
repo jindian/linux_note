@@ -3623,9 +3623,67 @@ $13 = {irq = 4, kstat_irqs = 0xc7001010,
 271	}
 ```
 
+call all constructor functions linked into the kernel with routine `do_ctors`, the defination of `__ctors_start` and `__ctors_end` could be found in `vmlinux.lds.S`
 
+```
+#ifdef CONFIG_CONSTRUCTORS
+#define KERNEL_CTORS()	. = ALIGN(8);			   \
+			VMLINUX_SYMBOL(__ctors_start) = .; \
+			*(.ctors)			   \
+			VMLINUX_SYMBOL(__ctors_end) = .;
+#else
+#define KERNEL_CTORS()
+#endif
 
+do_ctors () at init/main.c:703
+703		for (; call < (ctor_fn_t *) __ctors_end; call++)
+(gdb) l
+698	static void __init do_ctors(void)
+699	{
+700	#ifdef CONFIG_CONSTRUCTORS
+701		ctor_fn_t *call = (ctor_fn_t *) __ctors_start;
+702	
+703		for (; call < (ctor_fn_t *) __ctors_end; call++)
+704			(*call)();
+705	#endif
+706	}
+707	
+(gdb) p __ctors_start
+$1 = 0xc17611f0 <__setup_str_rdinit_setup> "rdinit="
+(gdb) p __ctors_end
+$2 = 0xc17611f0 <__setup_str_rdinit_setup> "rdinit="
+(gdb) n
+```
 
+the last funtion in `do_basic_setup` is `do_initcalls` which call all init functions defined in `vmlinux.lsd.S` in symbol `__early_initcall_end`.
+
+```do_initcalls
+#define INITCALLS							\
+	*(.initcallearly.init)						\
+	VMLINUX_SYMBOL(__early_initcall_end) = .;			\
+  	*(.initcall0.init)						\
+  	*(.initcall0s.init)						\
+  	*(.initcall1.init)						\
+  	*(.initcall1s.init)						\
+  	*(.initcall2.init)						\
+  	*(.initcall2s.init)						\
+  	*(.initcall3.init)						\
+  	*(.initcall3s.init)						\
+  	*(.initcall4.init)						\
+  	*(.initcall4s.init)						\
+  	*(.initcall5.init)						\
+  	*(.initcall5s.init)						\
+	*(.initcallrootfs.init)						\
+  	*(.initcall6.init)						\
+  	*(.initcall6s.init)						\
+  	*(.initcall7.init)						\
+  	*(.initcall7s.init)
+
+#define INIT_CALLS							\
+		VMLINUX_SYMBOL(__initcall_start) = .;			\
+		INITCALLS						\
+		VMLINUX_SYMBOL(__initcall_end) = .;
+```
 
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
