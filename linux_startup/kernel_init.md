@@ -3655,7 +3655,7 @@ $2 = 0xc17611f0 <__setup_str_rdinit_setup> "rdinit="
 (gdb) n
 ```
 
-the last funtion in `do_basic_setup` is `do_initcalls` which call all init functions defined in `vmlinux.lsd.S` in symbol `__early_initcall_end`.
+the last funtion in `do_basic_setup` is `do_initcalls` which call all init functions defined in `vmlinux.lsd.S` shown as follow:
 
 ```do_initcalls
 #define INITCALLS							\
@@ -3684,6 +3684,70 @@ the last funtion in `do_basic_setup` is `do_initcalls` which call all init funct
 		INITCALLS						\
 		VMLINUX_SYMBOL(__initcall_end) = .;
 ```
+
+17 functions invoked in `do_initcalls`, which is different from following debug information， it seems that more functions located in memory region between symbol `__early_initcall_end` and `__initcall_end`.
+
+```
+790		do_initcalls();
+(gdb) s
+do_initcalls () at init/main.c:767
+767		for (call = __early_initcall_end; call < __initcall_end; call++)
+(gdb) where
+#0  do_initcalls () at init/main.c:767
+#1  do_basic_setup () at init/main.c:790
+#2  kernel_init (unused=<optimized out>) at init/main.c:890
+#3  0xc1003ad7 in kernel_thread_helper ()
+    at arch/x86/kernel/entry_32.S:1000
+(gdb) p __early_initcall_end
+$1 = 0xc177d9b4 <__initcall_init_mmap_min_addr0>
+(gdb) p __initcall_end
+$2 = 0xc177e008 <__initcall_con_init>
+(gdb) 
+```
+
+let's check functions invoked in `do_initcalls`:
+
+init_mmap_min_addr: initialize `mmap_min_addr` which represents amount of vm to protect from userspace access by both DAC and the LSM, update mmap_min_addr = max(dac_mmap_min_addr, CONFIG_LSM_MMAP_MIN_ADDR)
+
+```init_mmap_min_addr
+(gdb) n
+768			do_one_initcall(*call);
+(gdb) s
+do_one_initcall (fn=0xc1718601 <init_mmap_min_addr>) at init/main.c:717
+717		int count = preempt_count();
+(gdb) 
+720		if (initcall_debug) {
+(gdb) 
+728		ret.result = fn();
+(gdb) s
+init_mmap_min_addr () at security/min_addr.c:48
+48		update_mmap_min_addr();
+(gdb) s
+update_mmap_min_addr () at security/min_addr.c:19
+19			mmap_min_addr = dac_mmap_min_addr;
+(gdb) n
+init_mmap_min_addr () at security/min_addr.c:51
+51	}
+(gdb) p dac_mmap_min_addr
+$3 = 65536
+(gdb) n
+do_one_initcall (fn=0xc1718601 <init_mmap_min_addr>) at init/main.c:730
+730		if (initcall_debug) {
+(gdb) 
+740		msgbuf[0] = 0;
+(gdb) 
+742		if (ret.result && ret.result != -ENODEV && initcall_debug)
+(gdb) 
+745		if (preempt_count() != count) {
+(gdb) 
+749		if (irqs_disabled()) {
+(gdb) 
+753		if (msgbuf[0]) {
+(gdb) 
+758	}
+(gdb) 
+```
+
 
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
