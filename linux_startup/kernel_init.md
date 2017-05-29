@@ -3707,7 +3707,7 @@ $2 = 0xc177e008 <__initcall_con_init>
 
 let's check functions invoked in `do_initcalls`:
 
-init_mmap_min_addr: initialize `mmap_min_addr` which represents amount of vm to protect from userspace access by both DAC and the LSM, update mmap_min_addr = max(dac_mmap_min_addr, CONFIG_LSM_MMAP_MIN_ADDR)
+the 1st function is init_mmap_min_addr, it initializes `mmap_min_addr` which represents amount of vm to protect from userspace access by both DAC and the LSM, update mmap_min_addr = max(dac_mmap_min_addr, CONFIG_LSM_MMAP_MIN_ADDR)
 
 ```init_mmap_min_addr
 (gdb) n
@@ -3748,9 +3748,49 @@ do_one_initcall (fn=0xc1718601 <init_mmap_min_addr>) at init/main.c:730
 (gdb) 
 ```
 
+the second function is `init_cpufreq_transition_notifier_list`, it initializes an [SRCU](https://lwn.net/Articles/202847/) notifier head and set the flag which indicates if `init_cpufreq_transition_notifier_list` is called as true.
+
+```init_cpufreq_transition_notifier_list
+init_cpufreq_transition_notifier_list () at drivers/cpufreq/cpufreq.c:127
+127		srcu_init_notifier_head(&cpufreq_transition_notifier_list);
+(gdb) s
+srcu_init_notifier_head (
+    nh=nh@entry=0xc1f29d00 <cpufreq_transition_notifier_list>)
+    at kernel/notifier.c:521
+521		mutex_init(&nh->mutex);
+(gdb) n
+522		if (init_srcu_struct(&nh->srcu) < 0)
+(gdb) s
+init_srcu_struct (
+    sp=sp@entry=0xc1f29d50 <cpufreq_transition_notifier_list+80>)
+    at kernel/srcu.c:47
+47		sp->completed = 0;
+(gdb) 
+48		mutex_init(&sp->mutex);
+(gdb) 
+49		sp->per_cpu_ref = alloc_percpu(struct srcu_struct_array);
+(gdb) 
+50		return (sp->per_cpu_ref ? 0 : -ENOMEM);
+(gdb) 
+51	}
+(gdb) 
+srcu_init_notifier_head (
+    nh=nh@entry=0xc1f29d00 <cpufreq_transition_notifier_list>)
+    at kernel/notifier.c:524
+524		nh->head = NULL;
+(gdb) 
+525	}
+(gdb) 
+init_cpufreq_transition_notifier_list () at drivers/cpufreq/cpufreq.c:128
+128		init_cpufreq_transition_notifier_list_called = true;
+(gdb) 
+130	}
+(gdb) 
+```
 
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
 * [completions - wait for completion handling](https://www.kernel.org/doc/Documentation/scheduler/completion.txt)
 * [Dynamic Power Management](http://www.sti.uniurb.it/events/sfm05moby/slides/sfm05-bogliolo.pdf)
 * [sysfs](https://en.wikipedia.org/wiki/Sysfs)
+* [Sleepable RCU](https://lwn.net/Articles/202847/)
