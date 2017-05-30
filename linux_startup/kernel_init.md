@@ -3788,7 +3788,7 @@ init_cpufreq_transition_notifier_list () at drivers/cpufreq/cpufreq.c:128
 (gdb) 
 ```
 
-the third one is `net_ns_init`, it's used to initialize network namespace from the information of the function name
+the third one is `net_ns_init`, it's used to initialize [network namespace](https://lwn.net/Articles/580893/) as the function name imply
 
 ```net_ns_init
 net_ns_init () at net/core/net_namespace.c:240
@@ -3819,9 +3819,77 @@ net_ns_init () at net/core/net_namespace.c:251
 257	}
 ```
 
+the fourth one is `e820_mark_nvs_memory`, non-volatile storage is a type of computer memory that can retrieve stored information even after having been power cycled (turned off and back on), `e820_mark_nvs_memory` marks ACPI NVS memory region, so that we can save/restore it during hibernation and the subsequent resume, it loops e820 memory map, if type of a specific memory region is `E820_NVS`, registers platform NVS memory region to save
+
+```e820_mark_nvs_memory
+e820_mark_nvs_memory () at arch/x86/kernel/e820.c:712
+712		for (i = 0; i < e820.nr_map; i++) {
+(gdb) p e820.nr_map
+$6 = 8
+(gdb) n
+709	{
+(gdb) 
+712		for (i = 0; i < e820.nr_map; i++) {
+(gdb) 
+715			if (ei->type == E820_NVS)
+
+		......
+
+712		for (i = 0; i < e820.nr_map; i++) {
+(gdb) 
+720	}
+(gdb) 
+```
+
+the fifth one is `cpufreq_tsc`, it checks if cpu has tsc feature and if TSC ticks at a constant rate in boot cpu, registers norifier  block for cpu clock rate changes.
+
+```
+cpufreq_tsc () at arch/x86/kernel/tsc.c:730
+730		if (!cpu_has_tsc)
+(gdb) n
+732		if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC))
+(gdb) 
+734		cpufreq_register_notifier(&time_cpufreq_notifier_block,
+(gdb) s
+cpufreq_register_notifier (
+    nb=nb@entry=0xc1694e80 <time_cpufreq_notifier_block>, 
+    list=list@entry=0) at drivers/cpufreq/cpufreq.c:1457
+1457		WARN_ON(!init_cpufreq_transition_notifier_list_called);
+(gdb) n
+1459		switch (list) {
+(gdb) 
+1461			ret = srcu_notifier_chain_register(
+(gdb) s
+srcu_notifier_chain_register (
+    nh=nh@entry=0xc1f29d00 <cpufreq_transition_notifier_list>, 
+    n=n@entry=0xc1694e80 <time_cpufreq_notifier_block>)
+    at kernel/notifier.c:427
+427		if (unlikely(system_state == SYSTEM_BOOTING))
+(gdb) 
+428			return notifier_chain_register(&nh->head, n);
+(gdb) 
+434	}
+(gdb) 
+cpufreq_register_notifier (
+    nb=nb@entry=0xc1694e80 <time_cpufreq_notifier_block>, 
+    list=list@entry=0) at drivers/cpufreq/cpufreq.c:1473
+1473	}
+(gdb) 
+cpufreq_tsc () at arch/x86/kernel/tsc.c:737
+737	}
+(gdb) 
+```
+
+the sixth one is `pci_reboot_init`
+
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
 * [completions - wait for completion handling](https://www.kernel.org/doc/Documentation/scheduler/completion.txt)
 * [Dynamic Power Management](http://www.sti.uniurb.it/events/sfm05moby/slides/sfm05-bogliolo.pdf)
 * [sysfs](https://en.wikipedia.org/wiki/Sysfs)
 * [Sleepable RCU](https://lwn.net/Articles/202847/)
+* [Network namespaces](https://lwn.net/Articles/580893/)
+* [Introducing Linux Network Namespaces](http://blog.scottlowe.org/2013/09/04/introducing-linux-network-namespaces/)
+* [Non-volatile memory](https://en.wikipedia.org/wiki/Non-volatile_memory)
+* [nvSRAM](https://en.wikipedia.org/wiki/NvSRAM)
+
