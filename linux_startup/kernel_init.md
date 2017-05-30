@@ -3748,7 +3748,7 @@ do_one_initcall (fn=0xc1718601 <init_mmap_min_addr>) at init/main.c:730
 (gdb) 
 ```
 
-the second function is `init_cpufreq_transition_notifier_list`, it initializes an [SRCU](https://lwn.net/Articles/202847/) notifier head and set the flag which indicates if `init_cpufreq_transition_notifier_list` is called as true.
+the second one is `init_cpufreq_transition_notifier_list`, it initializes an [SRCU](https://lwn.net/Articles/202847/) notifier head with `cpufreq_transition_notifier_list` as input parameter and set the flag which indicates if `init_cpufreq_transition_notifier_list` is called as true. The "transition" list for kernel code that needs to handle changes to devices when the CPU clock speed changes.
 
 ```init_cpufreq_transition_notifier_list
 init_cpufreq_transition_notifier_list () at drivers/cpufreq/cpufreq.c:127
@@ -3786,6 +3786,37 @@ init_cpufreq_transition_notifier_list () at drivers/cpufreq/cpufreq.c:128
 (gdb) 
 130	}
 (gdb) 
+```
+
+the third one is `net_ns_init`, it's used to initialize network namespace from the information of the function name
+
+```net_ns_init
+net_ns_init () at net/core/net_namespace.c:240
+240		ng = net_alloc_generic();						# allocate memmory for struct net_generic
+(gdb) 
+244		rcu_assign_pointer(init_net.gen, ng);
+(gdb) 
+246		mutex_lock(&net_mutex);
+(gdb) 
+247		if (setup_net(&init_net))
+(gdb) s
+setup_net (net=0xc1f2a8c0 <init_net>) at net/core/net_namespace.c:39
+39		atomic_set(&net->count, 1);
+(gdb) 
+45		list_for_each_entry(ops, &pernet_list, list) {				# execute init functions of all opses registered in pernet_list
+(gdb) 
+net_ns_init () at net/core/net_namespace.c:250
+250		rtnl_lock();
+(gdb) 
+(gdb) 
+net_ns_init () at net/core/net_namespace.c:251
+251		list_add_tail_rcu(&init_net.list, &net_namespace_list);			# add net namespace list
+(gdb) 
+252		rtnl_unlock();
+(gdb) 
+254		mutex_unlock(&net_mutex);
+(gdb) 
+257	}
 ```
 
 # Links
