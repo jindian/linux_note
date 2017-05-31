@@ -3880,7 +3880,194 @@ cpufreq_tsc () at arch/x86/kernel/tsc.c:737
 (gdb) 
 ```
 
-the sixth one is `pci_reboot_init`
+the sixth one is `pci_reboot_init`, it walk through table `pci_reboot_dmi_table`, check if dmi of current system match one of the items in the table, if yes, set reboot type and reboot.
+
+```pci_reboot_init
+pci_reboot_init () at arch/x86/kernel/reboot.c:485
+485		dmi_check_system(pci_reboot_dmi_table);
+(gdb) p pci_reboot_dmi_table 
+$3 = {{callback = 0xc17050f1 <set_pci_reboot>, 
+    ident = 0xc15d1479 "Apple MacBook5", matches = {{slot = 4 '\004', 
+        substr = "Apple Inc.", '\000' <repeats 68 times>}, {
+        slot = 5 '\005', substr = "MacBook5", '\000' <repeats 70 times>}, {
+        slot = 0 '\000', substr = '\000' <repeats 78 times>}, {
+        slot = 0 '\000', substr = '\000' <repeats 78 times>}}, 
+    driver_data = 0x0}, {callback = 0xc17050f1 <set_pci_reboot>, 
+    ident = 0xc15d1488 "Apple MacBookPro5", matches = {{slot = 4 '\004', 
+        substr = "Apple Inc.", '\000' <repeats 68 times>}, {
+        slot = 5 '\005', 
+        substr = "MacBookPro5", '\000' <repeats 67 times>}, {
+        slot = 0 '\000', substr = '\000' <repeats 78 times>}, {
+        slot = 0 '\000', substr = '\000' <repeats 78 times>}}, 
+    driver_data = 0x0}, {callback = 0xc17050f1 <set_pci_reboot>, 
+    ident = 0xc15d149a "Apple Macmini3,1", matches = {{slot = 4 '\004', 
+        substr = "Apple Inc.", '\000' <repeats 68 times>}, {
+        slot = 5 '\005', 
+        substr = "Macmini3,1", '\000' <repeats 68 times>}, {
+        slot = 0 '\000', substr = '\000' <repeats 78 times>}, {
+        slot = 0 '\000', substr = '\000' <repeats 78 times>}}, 
+    driver_data = 0x0}, {callback = 0xc17050f1 <set_pci_reboot>, 
+    ident = 0xc15d14ab "Apple iMac9,1", matches = {{slot = 4 '\004', 
+        substr = "Apple Inc.", '\000' <repeats 68 times>}, {
+---Type <return> to continue, or q <return> to quit---
+        slot = 5 '\005', substr = "iMac9,1", '\000' <repeats 71 times>}, {
+        slot = 0 '\000', substr = '\000' <repeats 78 times>}, {
+        slot = 0 '\000', substr = '\000' <repeats 78 times>}}, 
+    driver_data = 0x0}, {callback = 0xc17050f1 <set_pci_reboot>, 
+    ident = 0xc15d14b9 "Dell Latitude E5420", matches = {{slot = 4 '\004', 
+        substr = "Dell Inc.", '\000' <repeats 69 times>}, {
+        slot = 5 '\005', 
+        substr = "Latitude E5420", '\000' <repeats 64 times>}, {
+        slot = 0 '\000', substr = '\000' <repeats 78 times>}, {
+        slot = 0 '\000', substr = '\000' <repeats 78 times>}}, 
+    driver_data = 0x0}, {callback = 0x0, ident = 0x0, matches = {{
+        slot = 0 '\000', substr = '\000' <repeats 78 times>}, {
+        slot = 0 '\000', substr = '\000' <repeats 78 times>}, {
+        slot = 0 '\000', substr = '\000' <repeats 78 times>}, {
+        slot = 0 '\000', substr = '\000' <repeats 78 times>}}, 
+    driver_data = 0x0}}
+(gdb) s
+dmi_check_system (list=list@entry=0xc1739de0 <pci_reboot_dmi_table>)
+    at drivers/firmware/dmi_scan.c:469
+469		int count = 0;
+(gdb) n
+472		for (d = list; !dmi_is_end_of_table(d); d++)
+(gdb) 
+473			if (dmi_matches(d)) {
+(gdb) s
+dmi_matches (dmi=dmi@entry=0xc1739de0 <pci_reboot_dmi_table>)
+    at drivers/firmware/dmi_scan.c:427
+427	{
+(gdb) n
+430		WARN(!dmi_initialized, KERN_ERR "dmi check: not initialized yet.\n");
+(gdb) 
+433			int s = dmi->matches[i].slot;
+(gdb) 
+434			if (s == DMI_NONE)
+(gdb) p s
+$4 = 4
+(gdb) n
+436			if (dmi_ident[s]
+(gdb) p dmi_ident 
+$5 = {0x0, 0xc1f43000 <.brk.pagetables+8192> "Bochs", 
+  0xc1f43008 <.brk.pagetables+8200> "Bochs", 
+  0xc1f43010 <.brk.pagetables+8208> "01/01/2011", 
+  0xc1f4301c <.brk.pagetables+8220> "QEMU", 
+  0xc1f43024 <.brk.pagetables+8228> "Standard PC (i440FX + PIIX, 1996)", 
+  0xc1f43048 <.brk.pagetables+8264> "pc-i440fx-trusty", 
+  0xc1f4305c <.brk.pagetables+8284> "", 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 
+  0xc1f43060 <.brk.pagetables+8288> "Bochs", 
+  0xc1f43068 <.brk.pagetables+8296> "1", 
+  0xc1f4306c <.brk.pagetables+8300> "", 
+  0xc1f43070 <.brk.pagetables+8304> "", 
+  0xc1f43074 <.brk.pagetables+8308> ""}
+(gdb) n
+437			    && strstr(dmi_ident[s], dmi->matches[i].substr))
+(gdb) p dmi->matches[i].substr
+$6 = "Apple Inc.", '\000' <repeats 68 times>
+(gdb) n
+443	}
+(gdb) 
+440			return false;
+(gdb) 
+443	}
+(gdb) 
+dmi_check_system (list=list@entry=0xc1739de0 <pci_reboot_dmi_table>)
+    at drivers/firmware/dmi_scan.c:472
+472		for (d = list; !dmi_is_end_of_table(d); d++)
+(gdb) 
+473			if (dmi_matches(d)) {
+(gdb) 
+472		for (d = list; !dmi_is_end_of_table(d); d++)
+(gdb) 
+473			if (dmi_matches(d)) {
+(gdb) 
+472		for (d = list; !dmi_is_end_of_table(d); d++)
+(gdb) 
+473			if (dmi_matches(d)) {
+(gdb) 
+472		for (d = list; !dmi_is_end_of_table(d); d++)
+(gdb) 
+473			if (dmi_matches(d)) {
+(gdb) 
+472		for (d = list; !dmi_is_end_of_table(d); d++)
+(gdb) 
+480	}
+(gdb) 
+pci_reboot_init () at arch/x86/kernel/reboot.c:487
+487	}
+(gdb) 
+```
+
+the seventh one is `reboot_init`, the procedure of this routine is similar with `pci_reboot_init` except the table in the routine is `reboot_dmi_table` instead of `pci_reboot_dmi_table`, the defination of table `pci_reboot_init` could be found in line 137 of file arch/x86/kernel/reboot.c, if dmi of current system match any items in the table, invoke `set_bios_reboot` which set the reboot type with `BOOT_BIOS` selecting BIOS-method for reboots.
+
+the eighth one is `init_lapic_sysfs`, as the function imply, it initialize local apic filesystem
+
+```init_lapic_sysfs
+init_lapic_sysfs () at arch/x86/kernel/apic/apic.c:2161
+2161		if (!cpu_has_apic)
+(gdb) 
+2165		error = sysdev_class_register(&lapic_sysclass);					# register local apic system device class
+(gdb) s
+sysdev_class_register (cls=cls@entry=0xc1696ca0 <lapic_sysclass>)
+    at drivers/base/sys.c:136
+136		pr_debug("Registering sysdev class '%s'\n", cls->name);
+(gdb) n
+138		INIT_LIST_HEAD(&cls->drivers);
+(gdb) 
+139		memset(&cls->kset.kobj, 0x00, sizeof(struct kobject));
+(gdb) 
+140		cls->kset.kobj.parent = &system_kset->kobj;
+(gdb) 
+141		cls->kset.kobj.ktype = &ktype_sysdev_class;
+(gdb) 
+142		cls->kset.kobj.kset = system_kset;
+(gdb) 
+144		retval = kobject_set_name(&cls->kset.kobj, "%s", cls->name);
+(gdb) 
+145		if (retval)
+(gdb) 
+148		return kset_register(&cls->kset);
+(gdb) 
+149	}
+(gdb) 
+init_lapic_sysfs () at arch/x86/kernel/apic/apic.c:2166
+2166		if (!error)
+(gdb) 
+2167			error = sysdev_register(&device_lapic);					# register local apic device
+(gdb) s
+sysdev_register (sysdev=sysdev@entry=0xc1696c60 <device_lapic>)
+    at drivers/base/sys.c:242
+242		struct sysdev_class *cls = sysdev->cls;
+(gdb) n
+244		if (!cls)
+(gdb) 
+247		pr_debug("Registering sys device of class '%s'\n",
+(gdb) 
+251		memset(&sysdev->kobj, 0x00, sizeof(struct kobject));
+(gdb) 
+254		sysdev->kobj.kset = &cls->kset;
+(gdb) 
+257		error = kobject_init_and_add(&sysdev->kobj, &ktype_sysdev, NULL,
+(gdb) 
+261		if (!error) {
+(gdb) 
+264			pr_debug("Registering sys device '%s'\n",
+(gdb) 
+267			mutex_lock(&sysdev_drivers_lock);
+(gdb) 
+273			list_for_each_entry(drv, &cls->drivers, entry) {
+(gdb) 
+277			mutex_unlock(&sysdev_drivers_lock);
+(gdb) 
+278			kobject_uevent(&sysdev->kobj, KOBJ_ADD);
+(gdb) 
+282	}
+(gdb) 
+init_lapic_sysfs () at arch/x86/kernel/apic/apic.c:2169
+2169	}
+(gdb) 
+```
 
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
