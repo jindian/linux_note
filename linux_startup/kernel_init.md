@@ -4069,6 +4069,66 @@ init_lapic_sysfs () at arch/x86/kernel/apic/apic.c:2169
 (gdb) 
 ```
 
+the nineth one is `init_smp_flush`, it initialze spin lock of every smp_flush_state item of array `flush_state`.
+
+some reference of TLB flush could be found in [Translation lookaside buffer](https://en.wikipedia.org/wiki/Translation_lookaside_buffer):
+
+```
+Address space switch
+
+On an address space switch, as occurs on a process switch but not on a thread switch, some TLB entries can become invalid, since the virtual-to-physical mapping is different. The simplest strategy to deal with this is to completely flush the TLB. This means that after a switch, the TLB is empty and any memory reference will be a miss, and it will be some time before things are running back at full speed. Newer CPUs use more effective strategies marking which process an entry is for. This means that if a second process runs for only a short time and jumps back to a first process, it may still have valid entries, saving the time to reload them.
+For example, in the Alpha 21264, each TLB entry is tagged with an "address space number" (ASN), and only TLB entries with an ASN matching the current task are considered valid. Another example in the Intel Pentium Pro, the page global enable (PGE) flag in the register CR4 and the global (G) flag of a page-directory or page-table entry can be used to prevent frequently used pages from being automatically invalidated in the TLBs on a task switch or a load of register CR3.
+While selective flushing of the TLB is an option in software managed TLBs, the only option in some hardware TLBs (for example, the TLB in the Intel 80386) is the complete flushing of the TLB on an address space switch. Other hardware TLBs (for example, the TLB in the Intel 80486 and later x86 processors, and the TLB in ARM processors) allow the flushing of individual entries from the TLB indexed by virtual address.
+```
+
+the tenth one is `cpu_hotplug_pm_sync_init`, it register notifier function for cpu hotplug
+
+```cpu_hotplug_pm_sync_init
+cpu_hotplug_pm_sync_init () at kernel/cpu.c:514
+514		pm_notifier(cpu_hotplug_pm_callback, 0);
+(gdb) s
+register_pm_notifier (nb=nb@entry=0xc1698ea0 <cpu_hotplug_pm_callback_nb>)
+    at kernel/power/main.c:31
+31		return blocking_notifier_chain_register(&pm_chain_head, nb);
+(gdb) s
+blocking_notifier_chain_register (nh=nh@entry=0xc16a01e0 <pm_chain_head>, 
+    n=n@entry=0xc1698ea0 <cpu_hotplug_pm_callback_nb>)
+    at kernel/notifier.c:212
+212	{
+(gdb) n
+220		if (unlikely(system_state == SYSTEM_BOOTING))
+(gdb) 
+221			return notifier_chain_register(&nh->head, n);
+(gdb) s
+notifier_chain_register (n=0xc1698ea0 <cpu_hotplug_pm_callback_nb>, 
+    n@entry=0xc16a01e0 <pm_chain_head>, nl=<optimized out>)
+    at kernel/notifier.c:24
+24		while ((*nl) != NULL) {
+(gdb) n
+29		n->next = *nl;
+(gdb) 
+30		rcu_assign_pointer(*nl, n);
+(gdb) 
+blocking_notifier_chain_register (nh=nh@entry=0xc16a01e0 <pm_chain_head>, 
+    n=n@entry=0xc1698ea0 <cpu_hotplug_pm_callback_nb>)
+    at kernel/notifier.c:227
+227	}
+(gdb) 
+register_pm_notifier (nb=nb@entry=0xc1698ea0 <cpu_hotplug_pm_callback_nb>)
+    at kernel/power/main.c:32
+32	}
+(gdb) 
+cpu_hotplug_pm_sync_init () at kernel/cpu.c:516
+516	}
+(gdb) 
+```
+
+the eleventh one is `alloc_frozen_cpus`, it allocates cpu mask for frozen/slept cpu because of power management.
+
+the twelfth one is `sysctl_init`, it set parent for `root_table` and its child table.
+
+the thirteenth one is `ksysfs_init`
+
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
 * [completions - wait for completion handling](https://www.kernel.org/doc/Documentation/scheduler/completion.txt)
@@ -4079,4 +4139,8 @@ init_lapic_sysfs () at arch/x86/kernel/apic/apic.c:2169
 * [Introducing Linux Network Namespaces](http://blog.scottlowe.org/2013/09/04/introducing-linux-network-namespaces/)
 * [Non-volatile memory](https://en.wikipedia.org/wiki/Non-volatile_memory)
 * [nvSRAM](https://en.wikipedia.org/wiki/NvSRAM)
-
+* [flush](http://www.tldp.org/LDP/khg/HyperNews/get/memory/flush.html)
+* [Translation lookaside buffer](https://en.wikipedia.org/wiki/Translation_lookaside_buffer)
+* [Translation Lookaside Buffer (TLB)](http://www.informit.com/articles/article.aspx?p=29961&seqNum=4)
+* [Power Management In The Linux Kernel](https://events.linuxfoundation.org/sites/events/files/slides/kernel_PM_plain.pdf)
+* [The Sysctl Interface](http://www.linux.it/~rubini/docs/sysctl/sysctl.html)
