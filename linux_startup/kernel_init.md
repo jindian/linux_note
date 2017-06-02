@@ -4123,11 +4123,357 @@ cpu_hotplug_pm_sync_init () at kernel/cpu.c:516
 (gdb) 
 ```
 
-the eleventh one is `alloc_frozen_cpus`, it allocates cpu mask for frozen/slept cpu because of power management.
+the eleventh one is `alloc_frozen_cpus`, it allocates cpu mask for frozen/slept cpu because of power management
 
-the twelfth one is `sysctl_init`, it set parent for `root_table` and its child table.
+the twelfth one is `sysctl_init`, it set parent for `root_table` and its child table
 
-the thirteenth one is `ksysfs_init`
+the thirteenth one is `ksysfs_init`, in the initialization it create directory name `kernel` and files under the directory
+
+```ksysfs_init
+ksysfs_init () at kernel/ksysfs.c:163
+163		kernel_kobj = kobject_create_and_add("kernel", NULL);
+(gdb) s
+kobject_create_and_add (name=name@entry=0xc15cfce0 "kernel", 
+    parent=parent@entry=0x0) at lib/kobject.c:652
+652		kobj = kobject_create();
+(gdb) s
+kobject_create () at lib/kobject.c:626
+626		kobj = kzalloc(sizeof(*kobj), GFP_KERNEL);
+(gdb) n
+627		if (!kobj)
+(gdb) 
+630		kobject_init(kobj, &dynamic_kobj_ktype);
+(gdb) 
+631		return kobj;
+(gdb) 
+632	}
+(gdb) 
+kobject_create_and_add (name=name@entry=0xc15cfce0 "kernel", 
+    parent=parent@entry=0x0) at lib/kobject.c:653
+653		if (!kobj)
+(gdb) 
+656		retval = kobject_add(kobj, parent, "%s", name);
+(gdb) s
+kobject_add (kobj=kobj@entry=0xc7086310, parent=parent@entry=0x0, 
+    fmt=fmt@entry=0xc1627337 "%s") at lib/kobject.c:340
+340	{
+(gdb) n
+344		if (!kobj)
+(gdb) 
+347		if (!kobj->state_initialized) {
+(gdb) 
+355		retval = kobject_add_varg(kobj, parent, fmt, args);
+(gdb) s
+kobject_add_varg (vargs=0xc706bf7c "\340\374\\\301\263\353p\301", 
+    fmt=0xc1627337 "%s", parent=0x0, kobj=0xc7086310) at lib/kobject.c:304
+304		retval = kobject_set_name_vargs(kobj, fmt, vargs);
+(gdb) s
+kobject_set_name_vargs (kobj=kobj@entry=0xc7086310, 
+    fmt=fmt@entry=0xc1627337 "%s", 
+    vargs=vargs@entry=0xc706bf7c "\340\374\\\301\263\353p\301")
+    at lib/kobject.c:218
+218		const char *old_name = kobj->name;
+(gdb) n
+221		if (kobj->name && !fmt)
+(gdb) 
+224		kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
+(gdb) 
+225		if (!kobj->name)
+(gdb) 
+229		while ((s = strchr(kobj->name, '/')))
+(gdb) 
+232		kfree(old_name);
+(gdb) 
+233		return 0;
+(gdb) 
+234	}
+(gdb) 
+kobject_add_varg (vargs=0xc706bf7c "\340\374\\\301\263\353p\301", 
+    fmt=0xc1627337 "%s", parent=0x0, kobj=0xc7086310) at lib/kobject.c:305
+305		if (retval) {
+(gdb) 
+309		kobj->parent = parent;
+(gdb) 
+310		return kobject_add_internal(kobj);
+(gdb) s
+kobject_add_internal (kobj=0xc7086310) at lib/kobject.c:163
+163		if (!kobj)
+(gdb) n
+166		if (!kobj->name || !kobj->name[0]) {
+(gdb) 
+172		parent = kobject_get(kobj->parent);
+(gdb) 
+175		if (kobj->kset) {
+(gdb) 
+182		pr_debug("kobject: '%s' (%p): %s: parent: '%s', set: '%s'\n",
+(gdb) 
+187		error = create_dir(kobj);
+(gdb) s
+create_dir (kobj=0xc7086310) at lib/kobject.c:50
+50		if (kobject_name(kobj)) {
+(gdb) n
+51			error = sysfs_create_dir(kobj);
+(gdb) s
+sysfs_create_dir (kobj=kobj@entry=0xc7086310) at fs/sysfs/dir.c:715
+715		BUG_ON(!kobj);
+(gdb) 
+717		if (kobj->parent)
+(gdb) 
+720			parent_sd = &sysfs_root;
+(gdb) 
+722		error = create_dir(kobj, parent_sd, kobject_name(kobj), &sd);
+(gdb) s
+create_dir (kobj=kobj@entry=0xc7086310, parent_sd=0xc16ac580 <sysfs_root>, 
+    name=0xc70207a8 "kernel", p_sd=p_sd@entry=0xc706bf10)
+    at fs/sysfs/dir.c:682
+682		sd = sysfs_new_dirent(name, mode, SYSFS_DIR);
+(gdb) 
+683		if (!sd)
+(gdb) 
+685		sd->s_dir.kobj = kobj;
+(gdb) 
+688		sysfs_addrm_start(&acxt, parent_sd);
+(gdb) s
+sysfs_addrm_start (acxt=acxt@entry=0xc706bee8, 
+    parent_sd=parent_sd@entry=0xc16ac580 <sysfs_root>)
+    at fs/sysfs/dir.c:374
+374		memset(acxt, 0, sizeof(*acxt));
+(gdb) 
+375		acxt->parent_sd = parent_sd;
+(gdb) 
+381		mutex_lock(&sysfs_mutex);
+(gdb) 
+383		inode = ilookup5(sysfs_sb, parent_sd->s_ino, sysfs_ilookup_test,
+(gdb) 
+385		if (inode) {
+(gdb) 
+386			WARN_ON(inode->i_state & I_NEW);
+(gdb) 
+389			acxt->parent_inode = inode;
+(gdb) 
+395			if (!mutex_trylock(&inode->i_mutex)) {
+(gdb) 
+401	}
+(gdb) 
+create_dir (kobj=kobj@entry=0xc7086310, parent_sd=0xc16ac580 <sysfs_root>, 
+    name=<optimized out>, p_sd=p_sd@entry=0xc706bf10) at fs/sysfs/dir.c:689
+689		rc = sysfs_add_one(&acxt, sd);
+(gdb) s
+sysfs_add_one (acxt=acxt@entry=0xc706bee8, sd=sd@entry=0xc7022948)
+    at fs/sysfs/dir.c:482
+482		ret = __sysfs_add_one(acxt, sd);
+(gdb) s
+__sysfs_add_one (acxt=acxt@entry=0xc706bee8, sd=sd@entry=0xc7022948)
+    at fs/sysfs/dir.c:425
+425		if (sysfs_find_dirent(acxt->parent_sd, sd->s_name))
+(gdb) n
+428		sd->s_parent = sysfs_get(acxt->parent_sd);
+(gdb) 
+430		if (sysfs_type(sd) == SYSFS_DIR && acxt->parent_inode)
+(gdb) 
+431			inc_nlink(acxt->parent_inode);
+(gdb) 
+433		acxt->cnt++;
+(gdb) 
+435		sysfs_link_sibling(sd);
+(gdb) 
+437		return 0;
+(gdb) 
+438	}
+(gdb) 
+sysfs_add_one (acxt=acxt@entry=0xc706bee8, sd=sd@entry=0xc7022948)
+    at fs/sysfs/dir.c:483
+483		if (ret == -EEXIST) {
+(gdb) 
+496	}
+(gdb) 
+create_dir (kobj=kobj@entry=0xc7086310, parent_sd=<optimized out>, 
+    name=<optimized out>, p_sd=p_sd@entry=0xc706bf10) at fs/sysfs/dir.c:690
+690		sysfs_addrm_finish(&acxt);
+(gdb) s
+sysfs_addrm_finish (acxt=acxt@entry=0xc706bee8) at fs/sysfs/dir.c:595
+595		mutex_unlock(&sysfs_mutex);
+(gdb) 
+596		if (acxt->parent_inode) {
+(gdb) 
+600			if (acxt->cnt)
+(gdb) 
+601				inode->i_ctime = inode->i_mtime = CURRENT_TIME;
+(gdb) 
+603			mutex_unlock(&inode->i_mutex);
+(gdb) 
+604			iput(inode);
+(gdb) 
+608		while (acxt->removed) {
+(gdb) 
+619	}
+(gdb) 
+create_dir (kobj=kobj@entry=0xc7086310, parent_sd=<optimized out>, 
+    name=<optimized out>, p_sd=p_sd@entry=0xc706bf10) at fs/sysfs/dir.c:692
+692		if (rc == 0)
+(gdb) 
+693			*p_sd = sd;
+(gdb) 
+698	}
+(gdb) 
+sysfs_create_dir (kobj=kobj@entry=0xc7086310) at fs/sysfs/dir.c:723
+723		if (!error)
+(gdb) 
+724			kobj->sd = sd;
+(gdb) 
+726	}
+(gdb) 
+create_dir (kobj=0xc7086310) at lib/kobject.c:52
+52			if (!error) {
+(gdb) 
+kobject_add_internal (kobj=0xc7086310) at lib/kobject.c:188
+188		if (error) {
+(gdb) 
+204			kobj->state_in_sysfs = 1;
+(gdb) 
+207	}
+(gdb) 
+kobject_add (kobj=kobj@entry=0xc7086310, parent=parent@entry=0x0, 
+    fmt=fmt@entry=0xc1627337 "%s") at lib/kobject.c:359
+359	}
+(gdb) 
+kobject_create_and_add (name=name@entry=0xc15cfce0 "kernel", 
+    parent=parent@entry=0x0) at lib/kobject.c:657
+657		if (retval) {
+(gdb) 
+664	}
+(gdb) 
+ksysfs_init () at kernel/ksysfs.c:164
+164		if (!kernel_kobj) {
+(gdb) 
+168		error = sysfs_create_group(kernel_kobj, &kernel_attr_group);				 # create files which configured in kernel_attr_group
+(gdb) s
+sysfs_create_group (kobj=0xc7086310, 
+    grp=grp@entry=0xc169e380 <kernel_attr_group>) at fs/sysfs/group.c:100
+100		return internal_create_group(kobj, 0, grp);
+(gdb) s
+internal_create_group (kobj=0xc7086310, update=update@entry=0, 
+    grp=grp@entry=0xc169e380 <kernel_attr_group>) at fs/sysfs/group.c:65
+65		BUG_ON(!kobj || (!update && !kobj->sd));
+(gdb) n
+71		if (grp->name) {
+(gdb) 
+76			sd = kobj->sd;
+(gdb) 
+77		sysfs_get(sd);
+(gdb) 
+78		error = create_files(sd, kobj, grp, update);
+(gdb) s
+create_files (update=0, grp=0xc169e380 <kernel_attr_group>, 
+    kobj=0xc7086310, dir_sd=0xc7022948) at fs/sysfs/group.c:35
+35		for (i = 0, attr = grp->attrs; *attr && !error; i++, attr++) {
+(gdb) n
+41			if (update)
+(gdb) 
+43			if (grp->is_visible) {
+(gdb) 
+36			mode_t mode = 0;
+(gdb) 
+48			error = sysfs_add_file_mode(dir_sd, *attr, SYSFS_KOBJ_ATTR,
+(gdb) s
+sysfs_add_file_mode (dir_sd=dir_sd@entry=0xc7022948, 
+    attr=0xc169e444 <uevent_seqnum_attr>, type=type@entry=2, amode=292)
+    at fs/sysfs/file.c:503
+503		umode_t mode = (amode & S_IALLUGO) | S_IFREG;
+(gdb) n
+508		sd = sysfs_new_dirent(attr->name, mode, type);
+(gdb) 
+509		if (!sd)
+(gdb) 
+511		sd->s_attr.attr = (void *)attr;
+(gdb) 
+513		sysfs_addrm_start(&acxt, dir_sd);
+(gdb) 
+514		rc = sysfs_add_one(&acxt, sd);
+(gdb) 
+515		sysfs_addrm_finish(&acxt);
+(gdb) 
+517		if (rc)
+(gdb) 
+521	}
+(gdb) 
+create_files (update=0, grp=0xc169e380 <kernel_attr_group>, 
+    kobj=0xc7086310, dir_sd=0xc7022948) at fs/sysfs/group.c:50
+50			if (unlikely(error))
+
+	......
+
+(gdb) 
+35		for (i = 0, attr = grp->attrs; *attr && !error; i++, attr++) {
+(gdb) 
+78		error = create_files(sd, kobj, grp, update);
+(gdb) 
+83		sysfs_put(sd);
+(gdb) 
+85	}
+(gdb) 
+sysfs_create_group (kobj=<optimized out>, 
+    grp=grp@entry=0xc169e380 <kernel_attr_group>) at fs/sysfs/group.c:101
+101	}
+(gdb) 
+ksysfs_init () at kernel/ksysfs.c:169
+169		if (error)
+(gdb) 
+172		if (notes_size > 0) {
+(gdb) 
+173			notes_attr.size = notes_size;
+(gdb) 
+174			error = sysfs_create_bin_file(kernel_kobj, &notes_attr);
+(gdb) s
+sysfs_create_bin_file (kobj=0xc7086310, 
+    attr=attr@entry=0xc169e3c0 <notes_attr>) at fs/sysfs/bin.c:488
+488		BUG_ON(!kobj || !kobj->sd || !attr);
+(gdb) n
+490		return sysfs_add_file(kobj->sd, &attr->attr, SYSFS_KOBJ_BIN_ATTR);
+(gdb) s
+sysfs_add_file (dir_sd=0xc7022948, 
+    attr=attr@entry=0xc169e3c0 <notes_attr>, type=type@entry=4)
+    at fs/sysfs/file.c:527
+527		return sysfs_add_file_mode(dir_sd, attr, type, attr->mode);
+(gdb) s
+sysfs_add_file_mode (dir_sd=0xc7022948, 
+    attr=attr@entry=0xc169e3c0 <notes_attr>, type=type@entry=4, 
+    amode=amode@entry=292) at fs/sysfs/file.c:503
+503		umode_t mode = (amode & S_IALLUGO) | S_IFREG;
+(gdb) n
+508		sd = sysfs_new_dirent(attr->name, mode, type);
+(gdb) 
+509		if (!sd)
+(gdb) 
+511		sd->s_attr.attr = (void *)attr;
+(gdb) 
+513		sysfs_addrm_start(&acxt, dir_sd);
+(gdb) 
+514		rc = sysfs_add_one(&acxt, sd);
+(gdb) 
+515		sysfs_addrm_finish(&acxt);
+(gdb) 
+517		if (rc)
+(gdb) 
+521	}
+(gdb) 
+sysfs_add_file (dir_sd=<optimized out>, 
+    attr=attr@entry=0xc169e3c0 <notes_attr>, type=type@entry=4)
+    at fs/sysfs/file.c:528
+528	}
+(gdb) 
+sysfs_create_bin_file (kobj=<optimized out>, 
+    attr=attr@entry=0xc169e3c0 <notes_attr>) at fs/sysfs/bin.c:491
+491	}
+(gdb) 
+ksysfs_init () at kernel/ksysfs.c:175
+175			if (error)
+(gdb) 
+179		return 0;
+(gdb) 
+187	}
+(gdb) 
+```
 
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
