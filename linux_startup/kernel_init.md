@@ -4475,6 +4475,45 @@ ksysfs_init () at kernel/ksysfs.c:175
 (gdb) 
 ```
 
+the fourteenth one is `async_init`, it create `async_manager_thread` and wake it up
+
+the defination of `kthread_run` in include/linux/kthread.h, it's a macro which create and wake a thread.
+
+```kthread_run
+/**
+ * kthread_run - create and wake a thread.
+ * @threadfn: the function to run until signal_pending(current).
+ * @data: data ptr for @threadfn.
+ * @namefmt: printf-style name for the thread.
+ *
+ * Description: Convenient wrapper for kthread_create() followed by
+ * wake_up_process().  Returns the kthread or ERR_PTR(-ENOMEM).
+ */
+#define kthread_run(threadfn, data, namefmt, ...)			   \
+({									   \
+	struct task_struct *__k						   \
+		= kthread_create(threadfn, data, namefmt, ## __VA_ARGS__); \
+	if (!IS_ERR(__k))						   \
+		wake_up_process(__k);					   \
+	__k;								   \
+})
+```
+
+the fifteen one is `init_jiffies_clocksource`, it install clock source `clocksource_jiffies`, the clock source defined in kernel/time/jiffies.c, the clock source will be introduced in separate chapter
+
+```clocksource_jiffies
+struct clocksource clocksource_jiffies = {
+	.name		= "jiffies",
+	.rating		= 1, /* lowest valid rating*/
+	.read		= jiffies_read,
+	.mask		= 0xffffffff, /*32bits*/
+	.mult		= NSEC_PER_JIFFY << JIFFIES_SHIFT, /* details above */
+	.shift		= JIFFIES_SHIFT,
+};
+```
+
+
+
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
 * [completions - wait for completion handling](https://www.kernel.org/doc/Documentation/scheduler/completion.txt)
@@ -4485,8 +4524,9 @@ ksysfs_init () at kernel/ksysfs.c:175
 * [Introducing Linux Network Namespaces](http://blog.scottlowe.org/2013/09/04/introducing-linux-network-namespaces/)
 * [Non-volatile memory](https://en.wikipedia.org/wiki/Non-volatile_memory)
 * [nvSRAM](https://en.wikipedia.org/wiki/NvSRAM)
-* [flush](http://www.tldp.org/LDP/khg/HyperNews/get/memory/flush.html)
+* [SMP flush](http://www.tldp.org/LDP/khg/HyperNews/get/memory/flush.html)
 * [Translation lookaside buffer](https://en.wikipedia.org/wiki/Translation_lookaside_buffer)
 * [Translation Lookaside Buffer (TLB)](http://www.informit.com/articles/article.aspx?p=29961&seqNum=4)
 * [Power Management In The Linux Kernel](https://events.linuxfoundation.org/sites/events/files/slides/kernel_PM_plain.pdf)
 * [The Sysctl Interface](http://www.linux.it/~rubini/docs/sysctl/sysctl.html)
+* [Clock sources, Clock events, sched_clock() and delay timers](https://www.kernel.org/doc/Documentation/timers/timekeeping.txt)
