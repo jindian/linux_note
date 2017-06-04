@@ -4577,7 +4577,36 @@ init_jiffies_clocksource () at kernel/time/jiffies.c:70
 (gdb) 
 ```
 
-the sixteenth one is `pm_init` which is used to initialize power manager. With `CONFIG_PM_RUNTIME` disabled, the body of routine `pm_start_workqueue` invoked in `pm_init` is NULL, the routine creates work queue when `CONFIG_PM_RUNTIME` enabled. `pm_init` create kobject named `power` and create group sub folders for directory power.
+the sixteenth one is `pm_init` which is used to initialize power manager. With `CONFIG_PM_RUNTIME` disabled, the body of routine `pm_start_workqueue` invoked in `pm_init` is NULL, the routine creates work queue when `CONFIG_PM_RUNTIME` enabled. `pm_init` create kobject named `power` and create group sub folders for directory power
+
+the seventeenth one is `pm_disk_init` which create group for kobject `power_kobj` with disk specified attribute
+
+the eighteenth one is `swsusp_header_init` which allocate page for swap device
+
+the nineteenth one is `init_zero_pfn` which initialze zero page number `zero_pfn`
+
+```init_zero_pfn
+init_zero_pfn () at mm/memory.c:119
+119		zero_pfn = page_to_pfn(ZERO_PAGE(0));
+(gdb) 
+121	}
+(gdb) p zero_pfn
+$3 = 6364
+```
+
+the twentieth one is `filelock_init` which creates cache memory named `file_lock_cache`
+
+the next one `init_script_binfmt` which registers default binfmt handler for script with `script_format` as input parameter
+
+rest of routines listed here with the order it called by `do_initcalls`:
+
+`init_elf_binfmt` registers default binfmt handler for elf with `elf_format` as input parameter
+
+`debugfs_init` creates and adds kobject named `debug`, registers `debug_fs_type`, reference of debugfs could be found [here](https://en.wikipedia.org/wiki/Debugfs)
+
+The procedure of `securityfs_init` is similar with `debugfs_init`
+
+`random32_init` generates some initially weak seeding values to allow to start the random32() engine
 
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
@@ -4595,3 +4624,4 @@ the sixteenth one is `pm_init` which is used to initialize power manager. With `
 * [Power Management In The Linux Kernel](https://events.linuxfoundation.org/sites/events/files/slides/kernel_PM_plain.pdf)
 * [The Sysctl Interface](http://www.linux.it/~rubini/docs/sysctl/sysctl.html)
 * [Clock sources, Clock events, sched_clock() and delay timers](https://www.kernel.org/doc/Documentation/timers/timekeeping.txt)
+* [debugfs](https://en.wikipedia.org/wiki/Debugfs)
