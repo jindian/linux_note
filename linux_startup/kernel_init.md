@@ -4512,7 +4512,72 @@ struct clocksource clocksource_jiffies = {
 };
 ```
 
+the entire procedure of routine `init_jiffies_clocksource`, all clock source added to list `clocksource_list`
 
+```
+init_jiffies_clocksource () at kernel/time/jiffies.c:69
+69		return clocksource_register(&clocksource_jiffies);
+(gdb) s
+clocksource_register (cs=cs@entry=0xc169ee80 <clocksource_jiffies>)
+    at kernel/time/clocksource.c:562
+562		cs->max_idle_ns = clocksource_max_deferment(cs);
+(gdb) n
+564		mutex_lock(&clocksource_mutex);
+(gdb) 
+565		clocksource_enqueue(cs);
+(gdb) s
+clocksource_enqueue (cs=cs@entry=0xc169ee80 <clocksource_jiffies>)
+    at kernel/time/clocksource.c:543
+543		struct list_head *entry = &clocksource_list;
+(gdb) n
+546		list_for_each_entry(tmp, &clocksource_list, list)
+(gdb) 
+550		list_add(&cs->list, entry);
+(gdb) 
+551	}
+(gdb) 
+clocksource_register (cs=cs@entry=0xc169ee80 <clocksource_jiffies>)
+    at kernel/time/clocksource.c:566
+566		clocksource_enqueue_watchdog(cs);
+(gdb) s
+clocksource_enqueue_watchdog (cs=0xc169ee80 <clocksource_jiffies>)
+    at kernel/time/clocksource.c:304
+304		spin_lock_irqsave(&watchdog_lock, flags);
+(gdb) n
+305		if (cs->flags & CLOCK_SOURCE_MUST_VERIFY) {
+(gdb) 
+311			if (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS)
+(gdb) 
+314			if (!watchdog || cs->rating > watchdog->rating) {
+(gdb) 
+321		clocksource_start_watchdog();
+(gdb) s
+clocksource_start_watchdog () at kernel/time/clocksource.c:266
+266		if (watchdog_running || !watchdog || list_empty(&watchdog_list))
+(gdb) n
+clocksource_enqueue_watchdog (cs=0xc169ee80 <clocksource_jiffies>)
+    at kernel/time/clocksource.c:322
+322		spin_unlock_irqrestore(&watchdog_lock, flags);
+(gdb) 
+clocksource_register (cs=cs@entry=0xc169ee80 <clocksource_jiffies>)
+    at kernel/time/clocksource.c:567
+567		clocksource_select();
+(gdb) s
+clocksource_select () at kernel/time/clocksource.c:473
+473		if (!finished_booting || list_empty(&clocksource_list))
+(gdb) n
+clocksource_register (cs=cs@entry=0xc169ee80 <clocksource_jiffies>)
+    at kernel/time/clocksource.c:568
+568		mutex_unlock(&clocksource_mutex);
+(gdb) 
+570	}
+(gdb) 
+init_jiffies_clocksource () at kernel/time/jiffies.c:70
+70	}
+(gdb) 
+```
+
+the sixteenth one is `pm_init` which is used to initialize power manager. With `CONFIG_PM_RUNTIME` disabled, the body of routine `pm_start_workqueue` invoked in `pm_init` is NULL, the routine creates work queue when `CONFIG_PM_RUNTIME` enabled. `pm_init` create kobject named `power` and create group sub folders for directory power.
 
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
