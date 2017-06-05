@@ -4608,6 +4608,12 @@ The procedure of `securityfs_init` is similar with `debugfs_init`
 
 `random32_init` generates some initially weak seeding values to allow to start the random32() engine
 
+`virtio_init` registers a bus with `virtio_bus` as its input parameter
+
+`regulator_init` registers device class ragulator with `regulator_class` as its input parameter
+
+
+
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
 * [completions - wait for completion handling](https://www.kernel.org/doc/Documentation/scheduler/completion.txt)
