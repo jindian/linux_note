@@ -4612,7 +4612,13 @@ The procedure of `securityfs_init` is similar with `debugfs_init`
 
 `regulator_init` registers device class ragulator with `regulator_class` as its input parameter
 
+`cpufreq_core_init` initializes per cpu variables and create kobject `cpufreq` with kobject `cpu` as its parent
 
+`cpuidle_init` adds CPU global sysfs attributes, registers notifier for qos target `PM_QOS_CPU_DMA_LATENCY` changes
+
+`sock_init` initializes size of socket r/w memory, skbuff slab cache and socket inode slab cache, registers and mount socket file system, initialzes net filter if `CONFIG_NETFILTER` enabled
+
+`netlink_proto_init` 
 
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
