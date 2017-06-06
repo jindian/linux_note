@@ -4618,7 +4618,10 @@ The procedure of `securityfs_init` is similar with `debugfs_init`
 
 `sock_init` initializes size of socket r/w memory, skbuff slab cache and socket inode slab cache, registers and mount socket file system, initialzes net filter if `CONFIG_NETFILTER` enabled
 
-`netlink_proto_init` 
+`netlink_proto_init` initializes netlink protocal. It invokes `proto_register` to initialize `netlink_proto` which allocates cache memories and registers `netlink_proto` to list; later it initializes data used by netlink and registers netlink operations; finally does rt netlink initialization
+
+`bdi_class_init` creates `bdi` class and register the class, creates a directory in the debugfs filesystem
+
 
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
@@ -4637,3 +4640,4 @@ The procedure of `securityfs_init` is similar with `debugfs_init`
 * [The Sysctl Interface](http://www.linux.it/~rubini/docs/sysctl/sysctl.html)
 * [Clock sources, Clock events, sched_clock() and delay timers](https://www.kernel.org/doc/Documentation/timers/timekeeping.txt)
 * [debugfs](https://en.wikipedia.org/wiki/Debugfs)
+* [Netlink](https://en.wikipedia.org/wiki/Netlink)
