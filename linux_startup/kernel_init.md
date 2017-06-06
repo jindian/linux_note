@@ -4622,6 +4622,205 @@ The procedure of `securityfs_init` is similar with `debugfs_init`
 
 `bdi_class_init` creates `bdi` class and register the class, creates a directory in the debugfs filesystem
 
+`kobject_uevent_init` allocates a socket for `uevent_sock` and sets netlink flag of `NETLINK_KOBJECT_UEVENT` with `NL_NONROOT_RECV`, the procedure of socket creation:
+
+```netlink_kernel_create
+kobject_uevent_init () at lib/kobject_uevent.c:324
+324		uevent_sock = netlink_kernel_create(&init_net, NETLINK_KOBJECT_UEVENT,
+(gdb) s
+netlink_kernel_create (net=0xc1f2a8c0 <init_net>, unit=unit@entry=15, 
+    groups=groups@entry=1, input=input@entry=0x0, 
+    cb_mutex=cb_mutex@entry=0x0, module=module@entry=0x0)
+    at net/netlink/af_netlink.c:1465
+1465		BUG_ON(!nl_table);
+(gdb) 
+1467		if (unit < 0 || unit >= MAX_LINKS)
+(gdb) 
+1470		if (sock_create_lite(PF_NETLINK, SOCK_DGRAM, unit, &sock))
+(gdb) s
+sock_create_lite (family=family@entry=16, type=type@entry=2, 
+    protocol=protocol@entry=15, res=res@entry=0xc706bf74)
+    at net/socket.c:979
+981		err = security_socket_create(family, type, protocol, 1);
+(gdb) s
+security_socket_create (family=family@entry=16, type=type@entry=2, 
+    protocol=protocol@entry=15, kern=kern@entry=1)
+    at security/security.c:1011
+1011		return security_ops->socket_create(family, type, protocol, kern);
+(gdb) s
+cap_socket_create (family=16, type=2, protocol=15, kern=1)
+    at security/capability.c:598
+598	}
+(gdb) n
+security_socket_create (family=family@entry=16, type=type@entry=2, 
+    protocol=protocol@entry=15, kern=kern@entry=1)
+    at security/security.c:1012
+1012	}
+(gdb) 
+sock_create_lite (family=family@entry=16, type=type@entry=2, 
+    protocol=protocol@entry=15, res=res@entry=0xc706bf74)
+    at net/socket.c:982
+982		if (err)
+(gdb) 
+985		sock = sock_alloc();
+(gdb) s
+sock_alloc () at net/socket.c:486
+486		inode = new_inode(sock_mnt->mnt_sb);
+(gdb) n
+487		if (!inode)
+(gdb) 
+493		inode->i_mode = S_IFSOCK | S_IRWXUGO;
+(gdb) 
+494		inode->i_uid = current_fsuid();
+(gdb) 
+495		inode->i_gid = current_fsgid();
+(gdb) 
+497		percpu_add(sockets_in_use, 1);
+(gdb) 
+498		return sock;
+(gdb) 
+499	}
+(gdb) 
+sock_create_lite (family=family@entry=16, type=type@entry=2, 
+    protocol=protocol@entry=15, res=res@entry=0xc706bf74)
+    at net/socket.c:986
+986		if (!sock) {
+(gdb) 
+991		sock->type = type;
+(gdb) 
+992		err = security_socket_post_create(sock, family, type, protocol, 1);
+(gdb) s
+security_socket_post_create (sock=sock@entry=0xc6c066c0, 
+    family=family@entry=16, type=type@entry=2, protocol=protocol@entry=15, 
+    kern=kern@entry=1) at security/security.c:1017
+1017		return security_ops->socket_post_create(sock, family, type,
+(gdb) s
+cap_socket_post_create (sock=0xc6c066c0, family=16, type=2, protocol=15, 
+    kern=1) at security/capability.c:604
+604	}
+(gdb) n
+security_socket_post_create (sock=sock@entry=0xc6c066c0, 
+    family=family@entry=16, type=type@entry=2, protocol=protocol@entry=15, 
+    kern=kern@entry=1) at security/security.c:1019
+1019	}
+(gdb) 
+sock_create_lite (family=family@entry=16, type=type@entry=2, 
+    protocol=protocol@entry=15, res=res@entry=0xc706bf74)
+    at net/socket.c:993
+993		if (err)
+(gdb) 
+997		*res = sock;
+(gdb) 
+1003	}
+(gdb) 
+netlink_kernel_create (net=<optimized out>, unit=unit@entry=15, 
+    groups=groups@entry=1, input=input@entry=0x0, 
+    cb_mutex=cb_mutex@entry=0x0, module=module@entry=0x0)
+    at net/netlink/af_netlink.c:1479
+1479		if (__netlink_create(&init_net, sock, cb_mutex, unit) < 0)
+(gdb) s
+__netlink_create (net=0xc1f2a8c0 <init_net>, sock=0xc6c066c0, 
+    cb_mutex=cb_mutex@entry=0x0, protocol=protocol@entry=15)
+    at net/netlink/af_netlink.c:409
+409		sock->ops = &netlink_ops;
+(gdb) n
+411		sk = sk_alloc(net, PF_NETLINK, GFP_KERNEL, &netlink_proto);
+(gdb) 
+412		if (!sk)
+(gdb) 
+415		sock_init_data(sock, sk);
+(gdb) 
+418		if (cb_mutex)
+(gdb) 
+421			nlk->cb_mutex = &nlk->cb_def_mutex;
+(gdb) 
+422			mutex_init(nlk->cb_mutex);
+(gdb) 
+424		init_waitqueue_head(&nlk->wait);
+(gdb) 
+426		sk->sk_destruct = netlink_sock_destruct;
+(gdb) 
+427		sk->sk_protocol = protocol;
+(gdb) 
+428		return 0;
+(gdb) 
+429	}
+(gdb) 
+netlink_kernel_create (net=<optimized out>, unit=unit@entry=15, 
+    groups=groups@entry=1, input=input@entry=0x0, 
+    cb_mutex=cb_mutex@entry=0x0, module=module@entry=0x0)
+    at net/netlink/af_netlink.c:1523
+1482		sk = sock->sk;
+(gdb) 
+1485		if (groups < 32)
+(gdb) 
+1486			groups = 32;
+(gdb) 
+1488		listeners = kzalloc(NLGRPSZ(groups) + sizeof(struct listeners_rcu_head),
+(gdb) 
+1490		if (!listeners)
+(gdb) 
+1493		sk->sk_data_ready = netlink_data_ready;
+(gdb) 
+1494		if (input)
+(gdb) 
+1497		if (netlink_insert(sk, net, 0))
+(gdb) 
+1501		nlk->flags |= NETLINK_KERNEL_SOCKET;
+(gdb) 
+1503		netlink_table_grab();
+(gdb) 
+1504		if (!nl_table[unit].registered) {
+(gdb) 
+1505			nl_table[unit].groups = groups;
+(gdb) 
+1506			nl_table[unit].listeners = listeners;
+(gdb) 
+1507			nl_table[unit].cb_mutex = cb_mutex;
+(gdb) 
+1508			nl_table[unit].module = module;
+(gdb) 
+1509			nl_table[unit].registered = 1;
+(gdb) 
+1514		netlink_table_ungrab();
+(gdb) 
+1515		return sk;
+(gdb) 
+1525	}
+```
+
+`pcibus_class_init` registers and initializes `pcibus_class`
+
+`pci_driver_init` registers bus `pci_bus_type`
+
+`backlight_class_init` creates backlight class and initializes it
+
+`tty_class_init` creates tty class and initializes it
+
+`vtconsole_class_init` creates vtconsole class and creates device and initializes the device for every driver in `registered_con_driver`
+
+`spi_init` allocates memory for spi read/write buffer, registers `spi_bus_type` and creates class `spi_master_class`
+
+`i2c_init` registers bus `i2c_bus_type` and add driver for [i2c](https://www.i2c-bus.org/)
+
+`eisa_init` registers bus `eisa_bus_type`
+
+`amd_postcore_init` if vender of cpu is not AMD, ignore it
+
+`arch_kdebugfs_init` creates directory for x86 with debug filesystem and creates deubg directory and files for boot parameters if `CONFIG_DEBUG_BOOT_PARAMS` enabled
+
+`init_pit_clocksource` registers PIT clock source if needed
+
+`mtrr_if_init` create `mtrr` folder under `/proc` if supported
+
+`ffh_cstate_init` allocates per cpu variable `cpu_cstate_entry`, about cstate, it could be found [here](https://www.ibm.com/support/knowledgecenter/en/linuxonibm/liaai.cpufreq/CPUPerformanceStates.htm)
+
+`arch_init_ftrace_syscalls` allocates memory for `syscalls_metadata` array and initializes it with the meta data of every syscall
+
+`kdump_buf_page_init` allocates pages for kdump buffer
+
+
+
 
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
@@ -4641,3 +4840,6 @@ The procedure of `securityfs_init` is similar with `debugfs_init`
 * [Clock sources, Clock events, sched_clock() and delay timers](https://www.kernel.org/doc/Documentation/timers/timekeeping.txt)
 * [debugfs](https://en.wikipedia.org/wiki/Debugfs)
 * [Netlink](https://en.wikipedia.org/wiki/Netlink)
+* [i2c](https://www.i2c-bus.org/)
+* [MTRR (Memory Type Range Register) control](https://www.kernel.org/doc/Documentation/x86/mtrr.txt)
+* [CPU performance states (P-states) and CPU operating states (C-states)](https://www.ibm.com/support/knowledgecenter/en/linuxonibm/liaai.cpufreq/CPUPerformanceStates.htm)
