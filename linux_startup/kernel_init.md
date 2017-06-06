@@ -4819,8 +4819,11 @@ netlink_kernel_create (net=<optimized out>, unit=unit@entry=15,
 
 `kdump_buf_page_init` allocates pages for kdump buffer
 
+`acpi_pci_init` registers acpi bus type `acpi_pci_bus` and sets acpi platform power manager `acpi_pci_platform_pm`
 
+`dmi_id_init` allocates memory and adds device for `dmi_dev`
 
+`pci_arch_init` 
 
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
