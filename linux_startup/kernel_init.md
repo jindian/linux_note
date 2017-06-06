@@ -4823,7 +4823,17 @@ netlink_kernel_create (net=<optimized out>, unit=unit@entry=15,
 
 `dmi_id_init` allocates memory and adds device for `dmi_dev`
 
-`pci_arch_init` 
+`pci_arch_init` checks pci type and initializes `raw_pci_ops` and `raw_pci_ext_ops`, check system DMI data of `pciprobe_dmi_table` and `can_skip_pciprobe_dmi_table`
+
+`topology_init` initializes topology of cpu
+
+`mtrr_init_finialize` if CPU has no MTRR and seems to not support SMP. They have specific drivers `mtrr_sysdev_driver`, we use a tricky method to support suspend/resume for them
+
+`param_sysfs_init` creates `module_kset` and adds module_parameters to sysfs for "modules" built into the kernel
+
+`pm_sysrq_init`
+
+
 
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
