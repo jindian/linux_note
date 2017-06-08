@@ -4855,12 +4855,13 @@ netlink_kernel_create (net=<optimized out>, unit=unit@entry=15,
 
 `blk_iopoll_setup`  initializes softirq for block device iopoll
 
-`genhd_device_init`
+`genhd_device_init` initializes hard disk device
 
+`blk_dev_integrity_init` initializes block device integrity which allocate cache memory named `blkdev_integrity`
 
+`gpiolib_debugfs_init` creates `gpio` file under debugfs
 
-
-
+`pci_slot_init`
 
 
 # Links
