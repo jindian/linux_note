@@ -4831,7 +4831,35 @@ netlink_kernel_create (net=<optimized out>, unit=unit@entry=15,
 
 `param_sysfs_init` creates `module_kset` and adds module_parameters to sysfs for "modules" built into the kernel
 
-`pm_sysrq_init`
+`pm_sysrq_init` registers key and operation for power off
+
+`audit_watch_init` initializes an inotify handle with operations `audit_inotify_ops`
+
+`init_slow_work` initializes slow work facility, slow work is a thread pool implementation which can be used by kernel subsystems to run tasks which are expected to take a fair amount of time in their execution.
+
+`default_bdi_init` initializes default backing device interface synchronization, initializes default backing device info and registers it
+
+`init_bio` initializes block I/O
+
+`fsnotify_init` initializes sleep-RCU structure `fsnotify_grp_srcu` which is used to protect reads while running the fsnotify_groups list
+
+`fsnotify_notification_init` allocates caches and initializes `q_overflow_event` for fsnotify notification
+
+`cryptomgr_init` registers notify block `cryptomgr_notifier` for crypto
+ 
+`blk_settings_init` initializes frame page number limitation for block device
+
+`blk_ioc_init` allocates cache memory for block device I/O context
+
+`blk_softirq_init`  initializes softirq for block device
+
+`blk_iopoll_setup`  initializes softirq for block device iopoll
+
+`genhd_device_init`
+
+
+
+
 
 
 
@@ -4856,3 +4884,5 @@ netlink_kernel_create (net=<optimized out>, unit=unit@entry=15,
 * [i2c](https://www.i2c-bus.org/)
 * [MTRR (Memory Type Range Register) control](https://www.kernel.org/doc/Documentation/x86/mtrr.txt)
 * [CPU performance states (P-states) and CPU operating states (C-states)](https://www.ibm.com/support/knowledgecenter/en/linuxonibm/liaai.cpufreq/CPUPerformanceStates.htm)
+* [The slow work mechanism](https://lwn.net/Articles/329464/)
+* [SLOW WORK ITEM EXECUTION THREAD POOL](https://lwn.net/Articles/327186/)
