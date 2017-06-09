@@ -4861,8 +4861,25 @@ netlink_kernel_create (net=<optimized out>, unit=unit@entry=15,
 
 `gpiolib_debugfs_init` creates `gpio` file under debugfs
 
-`pci_slot_init`
+`pci_slot_init` initializes pci slot, creates `pci_slots_kset` inside this routine
 
+`fbmem_init` initializes frame buffer device, it creates folder `fb` under `/proc`, creates and registers cdev for frame buffer and creates fb class
+
+`acpi_init` initializes acpi, it creates and adds kobject and so on
+
+`dock_init` initializes dock
+
+`acpi_pci_root_init` registers `acpi_pci_root_drivers`
+
+`acpi_pci_link_init` registers `acpi_pci_link_driver`
+
+`pnp_init` registers bus `pnp_bus_type`
+
+`misc_init` creates folder `fs` under `/proc`, creates misc class and registers misc charactor device
+
+`vga_arb_device_init` registers device `vga_arb_device`, registers notifier for pci bus and adds all pci devices satisfying vga class in the arbiter by default
+
+`cn_init`, `wm8400_module_init`, `wm831x_i2c_init`, `wm8350_i2c_init`, `twl4030_init`, `ezx_pcap_init`, `da903x_init`, `ab3100_i2c_init`, `init_scsi`, `ata_init`, `nop_usb_xceiv_init`, `usb_init`, `serio_init`, `input_init`, `rtc_init`, `power_supply_class_init`, `hwmon_init`, `thermal_init`, `md_init`, `mmc_init`, `leds_init`, `pci_subsys_init`, `proto_init`, `net_dev_init`, `neigh_init`, `fib_rules_init`, `pktsched_init`, `tc_filter_init`, `tc_action_init`, `genl_init`, `cipso_v4_init`, `wireless_nlevent_init`, `netlbl_init`, `rfkill_init`, `sysctl_init`, `print_all_ICs`, `hpet_late_init`, `init_k8_nbs`, `clocksource_done_booting`, `ftrace_init_debugfs`, `rb_init_debugfs`, `tracer_init_debugfs`, `init_trace_printk_function_export`, `event_trace_init`, `init_pipe_fs`, `eventpoll_init`, `anon_inode_init`, `tomoyo_initerface_init`, `blk_scsi_ioctl_init`, `acpi_event_init`, `pnpacpi_init`, `pnp_system_init`, `chr_dev_init`, `firmware_class_init`, `cpufreq_gov_performance_init`, `init_acpi_pm_clocksource`, `pcibios_assign_resources`, `sysctl_core_init`, `inet_init`, `af_unix_init`, `pci_apply_final_quirks`, `populate_rootfs`, `pci_iommu_init`, `i8259A_init_sysfs`, `sbf_init`, `i8237A_init_sysfs`, `add_rtc_cmos`, `cache_sysfs_init`, `mce_init_device`, `threshold_init_device`, `thermal_throttle_init_device`, `speedstep_init`, `ioapic_init_sysfs`, `add_pcspkr`, `microcode_init`, `start_periodic_check_for_corruption`, `start_pageattr_test`, `pt_dump_init`, `crc32c_intel_mod_init`, `init_sched_debug_procfs`, `proc_schedstat_init`, `proc_execdomains_init`, `ioresources_init`, `uid_cache_init`, `init_posix_timers`, `init_posix_cpu_timers`, `nsproxy_cache_init`, `create_proc_profile`, `timekeeping_init_device`, `init_clocksource_sysfs`, `init_timer_list_procfs`, `init_tstats_procfs`, `lockdep_proc_init`, `futex_init`
 
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
