@@ -3685,7 +3685,7 @@ the last funtion in `do_basic_setup` is `do_initcalls` which call all init funct
 		VMLINUX_SYMBOL(__initcall_end) = .;
 ```
 
-17 functions invoked in `do_initcalls`, which is different from following debug information， it seems that more functions located in memory region between symbol `__early_initcall_end` and `__initcall_end`.
+Invokes functions located in memory region between symbol `__early_initcall_end` and `__initcall_end`.
 
 ```
 790		do_initcalls();
@@ -3707,7 +3707,7 @@ $2 = 0xc177e008 <__initcall_con_init>
 
 let's check functions invoked in `do_initcalls`:
 
-the 1st function is init_mmap_min_addr, it initializes `mmap_min_addr` which represents amount of vm to protect from userspace access by both DAC and the LSM, update mmap_min_addr = max(dac_mmap_min_addr, CONFIG_LSM_MMAP_MIN_ADDR)
+`init_mmap_min_addr` initializes `mmap_min_addr` which represents amount of vm to protect from userspace access by both DAC and the LSM, update mmap_min_addr = max(dac_mmap_min_addr, CONFIG_LSM_MMAP_MIN_ADDR)
 
 ```init_mmap_min_addr
 (gdb) n
@@ -3748,7 +3748,7 @@ do_one_initcall (fn=0xc1718601 <init_mmap_min_addr>) at init/main.c:730
 (gdb) 
 ```
 
-the second one is `init_cpufreq_transition_notifier_list`, it initializes an [SRCU](https://lwn.net/Articles/202847/) notifier head with `cpufreq_transition_notifier_list` as input parameter and set the flag which indicates if `init_cpufreq_transition_notifier_list` is called as true. The "transition" list for kernel code that needs to handle changes to devices when the CPU clock speed changes.
+`init_cpufreq_transition_notifier_list` initializes an [SRCU](https://lwn.net/Articles/202847/) notifier head with `cpufreq_transition_notifier_list` as input parameter and set the flag which indicates if `init_cpufreq_transition_notifier_list` is called as true. The "transition" list for kernel code that needs to handle changes to devices when the CPU clock speed changes.
 
 ```init_cpufreq_transition_notifier_list
 init_cpufreq_transition_notifier_list () at drivers/cpufreq/cpufreq.c:127
@@ -3788,7 +3788,7 @@ init_cpufreq_transition_notifier_list () at drivers/cpufreq/cpufreq.c:128
 (gdb) 
 ```
 
-the third one is `net_ns_init`, it's used to initialize [network namespace](https://lwn.net/Articles/580893/) as the function name imply
+`net_ns_init` is used to initialize [network namespace](https://lwn.net/Articles/580893/) as the function name imply
 
 ```net_ns_init
 net_ns_init () at net/core/net_namespace.c:240
@@ -3819,7 +3819,7 @@ net_ns_init () at net/core/net_namespace.c:251
 257	}
 ```
 
-the fourth one is `e820_mark_nvs_memory`, non-volatile storage is a type of computer memory that can retrieve stored information even after having been power cycled (turned off and back on), `e820_mark_nvs_memory` marks ACPI NVS memory region, so that we can save/restore it during hibernation and the subsequent resume, it loops e820 memory map, if type of a specific memory region is `E820_NVS`, registers platform NVS memory region to save
+`e820_mark_nvs_memory`, non-volatile storage is a type of computer memory that can retrieve stored information even after having been power cycled (turned off and back on), `e820_mark_nvs_memory` marks ACPI NVS memory region, so that we can save/restore it during hibernation and the subsequent resume, it loops e820 memory map, if type of a specific memory region is `E820_NVS`, registers platform NVS memory region to save
 
 ```e820_mark_nvs_memory
 e820_mark_nvs_memory () at arch/x86/kernel/e820.c:712
@@ -3841,7 +3841,7 @@ $6 = 8
 (gdb) 
 ```
 
-the fifth one is `cpufreq_tsc`, it checks if cpu has tsc feature and if TSC ticks at a constant rate in boot cpu, registers norifier  block for cpu clock rate changes.
+`cpufreq_tsc`, it checks if cpu has tsc feature and if TSC ticks at a constant rate in boot cpu, registers norifier  block for cpu clock rate changes.
 
 ```
 cpufreq_tsc () at arch/x86/kernel/tsc.c:730
@@ -3880,7 +3880,7 @@ cpufreq_tsc () at arch/x86/kernel/tsc.c:737
 (gdb) 
 ```
 
-the sixth one is `pci_reboot_init`, it walk through table `pci_reboot_dmi_table`, check if dmi of current system match one of the items in the table, if yes, set reboot type and reboot.
+`pci_reboot_init`, it walks through table `pci_reboot_dmi_table`, check if dmi of current system match one of the items in the table, if yes, set reboot type and reboot.
 
 ```pci_reboot_init
 pci_reboot_init () at arch/x86/kernel/reboot.c:485
@@ -3999,7 +3999,7 @@ pci_reboot_init () at arch/x86/kernel/reboot.c:487
 (gdb) 
 ```
 
-the seventh one is `reboot_init`, the procedure of this routine is similar with `pci_reboot_init` except the table in the routine is `reboot_dmi_table` instead of `pci_reboot_dmi_table`, the defination of table `pci_reboot_init` could be found in line 137 of file arch/x86/kernel/reboot.c, if dmi of current system match any items in the table, invoke `set_bios_reboot` which set the reboot type with `BOOT_BIOS` selecting BIOS-method for reboots.
+`reboot_init`, the procedure of this routine is similar with `pci_reboot_init` except the table in the routine is `reboot_dmi_table` instead of `pci_reboot_dmi_table`, the defination of table `pci_reboot_init` could be found in line 137 of file arch/x86/kernel/reboot.c, if dmi of current system match any items in the table, invoke `set_bios_reboot` which set the reboot type with `BOOT_BIOS` selecting BIOS-method for reboots.
 
 the eighth one is `init_lapic_sysfs`, as the function imply, it initialize local apic filesystem
 
@@ -4069,7 +4069,7 @@ init_lapic_sysfs () at arch/x86/kernel/apic/apic.c:2169
 (gdb) 
 ```
 
-the nineth one is `init_smp_flush`, it initialze spin lock of every smp_flush_state item of array `flush_state`.
+`init_smp_flush`, it initialzes spin lock of every smp_flush_state item of array `flush_state`.
 
 some reference of TLB flush could be found in [Translation lookaside buffer](https://en.wikipedia.org/wiki/Translation_lookaside_buffer):
 
@@ -4081,7 +4081,7 @@ For example, in the Alpha 21264, each TLB entry is tagged with an "address space
 While selective flushing of the TLB is an option in software managed TLBs, the only option in some hardware TLBs (for example, the TLB in the Intel 80386) is the complete flushing of the TLB on an address space switch. Other hardware TLBs (for example, the TLB in the Intel 80486 and later x86 processors, and the TLB in ARM processors) allow the flushing of individual entries from the TLB indexed by virtual address.
 ```
 
-the tenth one is `cpu_hotplug_pm_sync_init`, it register notifier function for cpu hotplug
+`cpu_hotplug_pm_sync_init`, it registers notifier function for cpu hotplug
 
 ```cpu_hotplug_pm_sync_init
 cpu_hotplug_pm_sync_init () at kernel/cpu.c:514
@@ -4123,11 +4123,11 @@ cpu_hotplug_pm_sync_init () at kernel/cpu.c:516
 (gdb) 
 ```
 
-the eleventh one is `alloc_frozen_cpus`, it allocates cpu mask for frozen/slept cpu because of power management
+`alloc_frozen_cpus`, it allocates cpu mask for frozen/slept cpu because of power management
 
-the twelfth one is `sysctl_init`, it set parent for `root_table` and its child table
+`sysctl_init`, it sets parent for `root_table` and its child table
 
-the thirteenth one is `ksysfs_init`, in the initialization it create directory name `kernel` and files under the directory
+`ksysfs_init`, in the initialization it creates directory name `kernel` and files under the directory
 
 ```ksysfs_init
 ksysfs_init () at kernel/ksysfs.c:163
@@ -4475,7 +4475,7 @@ ksysfs_init () at kernel/ksysfs.c:175
 (gdb) 
 ```
 
-the fourteenth one is `async_init`, it create `async_manager_thread` and wake it up
+`async_init`, it creates `async_manager_thread` and wake it up
 
 the defination of `kthread_run` in include/linux/kthread.h, it's a macro which create and wake a thread.
 
@@ -4499,7 +4499,7 @@ the defination of `kthread_run` in include/linux/kthread.h, it's a macro which c
 })
 ```
 
-the fifteen one is `init_jiffies_clocksource`, it install clock source `clocksource_jiffies`, the clock source defined in kernel/time/jiffies.c, the clock source will be introduced in separate chapter
+`init_jiffies_clocksource`, it installs clock source `clocksource_jiffies`, the clock source defined in kernel/time/jiffies.c, the clock source will be introduced in separate chapter
 
 ```clocksource_jiffies
 struct clocksource clocksource_jiffies = {
@@ -4577,13 +4577,13 @@ init_jiffies_clocksource () at kernel/time/jiffies.c:70
 (gdb) 
 ```
 
-the sixteenth one is `pm_init` which is used to initialize power manager. With `CONFIG_PM_RUNTIME` disabled, the body of routine `pm_start_workqueue` invoked in `pm_init` is NULL, the routine creates work queue when `CONFIG_PM_RUNTIME` enabled. `pm_init` create kobject named `power` and create group sub folders for directory power
+`pm_init` which is used to initialize power manager. With `CONFIG_PM_RUNTIME` disabled, the body of routine `pm_start_workqueue` invoked in `pm_init` is NULL, the routine creates work queue when `CONFIG_PM_RUNTIME` enabled. `pm_init` create kobject named `power` and create group sub folders for directory power
 
-the seventeenth one is `pm_disk_init` which create group for kobject `power_kobj` with disk specified attribute
+`pm_disk_init` which creates group for kobject `power_kobj` with disk specified attribute
 
-the eighteenth one is `swsusp_header_init` which allocate page for swap device
+`swsusp_header_init` which allocates page for swap device
 
-the nineteenth one is `init_zero_pfn` which initialze zero page number `zero_pfn`
+`init_zero_pfn` which initialzes zero page number `zero_pfn`
 
 ```init_zero_pfn
 init_zero_pfn () at mm/memory.c:119
@@ -4594,7 +4594,7 @@ init_zero_pfn () at mm/memory.c:119
 $3 = 6364
 ```
 
-the twentieth one is `filelock_init` which creates cache memory named `file_lock_cache`
+`filelock_init` which creates cache memory named `file_lock_cache`
 
 the next one `init_script_binfmt` which registers default binfmt handler for script with `script_format` as input parameter
 
@@ -4907,7 +4907,11 @@ Breakpoint 3, do_one_initcall (fn=0xc1722fcf <init>) at init/main.c:716
     at arch/x86/kernel/entry_32.S:1000
 ```
 
-`hpet_init`, `agp_init`, `agp_amdk7_init`, `agp_amd64_init`, `agp_intel_init`, `agp_nvidia_init`, `agp_via_init`, `init_tis`, `cn_proc_init`, `serial8250_init`, `serial8250_pnp_init`, `serial8250_pci_init`, `isa_bus_init`, `topology_sysfs_init`, `brd_init`, `loop_init`, `scsi_dh_init`, `init_sd`, `init_sr`, `init_sg`, `piix_init`, `sis_init`, `ata_generic_init`, `net_olddevs_init`, `ppp_init`, `tun_init`, `cdrom_init`, `ehci_hcd_init`, `ohci_hcd_mod_init`, `uhci_hcd_init`, `i8042_init`, `mousedev_init`, `evdev_init`, `atkbd_init`, `uinput_init`, `cmos_init`, `i2c_dev_init`, `dm_init`, `pci_eisa_init_module`, `virtual_eisa_root_init`, `cpufreq_stats_init`, `cpufreq_gov_powersave_init`, `cpufreq_gov_userspace_init`, `cpufreq_gov_dbs_init`, `cpufreq_gov_dbs_init`, `init_ladder`, `init_menu`, `efivars_init`, `staging_init`, `flow_cache_init`, `blackhole_module_init`, `sysctl_ipv4_init`, `init_syncookies`, `ipv4_netfilter_init`, `cubictcp_register`
+`hpet_init`, `agp_init`, `agp_amdk7_init`, `agp_amd64_init`, `agp_intel_init`, `agp_nvidia_init`, `agp_via_init`, `init_tis`, `cn_proc_init`, `serial8250_init`, `serial8250_pnp_init`, `serial8250_pci_init`, `isa_bus_init`, `topology_sysfs_init`, `brd_init`, `loop_init`, `scsi_dh_init`, `init_sd`, `init_sr`, `init_sg`, `piix_init`, `sis_init`, `ata_generic_init`, `net_olddevs_init`, `ppp_init`, `tun_init`, `cdrom_init`, `ehci_hcd_init`, `ohci_hcd_mod_init`, `uhci_hcd_init`, `i8042_init`, `mousedev_init`, `evdev_init`, `atkbd_init`, `uinput_init`, `cmos_init`, `i2c_dev_init`, `dm_init`, `pci_eisa_init_module`, `virtual_eisa_root_init`, `cpufreq_stats_init`, `cpufreq_gov_powersave_init`, `cpufreq_gov_userspace_init`, `cpufreq_gov_dbs_init`, `cpufreq_gov_dbs_init`, `init_ladder`, `init_menu`, `efivars_init`, `staging_init`, `flow_cache_init`, `blackhole_module_init`, `sysctl_ipv4_init`, `init_syncookies`, `ipv4_netfilter_init`, `cubictcp_register`, `inet6_init`, `packet_init`, `dcbnl_init`, `mce_debugfs_init`, `severities_debugfs_init`, `powernowk8_init`, `acpi_cpufreq_init`, `centrino_init`, `hpet_insert_resource`, `update_mp_table`, `lapic_insert_resource`, `print_ipi_mode`, `init_lapic_nmi_sysfs`, `io_apic_bug_finalize`, `check_early_ioremap_leak`, `pat_memtype_list_init`, `sched_init_debug`, `init_oops_id`, `disable_boot_consoles`, `pm_qos_power_init`, `software_resume`, `debugfs_kprobe_init`, `taskstats_init`, `clear_boot_tracer`, `fail_page_alloc_debugfs`, `max_swapfiles_check`, `failslab_debugfs_init`, `init_ima`, `fail_make_request_debugfs`, `fail_io_timeout_debugfs`, `random32_reseed`, `pci_resource_alignment_sysfs_init`, `pci_sysfs_init`, `regulator_init_complete`, `random_int_secret_init`, `scsi_complete_async_scans`, `rtc_hctosys`, `edd_init`, `memmap_init`, `pci_mmcfg_late_insert_resources`, `net_secret_init`, `tcp_congestion_default`, `initialize_hashrnd`
+
+That's all of the init funtions invoked in `do_initcalls`
+
+
 
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
