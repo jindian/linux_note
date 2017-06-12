@@ -4936,7 +4936,7 @@ free init memory, unlock kernel, the lock invoked in the beginning of `kernel_in
 	system_state = SYSTEM_RUNNING;
 ```
 
-MNMA configuration is disabled in my enviroment, ignore `numa_default_policy`, open `/dev/console`
+MNMA configuration is disabled in my enviroment, ignore `numa_default_policy`, open `/dev/console`, its fd is 0, map the file `/dev/console` to 1 and 2 seperately with invoking `sys_dup` twice, it's the source of stdout, stdin and stderr
 
 ```
 	numa_default_policy();
@@ -4976,14 +4976,14 @@ sys_open (filename=filename@entry=0xc15c52bb "/dev/console",
 1064	}
 (gdb) 
 		printk(KERN_WARNING "Warning: unable to open an initial console.\n");
+
+	(void) sys_dup(0);
+	(void) sys_dup(0);
 ```
 
 
 
 ```
-	(void) sys_dup(0);
-	(void) sys_dup(0);
-
 	current->signal->flags |= SIGNAL_UNKILLABLE;
 
 	if (ramdisk_execute_command) {
