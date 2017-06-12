@@ -5047,3 +5047,5 @@ and the defination of the macro `SIGNAL_UNKILLABLE`
 * [The slow work mechanism](https://lwn.net/Articles/329464/)
 * [SLOW WORK ITEM EXECUTION THREAD POOL](https://lwn.net/Articles/327186/)
 * [An asynchronous function call infrastructure](https://lwn.net/Articles/314808/)
+* [why you can't kill init](https://flossstuff.wordpress.com/2013/08/16/why-you-cant-kill-init/)
+
