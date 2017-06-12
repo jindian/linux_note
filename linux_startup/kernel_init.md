@@ -4917,6 +4917,102 @@ That's all of the init funtions invoked in `do_initcalls`
 
 * The final function invoked in `kernel_init`: `init_post`
 
+wait for all asynchronous functions to complete, async_synchronize_full returns when there are no asynchronous function calls in the system. Of course, another one could always be submitted immediately thereafter. [An asynchronous function call infrastructure](https://lwn.net/Articles/314808/)
+
+```
+static noinline int init_post(void)
+	__releases(kernel_lock)
+{
+	/* need to finish all async __init code before freeing the memory */
+	async_synchronize_full();
+```
+
+free init memory, unlock kernel, the lock invoked in the beginning of `kernel_init`, mark kernel code and kernel read-only data section memory with write protecting, update the `system_state`
+
+```
+	free_initmem();
+	unlock_kernel();
+	mark_rodata_ro();
+	system_state = SYSTEM_RUNNING;
+```
+
+MNMA configuration is disabled in my enviroment, ignore `numa_default_policy`, open `/dev/console`
+
+```
+	numa_default_policy();
+
+	if (sys_open((const char __user *) "/dev/console", O_RDWR, 0) < 0)
+sys_open (filename=filename@entry=0xc15c52bb "/dev/console", 
+    flags=flags@entry=2, mode=mode@entry=0) at fs/open.c:1060
+1060		ret = do_sys_open(AT_FDCWD, filename, flags, mode);
+(gdb) s
+do_sys_open (dfd=dfd@entry=-100, 
+    filename=filename@entry=0xc15c52bb "/dev/console", 
+    flags=flags@entry=2, mode=mode@entry=0) at fs/open.c:1032
+1032	{
+(gdb) n
+1033		char *tmp = getname(filename);
+(gdb) 
+1036		if (!IS_ERR(tmp)) {
+(gdb) 
+1037			fd = get_unused_fd_flags(flags);		# allocate file descriptor
+(gdb) 
+1038			if (fd >= 0) {
+(gdb) 
+1039				struct file *f = do_filp_open(dfd, tmp, flags, mode, 0);
+(gdb) 
+1040				if (IS_ERR(f)) {
+(gdb) 
+1044					fsnotify_open(f->f_path.dentry);
+(gdb) 
+1045					fd_install(fd, f);		# map fd and file
+(gdb) 
+1048			putname(tmp);
+(gdb) 
+1051	}
+(gdb) 
+sys_open (filename=filename@entry=0xc15c52bb "/dev/console", 
+    flags=flags@entry=2, mode=mode@entry=0) at fs/open.c:1064
+1064	}
+(gdb) 
+		printk(KERN_WARNING "Warning: unable to open an initial console.\n");
+```
+
+
+
+```
+	(void) sys_dup(0);
+	(void) sys_dup(0);
+
+	current->signal->flags |= SIGNAL_UNKILLABLE;
+
+	if (ramdisk_execute_command) {
+		run_init_process(ramdisk_execute_command);
+		printk(KERN_WARNING "Failed to execute %s\n",
+				ramdisk_execute_command);
+	}
+
+	/*
+	 * We try each of these until one succeeds.
+	 *
+	 * The Bourne shell can be used instead of init if we are
+	 * trying to recover a really broken machine.
+	 */
+	if (execute_command) {
+		run_init_process(execute_command);
+		printk(KERN_WARNING "Failed to execute %s.  Attempting "
+					"defaults...\n", execute_command);
+	}
+	run_init_process("/sbin/init");
+	run_init_process("/etc/init");
+	run_init_process("/bin/init");
+	run_init_process("/bin/sh");
+
+	panic("No init found.  Try passing init= option to kernel.");
+}
+
+```
+
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
 * [completions - wait for completion handling](https://www.kernel.org/doc/Documentation/scheduler/completion.txt)
@@ -4940,3 +5036,4 @@ That's all of the init funtions invoked in `do_initcalls`
 * [CPU performance states (P-states) and CPU operating states (C-states)](https://www.ibm.com/support/knowledgecenter/en/linuxonibm/liaai.cpufreq/CPUPerformanceStates.htm)
 * [The slow work mechanism](https://lwn.net/Articles/329464/)
 * [SLOW WORK ITEM EXECUTION THREAD POOL](https://lwn.net/Articles/327186/)
+* [An asynchronous function call infrastructure](https://lwn.net/Articles/314808/)
