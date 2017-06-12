@@ -4981,11 +4981,21 @@ sys_open (filename=filename@entry=0xc15c52bb "/dev/console",
 	(void) sys_dup(0);
 ```
 
-
+mark the init process as unkillable, we can find the answer [why you can't kill init](https://flossstuff.wordpress.com/2013/08/16/why-you-cant-kill-init/)
 
 ```
 	current->signal->flags |= SIGNAL_UNKILLABLE;
+```
 
+and the defination of the macro `SIGNAL_UNKILLABLE`
+
+```
+#define SIGNAL_UNKILLABLE	0x00000040 /* for init: ignore fatal signals */
+```
+
+
+
+```
 	if (ramdisk_execute_command) {
 		run_init_process(ramdisk_execute_command);
 		printk(KERN_WARNING "Failed to execute %s\n",
