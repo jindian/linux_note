@@ -4911,7 +4911,11 @@ Breakpoint 3, do_one_initcall (fn=0xc1722fcf <init>) at init/main.c:716
 
 That's all of the init funtions invoked in `do_initcalls`
 
+* Check if there is user specified init path exists, if yes, do the rest of the initialization. If not, use the default path `/init` to continue.
 
+* Try to access the init path, find the dentry from init path.
+
+* The final function invoked in `kernel_init`: `init_post`
 
 # Links
 * [Optimizing preemption](https://lwn.net/Articles/563185/)
