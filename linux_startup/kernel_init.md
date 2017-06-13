@@ -4993,15 +4993,35 @@ and the defination of the macro `SIGNAL_UNKILLABLE`
 #define SIGNAL_UNKILLABLE	0x00000040 /* for init: ignore fatal signals */
 ```
 
-
+In `kernel_execve` it's extend inline assembly which finally calls `sys_execve`
 
 ```
 	if (ramdisk_execute_command) {
 		run_init_process(ramdisk_execute_command);
+(gdb) s
+run_init_process (init_filename=0xc15c52f0 "/init") at init/main.c:804
+804		kernel_execve(init_filename, argv_init, envp_init);
+(gdb) s
+803		argv_init[0] = init_filename;
+(gdb) n
+804		kernel_execve(init_filename, argv_init, envp_init);
+(gdb) s
+kernel_execve (filename=0xc15c52f0 "/init", 
+    argv=argv@entry=0xc1694240 <argv_init>, 
+    envp=envp@entry=0xc16941a0 <envp_init>)
+    at arch/x86/kernel/sys_i386_32.c:217
+217	{
+(gdb) n
+219		asm volatile ("push %%ebx ; movl %2,%%ebx ; int $0x80 ; pop %%ebx"
+
 		printk(KERN_WARNING "Failed to execute %s\n",
 				ramdisk_execute_command);
 	}
+```
 
+
+
+```
 	/*
 	 * We try each of these until one succeeds.
 	 *
@@ -5048,4 +5068,5 @@ and the defination of the macro `SIGNAL_UNKILLABLE`
 * [SLOW WORK ITEM EXECUTION THREAD POOL](https://lwn.net/Articles/327186/)
 * [An asynchronous function call infrastructure](https://lwn.net/Articles/314808/)
 * [why you can't kill init](https://flossstuff.wordpress.com/2013/08/16/why-you-cant-kill-init/)
+* [GCC-Inline-Assembly](http://www.ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html)
 
