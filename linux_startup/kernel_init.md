@@ -4993,7 +4993,7 @@ and the defination of the macro `SIGNAL_UNKILLABLE`
 #define SIGNAL_UNKILLABLE	0x00000040 /* for init: ignore fatal signals */
 ```
 
-In `kernel_execve` it's extend inline assembly which finally calls `sys_execve`
+execute init script `/init`
 
 ```
 	if (ramdisk_execute_command) {
@@ -5019,7 +5019,7 @@ kernel_execve (filename=0xc15c52f0 "/init",
 	}
 ```
 
-
+if no `/init`, execute other script
 
 ```
 	/*
