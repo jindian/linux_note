@@ -167,6 +167,6 @@ struct task_struct *kthread_create(int (*threadfn)(void *data),
 EXPORT_SYMBOL(kthread_create);
 ```
 
-#Links
+# Links
 
 * [x86 registers](http://www.eecg.toronto.edu/~amza/www.mindsec.com/files/x86regs.html)
