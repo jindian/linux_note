@@ -76,12 +76,12 @@ int kthreadd(void *unused)
 
 	for (;;) {
 		set_current_state(TASK_INTERRUPTIBLE);
-		if (list_empty(&kthread_create_list))
+		if (list_empty(&kthread_create_list))			# if no kthread to create, swap out let other thread to execute
 			schedule();
 		__set_current_state(TASK_RUNNING);
 
 		spin_lock(&kthread_create_lock);
-		while (!list_empty(&kthread_create_list)) {
+		while (!list_empty(&kthread_create_list)) {		# create all kthreads in list
 			struct kthread_create_info *create;
 
 			create = list_entry(kthread_create_list.next,
@@ -90,6 +90,13 @@ int kthreadd(void *unused)
 			spin_unlock(&kthread_create_lock);
 
 			create_kthread(create);
+(gdb) s
+create_kthread (create=0xc706bf14) at kernel/kthread.c:89
+89		pid = kernel_thread(kthread, create, CLONE_FS | CLONE_FILES | SIGCHLD);
+(gdb) n
+90		if (pid < 0) {
+(gdb) 
+kthreadd (unused=<optimized out>) at kernel/kthread.c:209
 
 			spin_lock(&kthread_create_lock);
 		}
@@ -99,3 +106,67 @@ int kthreadd(void *unused)
 	return 0;
 }
 ```
+
+invoke `kthread_create` to create kthread, in which it add create thread information to list `kthread_create_list` and wake up kthreadd to create kernel thread.
+
+```kthread_create
+/**
+ * kthread_create - create a kthread.
+ * @threadfn: the function to run until signal_pending(current).
+ * @data: data ptr for @threadfn.
+ * @namefmt: printf-style name for the thread.
+ *
+ * Description: This helper function creates and names a kernel
+ * thread.  The thread will be stopped: use wake_up_process() to start
+ * it.  See also kthread_run(), kthread_create_on_cpu().
+ *
+ * When woken, the thread will run @threadfn() with @data as its
+ * argument. @threadfn() can either call do_exit() directly if it is a
+ * standalone thread for which noone will call kthread_stop(), or
+ * return when 'kthread_should_stop()' is true (which means
+ * kthread_stop() has been called).  The return value should be zero
+ * or a negative error number; it will be passed to kthread_stop().
+ *
+ * Returns a task_struct or ERR_PTR(-ENOMEM).
+ */
+struct task_struct *kthread_create(int (*threadfn)(void *data),
+				   void *data,
+				   const char namefmt[],
+				   ...)
+{
+	struct kthread_create_info create;
+
+	create.threadfn = threadfn;
+	create.data = data;
+	init_completion(&create.done);
+
+	spin_lock(&kthread_create_lock);
+	list_add_tail(&create.list, &kthread_create_list);
+	spin_unlock(&kthread_create_lock);
+
+	wake_up_process(kthreadd_task);
+	wait_for_completion(&create.done);
+
+	if (!IS_ERR(create.result)) {
+		struct sched_param param = { .sched_priority = 0 };
+		va_list args;
+
+		va_start(args, namefmt);
+		vsnprintf(create.result->comm, sizeof(create.result->comm),
+			  namefmt, args);
+		va_end(args);
+		/*
+		 * root may have changed our (kthreadd's) priority or CPU mask.
+		 * The kernel thread should not inherit these properties.
+		 */
+		sched_setscheduler_nocheck(create.result, SCHED_NORMAL, &param);
+		set_cpus_allowed_ptr(create.result, cpu_all_mask);
+	}
+	return create.result;
+}
+EXPORT_SYMBOL(kthread_create);
+```
+
+#Links
+
+* [x86 registers](http://www.eecg.toronto.edu/~amza/www.mindsec.com/files/x86regs.html)
