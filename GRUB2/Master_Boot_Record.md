@@ -1,8 +1,12 @@
 # MBR\(Master Boot Record\)
 
-MBR is part of grub2, it installed in the first sector of disk image. After BIOS initialization, MBR loaded to memory at address 0x7c00
+# _What is MBR?_
 
-## Memory deloyment of MBR
+MBR\(Master Boot Record\) is part of grub2, the hardware of hour emulator is i386, the code of MBR located in directory `grub-core/boot/i386/pc/boot.S`,  it installed in the first sector of disk image, after BIOS initialized, MBR loaded to memory at address 0x7c00.
+
+We will not discuss what happen after you push power button and BIOS initialization, you can reference [linux-inside](https://www.gitbook.com/book/0xax/linux-insides/details) if you have instresting for this part.
+
+Memory deployment of address 0x7c00 length 512:
 
 ```shell
 0x7c00          +----------------------+
@@ -18,7 +22,7 @@ MBR is part of grub2, it installed in the first sector of disk image. After BIOS
                 +----------------------+
 ```
 
-**grub-core\/boot\/i386\/pc\/boot.S**
+Part of assembly code of MBR:`grub-core/boot/i386/pc/boot.S`
 
 ```assembly
 .globl _start, start;
@@ -54,10 +58,9 @@ start:
 
 /* the last 2 bytes in the sector 0 contain the signature */
  .word GRUB_BOOT_MACHINE_SIGNATURE
-
 ```
 
-**include\/grub\/i386\/pc\/boot.h**
+MACROs used in above assembly code:`include/grub/i386/pc/boot.h`
 
 ```
 #define GRUB_BOOT_MACHINE_PART_START 0x1be
@@ -65,7 +68,148 @@ start:
 #define GRUB_BOOT_MACHINE_SIGNATURE  0xaa55
 ```
 
-## What MBR do?
+The boot signature of MBR must be 0xaa55, otherwise the signature checking will be failed when loading MBR to memory. Below code is a sample of simple MBR, it's used to verify boot signature.
+
+test\_boot\_signature\_only.S
+
+```
+.code16                #Generate 16bits real mode code
+.text                #Code section
+
+    .global _start;        #Code entry
+_start:
+    #Print 'H'
+    movb $'H', %al
+    movb $0x0e, %ah
+    int $0x10
+
+    #Print 'e'
+    movb $'e', %al
+    movb $0x0e, %ah
+    int $0x10
+
+    #Print 'l'
+    movb $'l', %al
+    movb $0x0e, %ah
+    int $0x10
+
+    #Print 'l'
+    movb $'l', %al
+    movb $0x0e, %ah
+    int $0x10
+
+    #Print 'o'
+    movb $'o', %al
+    movb $0x0e, %ah
+    int $0x10
+
+    #Print ','
+    movb $',', %al
+    movb $0x0e, %ah
+    int $0x10
+
+    #Print ' '
+    movb $' ', %al
+    movb $0x0e, %ah
+    int $0x10
+
+    #Print 'W'
+    movb $'W', %al
+    movb $0x0e, %ah
+    int $0x10
+
+    #Print 'o'
+    movb $'o', %al
+    movb $0x0e, %ah
+    int $0x10
+
+    #Print 'r'
+    movb $'r', %al
+    movb $0x0e, %ah
+    int $0x10
+
+    #Print 'l'
+    movb $'l', %al
+    movb $0x0e, %ah
+    int $0x10
+
+    #Print 'd'
+    movb $'d', %al
+    movb $0x0e, %ah
+    int $0x10
+
+    #Print '!'
+    movb $'!', %al
+    movb $0x0e, %ah
+    int $0x10
+
+    .byte 0x55        #boot signature
+    .byte 0xaa        #boot signat
+```
+
+Compile the assembly code:
+
+```
+as test_boot_signature_only.S -o test_boot_signature_only.o
+```
+
+Link the object file, instruct link to map MBR at address 0x7c00
+
+```
+ld -Ttext 0x7c00 --oformat=binary test_boot_signature_only.o -o test_boot_signature_only.bin
+```
+
+Create a flopy and copy the executable code to it
+
+floppy\_creator.sh
+
+```
+#!/bin/bash
+
+
+if [[ $1 == "" ]]
+then
+    echo "Select executable please!!"
+    exit 1
+fi
+
+# To create a floppy disk image to 1.4mb size
+dd if=/dev/zero of=floppy.img bs=512 count=2880
+
+# To copy the code to the boot sector of the floppy disk image file
+dd if=$1 of=floppy.img#!/bin/bash
+
+
+if [[ $1 == "" ]]
+then
+    echo "Select executable please!!"
+    exit 1
+fi
+
+# To create a floppy disk image to 1.4mb size
+dd if=/dev/zero of=floppy.img bs=512 count=2880
+
+# To copy the code to the boot sector of the floppy disk image file
+dd if=$1 of=floppy.img
+```
+
+With qemu to boot from floppy
+
+```
+qemu-system-i386 -fda floppy.img -boot a
+```
+
+The expect result
+
+![](/assets/correct_boot_signaturepng.png)
+
+If boot signature is not \`0x55aa\`, let's check the result again
+
+![](/assets/incorrect_boot_signature.png)
+
+After failed to boot from floppy because of the failure when checking boot signature, qemu tried to boot from DVD/CD, etc ... until it found no bootable device.
+
+## _What does MBR do?_
 
 Copy grub kernel and jump to it continue the boot process
 
@@ -110,11 +254,9 @@ start:
 
         . = _start + GRUB_BOOT_MACHINE_BPB_START
         . = _start + 4
-
-
 ```
 
-BIOS saves boot device type in register dl, for HDD dl set as 0x80.
+BIOS saves boot device type in register dl, for HDD dl set as 0x80.  
 Value of register dl\(0x80\) shown in following debug information, jump to 0x7c74 after bitwise AND with 0x70 with result of ZF set as 0.
 
 ```assembly
@@ -165,7 +307,6 @@ boot_drive_check:
          * jump to 07C0:0000 instead of 0000:7C00.
          */
         ljmp    $0, $real_start
-
 ```
 
 In address 0x7c74, long jump to next instruction
@@ -228,7 +369,7 @@ real_start:
 
 Save driver reference and print notification message. Check Extensions Present using BIOS interrupt and check the result. The result shown in debug information. We come to lba\_mode finally.
 
-INT 13h AH=41h: Check Extensions Present:
+INT 13h AH=41h: Check Extensions Present:  
 ![](INT13H_AH41H.png)
 
 ```assembly
@@ -305,10 +446,9 @@ grub-core/boot/i386/pc/boot.S:149
 
         andw    $1, %cx
         jz      LOCAL(chs_mode)
-
 ```
 
-Prepare DAP\(disk address packet\) and read source from drive. Carry flag doesn't set, read successfully. Jump to 0x7d54, copy buff.
+Prepare DAP\(disk address packet\) and read source from drive. Carry flag doesn't set, read successfully. Jump to 0x7d54, copy buff.  
 ![](INT13H_AH42H.png)
 
 ```assembly
@@ -378,7 +518,6 @@ lba_mode:
 
         movw    $GRUB_BOOT_MACHINE_BUFFER_SEG, %bx
         jmp     LOCAL(copy_buffer)
-
 ```
 
 Copy 512 bytes grub kernel to address 0x8000, jump to 0x8000
@@ -441,6 +580,9 @@ LOCAL(copy_buffer):
 
 ## Links:
 
+* [MBR\(Master boot record\)](https://en.wikipedia.org/wiki/Master_boot_record)
 * [BIOS interrupt INT13H](https://en.wikipedia.org/wiki/INT_13H)
 * [LBA and CHS](https://en.wikipedia.org/wiki/Logical_block_addressing)
+
+
 

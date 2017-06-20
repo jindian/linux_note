@@ -36,8 +36,8 @@
   * [start\_kernel part X](/linux_startup/start_kernel_part_X.md)
   * [start\_kernel part XI](/linux_startup/start_kernel_part_XI.md)
   * [rest of kernel initialization](/linux_startup/rest_kernel_initialization.md)
-  * [kthreadd](/linux_startup/kthreadd.md)
-  * [kernel_init](/linux_startup/kernel_init.md)
+  * [kernel\_init](/linux_startup/kernel_init.md)
+  * [ktreadd](/linux_startup/kthreadd.md)
 
 
 
