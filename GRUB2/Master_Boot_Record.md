@@ -159,7 +159,7 @@ Link the object file, instruct link to map MBR at address 0x7c00
 ld -Ttext 0x7c00 --oformat=binary test_boot_signature_only.o -o test_boot_signature_only.bin
 ```
 
-Create a flopy and copy the executable code to it
+Create a floppy and copy the executable code to it
 
 floppy\_creator.sh
 
@@ -203,7 +203,7 @@ The expect result
 
 ![](/assets/correct_boot_signaturepng.png)
 
-If boot signature is not \`0x55aa\`, let's check the result again
+If boot signature is not \`0xaa55\`, let's check the result again
 
 ![](/assets/incorrect_boot_signature.png)
 
