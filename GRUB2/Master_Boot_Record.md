@@ -380,17 +380,17 @@ real_start:
 Instructions start at address 0x7c8c and end at address 0x7c90 just print notification message to screen.
 
 ```
-0x7c8c:    push   %dx
+   0x7c8c:    push   %dx
    0x7c8d:    mov    $0x7d80,%si
 (gdb) x/s 0x7d80
 0x7d80:    "GRUB "
    0x7c90:    call   0x7daa
 ```
 
-Next instrucstions check Extensions Present using BIOS interrupt `0x13`. The result shown in debug information. Check the returned result of BIOS routine, jump to 0x7cde `LOCAL(chs_mode)` if failed. The reference of BIOS interrupt `0x13 `shown in following section.
+Next instrucstions check Extensions Present using BIOS interrupt `0x13`. The result shown in debug information. Check the returned result of BIOS routine, jump to 0x7cde `LOCAL(chs_mode)` if failed. The reference of BIOS interrupt `0x13`shown in following section.
 
 ```
-0x7c93:    mov    $0x7c05,%si
+   0x7c93:    mov    $0x7c05,%si
    0x7c96:    mov    $0x41,%ah
    0x7c98:    mov    $0x55aa,%bx
    0x7c9b:    int    $0x13
@@ -463,12 +463,11 @@ grub-core/boot/i386/pc/boot.S:149
 INT 13h AH=41h: Check Extensions Present:  
 ![](INT13H_AH41H.png)
 
-We come to lba\_mode finally.
+OK, if no failure detected, we come to address 0x7cac`lba_mode`.
 
-Prepare DAP\(disk address packet\) and read source from drive. Carry flag doesn't set, read successfully. Jump to 0x7d54, copy buff.  
-![](INT13H_AH42H.png)
+Instructions between 0x7cac and 0x7cce prepare DAP\(disk address packet\) , if remember correctly, the value of register `si` is 0x7c05, if you don't remeber it, go back to above section, we just print registers' information. DAP\(disk address packet\)  is used when reading sector data from disk.
 
-```assembly
+```
    0x7cac:    xor    %ax,%ax
    0x7cae:    mov    %ax,0x4(%si)
    0x7cb1:    inc    %ax
@@ -480,17 +479,6 @@ Prepare DAP\(disk address packet\) and read source from drive. Carry flag doesn'
    0x7cc5:    mov    0x7c60,%ebx
    0x7cca:    mov    %ebx,0xc(%si)
    0x7cce:    movw   $0x7000,0x6(%si)
-   0x7cd3:    mov    $0x42,%ah
-   0x7cd5:    int    $0x13
-(gdb) info registers eflags
-eflags         0x202    [ IF ]
-   0x7cd7:    jb     0x7cde
-   0x7cd9:    mov    $0x7000,%bx
-   0x7cdc:    jmp    0x7d54
-   0x7cde:    mov    $0x8,%ah
-   0x7ce0:    int    $0x13
-   0x7ce2:    jae    0x7cf1
-   0x7ce4:    test   $0x80,%dl
 
 ----------------------------------------------------------------------
 
@@ -517,6 +505,26 @@ lba_mode:
         movl    %ebx, 12(%si)
         /* the segment of buffer address */
         movw    $GRUB_BOOT_MACHINE_BUFFER_SEG, 6(%si)
+```
+
+Next instructions read sector from drive and check the result, if no error detected jump to 0x7d54 `LOCAL(copy_buffer)`, copy read sector to dest address.
+
+```
+   0x7cd3:    mov    $0x42,%ah
+   0x7cd5:    int    $0x13
+(gdb) info registers eflags
+eflags         0x202    [ IF ]
+   0x7cd7:    jb     0x7cde
+   0x7cd9:    mov    $0x7000,%bx
+   0x7cdc:    jmp    0x7d54
+   0x7cde:    mov    $0x8,%ah
+   0x7ce0:    int    $0x13
+   0x7ce2:    jae    0x7cf1
+   0x7ce4:    test   $0x80,%dl
+
+----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/boot.S:202
 
 /*
  * BIOS call "INT 0x13 Function 0x42" to read sectors from disk into memory
@@ -536,6 +544,11 @@ lba_mode:
         movw    $GRUB_BOOT_MACHINE_BUFFER_SEG, %bx
         jmp     LOCAL(copy_buffer)
 ```
+
+The reference of Extended Read Sectors From Drive shown as follow  
+![](INT13H_AH42H.png)
+
+   
 
 Copy 512 bytes grub kernel to address 0x8000, jump to 0x8000
 
