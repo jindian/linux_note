@@ -211,53 +211,72 @@ After failed to boot from floppy because of the failure when checking boot signa
 
 ## _What does MBR do?_
 
-Copy grub kernel and jump to it continue the boot process
+Source code of MBR copies grub kernel to specifid address and jump to it to continue the boot process
 
-BIOS reads MBR into memory at address 0x7c00, the first instruction is jump to 0x7c65
+BIOS loads MBR to memory address 0x7c00, the first instruction is jump to 0x7c65 `jmp	LOCAL(after_BPB)`. 
 
-```assembly
-   0x7c00:    jmp    0x7c65
-   0x7c02:    nop
-   0x7c03:    adc    %cl,-0x4330(%bp)
-   0x7c07:    add    %dh,0xb8(%bx,%si)
-   0x7c0b:    add    %cl,-0x7128(%bp)
-   0x7c0f:    sar    $0xbe,%bl
-   0x7c12:    add    %bh,-0x41(%si)
-   0x7c15:    add    %al,0xb9
-   0x7c19:    add    %bl,%dh
-   0x7c1b:    movsb  %ds:(%si),%es:(%di)
-
-----------------------------------------------------------------------
-
-grub-core/boot/i386/pc/boot.S:39
-
-.globl _start, start;
-_start:
-start:
-        /*
-         * _start is loaded at 0x7c00 and is jumped to with CS:IP 0:0x7c00
-         */
-
-        /*
-         * Beginning of the sector is compatible with the FAT/HPFS BIOS
-         * parameter block.
-         */
-
-        jmp     LOCAL(after_BPB)
-        nop     /* do I care about this ??? */
-
-        /*
-         * This space is for the BIOS parameter block!!!!  Don't change
-         * the first jump, nor start the code anywhere but right after
-         * this area.
-         */
-
-        . = _start + GRUB_BOOT_MACHINE_BPB_START
-        . = _start + 4
+```
+0x7c00: jmp 0x7c65
 ```
 
-BIOS saves boot device type in register dl, for HDD dl set as 0x80.  
-Value of register dl\(0x80\) shown in following debug information, jump to 0x7c74 after bitwise AND with 0x70 with result of ZF set as 0.
+Between 0x7c00 and 0x7c65, there are BIOS parameter block and other parameters stored.
+
+```
+	jmp	LOCAL(after_BPB)
+	nop	/* do I care about this ??? */
+
+	/*
+	 * This space is for the BIOS parameter block!!!!  Don't change
+	 * the first jump, nor start the code anywhere but right after
+	 * this area.
+	 */
+
+	. = _start + GRUB_BOOT_MACHINE_BPB_START
+	. = _start + 4
+
+	/* scratch space */
+mode:
+	.byte	0
+disk_address_packet:
+sectors:
+	.long	0
+heads:
+	.long	0
+cylinders:
+	.word	0
+sector_start:
+	.byte	0
+head_start:
+	.byte	0
+cylinder_start:
+	.word	0
+	/* more space... */
+
+	. = _start + GRUB_BOOT_MACHINE_BPB_END
+
+	/*
+	 * End of BIOS parameter block.
+	 */
+
+kernel_address:
+	.word	GRUB_BOOT_MACHINE_KERNEL_ADDR
+
+	. = _start + GRUB_BOOT_MACHINE_KERNEL_SECTOR
+kernel_sector:
+	.long	1, 0
+
+	. = _start + GRUB_BOOT_MACHINE_BOOT_DRIVE
+boot_drive:
+	.byte 0xff	/* the disk to load kernel from */
+			/* 0xff means use the boot drive */
+
+LOCAL(after_BPB):
+```
+
+Contine the procedue after `jmp	LOCAL(after_BPB)`  
+
+MBR checks boot device type, BIOS saves boot device type in register `dl`, for HDD the register set as 0x80, 0x70 for floppy.  
+Value of register `dl`\(0x80\) shown in following debug information, jump to 0x7c74. Of course if `dl` is 0x70, do nothing but jump to 0x7c74. Instruction at address 0x7c74 is a long jump to dest address 0x7c79 `ljmp    $0, $real_start`
 
 ```assembly
    0x7c65:    cli    
@@ -309,24 +328,15 @@ boot_drive_check:
         ljmp    $0, $real_start
 ```
 
-In address 0x7c74, long jump to next instruction
+Instrucstions start from 0x7c79 initialize data section register with 0 and initialize stack with address 0x2000, enable interrupt, check the value at address 0x7c64 which refers to `boot_drive`, let's check the defination of `boot_drive`again as follow
 
-```assembly
-   0x7c74:    ljmp   $0x0,$0x7c79
-
-----------------------------------------------------------------------
-
-grub-core/boot/i386/pc/boot.S:123
-
-1:
-        /*
-         * ljmp to the next instruction because some bogus BIOSes
-         * jump to 07C0:0000 instead of 0000:7C00.
-         */
-        ljmp    $0, $real_start
+```
+boot_drive:
+	.byte 0xff	/* the disk to load kernel from */
+			/* 0xff means use the boot drive */
 ```
 
-Initialize data section register and set up stack for real mode code, check if we have forced disk reference. Value stored in address 0x7c64 is 0xff as follow, we have no force disk referencem, jump to 0x7c8c.
+the value stored in address 0x7c64 is 0xff as follow, next instruction is jump to 0x7c8c if value in 0x7c64 is equal to 0xff.
 
 ```assembly
    0x7c79:    xor    %ax,%ax
