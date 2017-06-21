@@ -548,9 +548,7 @@ grub-core/boot/i386/pc/boot.S:202
 The reference of Extended Read Sectors From Drive shown as follow  
 ![](INT13H_AH42H.png)
 
-   
-
-Copy 512 bytes grub kernel to address 0x8000, jump to 0x8000
+Instructions from 0x7d54 copy previous read data from disk with length 512 to address 0x8000, jump to memory address saved at 0x7c5a after completed.
 
 ```assembly
    0x7d54:    pusha  
@@ -567,14 +565,6 @@ Copy 512 bytes grub kernel to address 0x8000, jump to 0x8000
 (gdb) x/h 0x7c5a
 0x7c5a:    0x8000
    0x7d67:    jmp    *0x7c5a
-   0x7d6b:    mov    $0x7d86,%si
-   0x7d6e:    jmp    0x7d73
-   0x7d70:    mov    $0x7d95,%si
-   0x7d73:    call   0x7daa
-   0x7d76:    mov    $0x7d9a,%si
-   0x7d79:    call   0x7daa
-   0x7d7c:    int    $0x18
-   0x7d7e:    jmp    0x7d7e
 
 ----------------------------------------------------------------------
 
@@ -607,6 +597,10 @@ LOCAL(copy_buffer):
 
 /* END OF MAIN LOOP */
 ```
+
+The copied content is the first part of grub core img, its code is grub-core/boot/i386/diskboot.S if we boot from disk, it will be introduced in next chapter.
+
+--END
 
 ## Links:
 
