@@ -213,7 +213,7 @@ After failed to boot from floppy because of the failure when checking boot signa
 
 Source code of MBR copies grub kernel to specifid address and jump to it to continue the boot process
 
-BIOS loads MBR to memory address 0x7c00, the first instruction is jump to 0x7c65 `jmp	LOCAL(after_BPB)`. 
+BIOS loads MBR to memory address 0x7c00, the first instruction is jump to 0x7c65 `jmp    LOCAL(after_BPB)`.
 
 ```
 0x7c00: jmp 0x7c65
@@ -222,58 +222,58 @@ BIOS loads MBR to memory address 0x7c00, the first instruction is jump to 0x7c65
 Between 0x7c00 and 0x7c65, there are BIOS parameter block and other parameters stored.
 
 ```
-	jmp	LOCAL(after_BPB)
-	nop	/* do I care about this ??? */
+    jmp    LOCAL(after_BPB)
+    nop    /* do I care about this ??? */
 
-	/*
-	 * This space is for the BIOS parameter block!!!!  Don't change
-	 * the first jump, nor start the code anywhere but right after
-	 * this area.
-	 */
+    /*
+     * This space is for the BIOS parameter block!!!!  Don't change
+     * the first jump, nor start the code anywhere but right after
+     * this area.
+     */
 
-	. = _start + GRUB_BOOT_MACHINE_BPB_START
-	. = _start + 4
+    . = _start + GRUB_BOOT_MACHINE_BPB_START
+    . = _start + 4
 
-	/* scratch space */
+    /* scratch space */
 mode:
-	.byte	0
+    .byte    0
 disk_address_packet:
 sectors:
-	.long	0
+    .long    0
 heads:
-	.long	0
+    .long    0
 cylinders:
-	.word	0
+    .word    0
 sector_start:
-	.byte	0
+    .byte    0
 head_start:
-	.byte	0
+    .byte    0
 cylinder_start:
-	.word	0
-	/* more space... */
+    .word    0
+    /* more space... */
 
-	. = _start + GRUB_BOOT_MACHINE_BPB_END
+    . = _start + GRUB_BOOT_MACHINE_BPB_END
 
-	/*
-	 * End of BIOS parameter block.
-	 */
+    /*
+     * End of BIOS parameter block.
+     */
 
 kernel_address:
-	.word	GRUB_BOOT_MACHINE_KERNEL_ADDR
+    .word    GRUB_BOOT_MACHINE_KERNEL_ADDR
 
-	. = _start + GRUB_BOOT_MACHINE_KERNEL_SECTOR
+    . = _start + GRUB_BOOT_MACHINE_KERNEL_SECTOR
 kernel_sector:
-	.long	1, 0
+    .long    1, 0
 
-	. = _start + GRUB_BOOT_MACHINE_BOOT_DRIVE
+    . = _start + GRUB_BOOT_MACHINE_BOOT_DRIVE
 boot_drive:
-	.byte 0xff	/* the disk to load kernel from */
-			/* 0xff means use the boot drive */
+    .byte 0xff    /* the disk to load kernel from */
+            /* 0xff means use the boot drive */
 
 LOCAL(after_BPB):
 ```
 
-Contine the procedue after `jmp	LOCAL(after_BPB)`  
+Contine the procedue after `jmp    LOCAL(after_BPB)`
 
 MBR checks boot device type, BIOS saves boot device type in register `dl`, for HDD the register set as 0x80, 0x70 for floppy.  
 Value of register `dl`\(0x80\) shown in following debug information, jump to 0x7c74. Of course if `dl` is 0x70, do nothing but jump to 0x7c74. Instruction at address 0x7c74 is a long jump to dest address 0x7c79 `ljmp    $0, $real_start`
@@ -332,8 +332,8 @@ Instrucstions start from 0x7c79 initialize data section register with 0 and init
 
 ```
 boot_drive:
-	.byte 0xff	/* the disk to load kernel from */
-			/* 0xff means use the boot drive */
+    .byte 0xff    /* the disk to load kernel from */
+            /* 0xff means use the boot drive */
 ```
 
 the value stored in address 0x7c64 is 0xff as follow, next instruction is jump to 0x7c8c if value in 0x7c64 is equal to 0xff.
@@ -377,18 +377,20 @@ real_start:
         movb    %al, %dl
 ```
 
-Save driver reference and print notification message. Check Extensions Present using BIOS interrupt and check the result. The result shown in debug information. We come to lba\_mode finally.
+Instructions start at address 0x7c8c and end at address 0x7c90 just print notification message to screen.
 
-INT 13h AH=41h: Check Extensions Present:  
-![](INT13H_AH41H.png)
-
-```assembly
-   0x7c8c:    push   %dx
+```
+0x7c8c:    push   %dx
    0x7c8d:    mov    $0x7d80,%si
 (gdb) x/s 0x7d80
 0x7d80:    "GRUB "
    0x7c90:    call   0x7daa
-   0x7c93:    mov    $0x7c05,%si
+```
+
+Next instrucstions check Extensions Present using BIOS interrupt `0x13`. The result shown in debug information. Check the returned result of BIOS routine, jump to 0x7cde `LOCAL(chs_mode)` if failed. The reference of BIOS interrupt `0x13 `shown in following section.
+
+```
+0x7c93:    mov    $0x7c05,%si
    0x7c96:    mov    $0x41,%ah
    0x7c98:    mov    $0x55aa,%bx
    0x7c9b:    int    $0x13
@@ -457,6 +459,11 @@ grub-core/boot/i386/pc/boot.S:149
         andw    $1, %cx
         jz      LOCAL(chs_mode)
 ```
+
+INT 13h AH=41h: Check Extensions Present:  
+![](INT13H_AH41H.png)
+
+We come to lba\_mode finally.
 
 Prepare DAP\(disk address packet\) and read source from drive. Carry flag doesn't set, read successfully. Jump to 0x7d54, copy buff.  
 ![](INT13H_AH42H.png)
