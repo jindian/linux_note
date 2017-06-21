@@ -600,7 +600,7 @@ LOCAL(copy_buffer):
 
 The copied content is the first part of grub core img, its code is grub-core/boot/i386/diskboot.S if we boot from disk, it will be introduced in next chapter.
 
---END
+--THE END
 
 ## Links:
 
