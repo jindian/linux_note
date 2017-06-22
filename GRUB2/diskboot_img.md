@@ -22,6 +22,22 @@ Parameters used to read rest grub core image start at address 0x81f4.
 
 Continue the boot process, in previous chapter MBR copied disk boot image to address 0x8000 and jumped to this address.
 
+```
+
+
+----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/boot.S:332
+
+popw %ds
+popa
+
+/* boot kernel */
+jmp *(kernel_address)
+
+/* END OF MAIN LOOP */
+```
+
 Save drive type and DAP, print notification message and enter bootloop.
 
 ```assembly
