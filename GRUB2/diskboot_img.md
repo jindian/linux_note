@@ -42,11 +42,9 @@ jmp *(kernel_address)
 /* END OF MAIN LOOP */
 ```
 
-Register `dx` stores driver type and  `si` stores start address of BIOS parameter block, they will be used to read rest of grub core image from hard disk, so before print notification message on screen, save the two registers to stack to ignore register value clobbered.
+Register `dx` stores driver type and  `si` stores start address of BIOS parameter block, they will be used to read rest of grub core image from hard disk, so before print notification message on screen, save the two registers to stack to ignore register value clobbered. After notification message printed, recover the value of register `si`.
 
-Save drive type and DAP, print notification message and enter bootloop.
-
-```assembly
+```
    0x8000:    push   %dx
    0x8001:    push   %si
 (gdb) info registers dx si
@@ -57,11 +55,6 @@ si             0x7c05    31749
 0x811b:    "loading"
    0x8005:    call   0x8141
    0x8008:    pop    %si
-   0x8009:    mov    $0x81f4,%di
-   0x800c:    mov    (%di),%ebp
-   0x800f:    cmpw   $0x0,0x8(%di)
-   0x8013:    je     0x80f9
-   0x8017:    cmpb   $0x0,-0x1(%si)
 
 ------------------------------------------------------------------------
 
@@ -87,6 +80,22 @@ _start:
         pushw   %si
         MSG(notification_string)
         popw    %si
+
+
+```
+
+Save drive type and DAP, print notification message and enter bootloop.
+
+```assembly
+   0x8009:    mov    $0x81f4,%di
+   0x800c:    mov    (%di),%ebp
+   0x800f:    cmpw   $0x0,0x8(%di)
+   0x8013:    je     0x80f9
+   0x8017:    cmpb   $0x0,-0x1(%si)
+
+------------------------------------------------------------------------
+
+grub-core/boot/i386/pc/diskboot.S:58
 
         /* this sets up for the first run through "bootloop" */
         movw    $LOCAL(firstlist), %di
