@@ -80,18 +80,32 @@ _start:
         pushw   %si
         MSG(notification_string)
         popw    %si
+```
 
+Save `fisrtlist` to register `di`, what parameters saved in section start from `firstlist`? There are detail informations in below assembly code for every variables.
+
+```
+LOCAL(firstlist):	/* this label has to be before the first list entry!!! */
+        /* fill the first data listing with the default */
+blocklist_default_start:
+	/* this is the sector start parameter, in logical sectors from
+	   the start of the disk, sector 0 */
+	.long 2, 0
+blocklist_default_len:
+	/* this is the number of sectors to read.  grub-mkimage
+	   will fill this up */
+	.word 0
+blocklist_default_seg:
+	/* this is the segment of the starting address to load the data into */
+	.word (GRUB_BOOT_MACHINE_KERNEL_SEG + 0x20)
 
 ```
 
-Save drive type and DAP, print notification message and enter bootloop.
+and save the sector number to register `ebp`, next we  enter `bootloop`.
 
 ```assembly
    0x8009:    mov    $0x81f4,%di
    0x800c:    mov    (%di),%ebp
-   0x800f:    cmpw   $0x0,0x8(%di)
-   0x8013:    je     0x80f9
-   0x8017:    cmpb   $0x0,-0x1(%si)
 
 ------------------------------------------------------------------------
 
@@ -102,6 +116,9 @@ grub-core/boot/i386/pc/diskboot.S:58
 
         /* save the sector number of the second sector in %ebp */
         movl    (%di), %ebp
+
+        /* this is the loop for reading the rest of the kernel in */
+LOCAL(bootloop):
 ```
 
 Check the number of sector to read, in my environment its value is 60, Enter setup-sectors. Setup DAP and read rest of kernel with BIOS interrupt, jump to copy buffer\(0x80c9\).
