@@ -20,18 +20,14 @@ Parameters used to read rest grub core image start at address 0x81f4.
                 +-------------------------+
 ```
 
-Continue the boot process, the previous chapter MBR copied disk boot image to address 0x8000 and jumped to it.
+Continue the boot process, in previous chapter MBR copied disk boot image to address 0x8000 and jumped to this address.
 
 ```
-   0x7d65:    pop    %ds
-   0x7d66:    popa   
-(gdb) x/h 0x7c5a
-0x7c5a:    0x8000
-   0x7d67:    jmp    *0x7c5a
+
 
 ----------------------------------------------------------------------
 
-grub-core/boot/i386/pc/boot.S:351
+grub-core/boot/i386/pc/boot.S:332
 
 popw %ds
 popa
