@@ -42,6 +42,8 @@ jmp *(kernel_address)
 /* END OF MAIN LOOP */
 ```
 
+Register `dx` stores driver type and  `si` stores start address of BIOS parameter block, they will be used to read rest of grub core image from hard disk, so before print notification message on screen, save the two registers to stack to ignore register value clobbered.
+
 Save drive type and DAP, print notification message and enter bootloop.
 
 ```assembly
