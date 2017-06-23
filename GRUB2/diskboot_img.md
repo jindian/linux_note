@@ -6,7 +6,7 @@ In my environment, it boot from hard disk, disk boot image introduced only in th
 
 Disk boot image is the first sector of grub core image when boot from a hard disk. It's use to read rest of grub core image into memory and starts the kernel, size of disk boot image is 512 bytes.
 
-Parameters used to read rest grub core image start at address 0x81f4. 
+Parameters used to read rest grub core image start at address 0x81f4.
 
 Instructions start from address 0x81f4, it's `firstlist`.
 
@@ -14,20 +14,20 @@ Instructions start from address 0x81f4, it's `firstlist`.
 grub-core/boot/i386/pc/diskboot.S:365
 
 
-	. = _start + 0x200 - GRUB_BOOT_MACHINE_LIST_SIZE
-LOCAL(firstlist):	/* this label has to be before the first list entry!!! */
+    . = _start + 0x200 - GRUB_BOOT_MACHINE_LIST_SIZE
+LOCAL(firstlist):    /* this label has to be before the first list entry!!! */
         /* fill the first data listing with the default */
 blocklist_default_start:
-	/* this is the sector start parameter, in logical sectors from
-	   the start of the disk, sector 0 */
-	.long 2, 0
+    /* this is the sector start parameter, in logical sectors from
+       the start of the disk, sector 0 */
+    .long 2, 0
 blocklist_default_len:
-	/* this is the number of sectors to read.  grub-mkimage
-	   will fill this up */
-	.word 0
+    /* this is the number of sectors to read.  grub-mkimage
+       will fill this up */
+    .word 0
 blocklist_default_seg:
-	/* this is the segment of the starting address to load the data into */
-	.word (GRUB_BOOT_MACHINE_KERNEL_SEG + 0x20)
+    /* this is the segment of the starting address to load the data into */
+    .word (GRUB_BOOT_MACHINE_KERNEL_SEG + 0x20)
 ```
 
 memory map of disk boot image
@@ -175,7 +175,6 @@ LOCAL(bootloop):
 
         /* if zero, go to the start function */
         je      LOCAL(bootit)
-
 ```
 
 In `bootit`, bootstrap prints notification message and jumps to address 0x8200. 0x8200 is the start address of read grub core image from disk.
@@ -437,10 +436,6 @@ LOCAL(copy_buffer):
         /* jump to bootloop */
         jmp     LOCAL(bootloop)
 ```
-
-
-
-
 
 # Links
 
