@@ -1,8 +1,36 @@
 # disk boot image
 
+In my environment, it boot from hard disk, disk boot image introduced only in this chapter. A variety of bootstrap images for starting GRUB in various ways, reference [GRUB image files](https://www.gnu.org/software/grub/manual/html_node/Images.html#Images) for other boot images.
+
+# _Disk boot image and its memory map_
+
 Disk boot image is the first sector of grub core image when boot from a hard disk. It's use to read rest of grub core image into memory and starts the kernel, size of disk boot image is 512 bytes.
 
-Parameters used to read rest grub core image start at address 0x81f4.
+Parameters used to read rest grub core image start at address 0x81f4. 
+
+Instructions start from address 0x81f4, it's `firstlist`.
+
+```assembly
+grub-core/boot/i386/pc/diskboot.S:365
+
+
+	. = _start + 0x200 - GRUB_BOOT_MACHINE_LIST_SIZE
+LOCAL(firstlist):	/* this label has to be before the first list entry!!! */
+        /* fill the first data listing with the default */
+blocklist_default_start:
+	/* this is the sector start parameter, in logical sectors from
+	   the start of the disk, sector 0 */
+	.long 2, 0
+blocklist_default_len:
+	/* this is the number of sectors to read.  grub-mkimage
+	   will fill this up */
+	.word 0
+blocklist_default_seg:
+	/* this is the segment of the starting address to load the data into */
+	.word (GRUB_BOOT_MACHINE_KERNEL_SEG + 0x20)
+```
+
+memory map of disk boot image
 
 ```
 0x8000          +-------------------------+
@@ -20,9 +48,11 @@ Parameters used to read rest grub core image start at address 0x81f4.
                 +-------------------------+
 ```
 
-Continue the boot process, in previous chapter MBR copied disk boot image to address 0x8000 and jumped to this address.
+# _Procedure of disk boot image_
 
-```
+In previous chapter MBR copied disk boot image to address 0x8000 and jumped to this address.
+
+```assembly
     0x7d65:     pop   %ds
     0x7d66: popa
 (gdb) x/h 0x7c5a
@@ -44,7 +74,7 @@ jmp *(kernel_address)
 
 Register `dx` stores driver type and  `si` stores start address of BIOS parameter block, they will be used to read rest of grub core image from hard disk, so before print notification message on screen, save the two registers to stack to ignore register value clobbered. After notification message printed, recover the value of register `si`.
 
-```
+```assembly
    0x8000:    push   %dx
    0x8001:    push   %si
 (gdb) info registers dx si
@@ -82,26 +112,25 @@ _start:
         popw    %si
 ```
 
-Save `fisrtlist` to register `di`, what parameters saved in section start from `firstlist`? There are detail informations in below assembly code for every variables.
+Save `fisrtlist` to register `di`, what parameters saved in section start from `firstlist`? Reference comments of every variable in below assembly code.
 
-```
-LOCAL(firstlist):	/* this label has to be before the first list entry!!! */
+```assembly
+LOCAL(firstlist):    /* this label has to be before the first list entry!!! */
         /* fill the first data listing with the default */
 blocklist_default_start:
-	/* this is the sector start parameter, in logical sectors from
-	   the start of the disk, sector 0 */
-	.long 2, 0
+    /* this is the sector start parameter, in logical sectors from
+       the start of the disk, sector 0 */
+    .long 2, 0
 blocklist_default_len:
-	/* this is the number of sectors to read.  grub-mkimage
-	   will fill this up */
-	.word 0
+    /* this is the number of sectors to read.  grub-mkimage
+       will fill this up */
+    .word 0
 blocklist_default_seg:
-	/* this is the segment of the starting address to load the data into */
-	.word (GRUB_BOOT_MACHINE_KERNEL_SEG + 0x20)
-
+    /* this is the segment of the starting address to load the data into */
+    .word (GRUB_BOOT_MACHINE_KERNEL_SEG + 0x20)
 ```
 
-and save the sector number to register `ebp`, next we  enter `bootloop`.
+and save the sector number to register `ebp` to start read from,  next we  enter `bootloop`.
 
 ```assembly
    0x8009:    mov    $0x81f4,%di
@@ -121,7 +150,7 @@ grub-core/boot/i386/pc/diskboot.S:58
 LOCAL(bootloop):
 ```
 
-Check the number of sector to read, in my environment its value is 60, Enter setup-sectors. Setup DAP and read rest of kernel with BIOS interrupt, jump to copy buffer\(0x80c9\).
+Check the number of sector to read, in my environment the init value is 60, the bootstrap will go back to `bootloop` until number of sector is 0. When the number is 0, bootstrap jumps from `bootloop` to `bootit`.
 
 ```assembly
    0x800f:    cmpw   $0x0,0x8(%di)
@@ -132,6 +161,66 @@ di             0x81f4    -32268
 (gdb) p 0x3c
 $2 = 60
    0x8013:    je     0x80f9
+
+-----------------------------------------------------------------------
+
+
+grub-core/boot/i386/pc/diskboot.S:64
+
+       /* this is the loop for reading the rest of the kernel in */
+LOCAL(bootloop):
+
+        /* check the number of sectors to read */
+        cmpw    $0, 8(%di)
+
+        /* if zero, go to the start function */
+        je      LOCAL(bootit)
+
+```
+
+In `bootit`, bootstrap prints notification message and jumps to address 0x8200. 0x8200 is the start address of read grub core image from disk.
+
+```assembly
+   0x80f9:    mov    $0x8125,%si
+(gdb) x/s 0x8125
+0x8125:    "\r\n"
+   0x80fc:    call   0x8141
+   0x80ff:    pop    %dx
+(gdb) info registers 
+eax            0xe00    3584
+ecx            0x0    0
+edx            0x80    128
+ebx            0x1    1
+esp            0x1ffe    0x1ffe
+ebp            0x2    0x2
+esi            0x8127    33063
+edi            0x81e8    33256
+eip            0x8100    0x8100
+eflags         0x246    [ PF ZF IF ]
+cs             0x0    0
+ss             0x0    0
+ds             0x0    0
+es             0x820    2080
+fs             0x0    0
+gs             0x0    0
+   0x8100:    ljmp   $0x0,$0x8200
+
+-----------------------------------------------------------------------
+
+grub-core/boot/i386/pc/diskboot.S:297
+
+LOCAL(bootit):
+        /* print a newline */
+        MSG(notification_done)
+        popw    %dx     /* this makes sure %dl is our "boot" drive */
+        ljmp    $0, $(GRUB_BOOT_MACHINE_KERNEL_ADDR + 0x200)
+```
+
+If the number of sector to be read in `bootloop` is not 0, bootstrap enters `setup_sectors`.
+
+Setup DAP and read rest of kernel with BIOS interrupt, jump to copy buffer\(0x80c9\).
+
+```assembly
    0x8017:    cmpb   $0x0,-0x1(%si)
 (gdb) info registers si
 si             0x7c05    31749
@@ -186,16 +275,8 @@ gs             0x0    0
 
 -----------------------------------------------------------------------
 
-grub-core/boot/i386/pc/diskboot.S:64
+grub-core/boot/i386/pc/diskboot.S:73
 
-       /* this is the loop for reading the rest of the kernel in */
-LOCAL(bootloop):
-
-        /* check the number of sectors to read */
-        cmpw    $0, 8(%di)
-
-        /* if zero, go to the start function */
-        je      LOCAL(bootit)
 
 LOCAL(setup_sectors):
         /* check if we use LBA or CHS */
@@ -357,49 +438,9 @@ LOCAL(copy_buffer):
         jmp     LOCAL(bootloop)
 ```
 
-In bootit, print new line and jump to the start of rest kernel image code\(0x8200\).
 
-```assembly
-   0x80f9:    mov    $0x8125,%si
-(gdb) x/s 0x8125
-0x8125:    "\r\n"
-   0x80fc:    call   0x8141
-   0x80ff:    pop    %dx
-(gdb) info registers 
-eax            0xe00    3584
-ecx            0x0    0
-edx            0x80    128
-ebx            0x1    1
-esp            0x1ffe    0x1ffe
-ebp            0x2    0x2
-esi            0x8127    33063
-edi            0x81e8    33256
-eip            0x8100    0x8100
-eflags         0x246    [ PF ZF IF ]
-cs             0x0    0
-ss             0x0    0
-ds             0x0    0
-es             0x820    2080
-fs             0x0    0
-gs             0x0    0
-   0x8100:    ljmp   $0x0,$0x8200
-   0x8105:    mov    $0x8128,%si
-   0x8108:    call   0x8141
-   0x810b:    jmp    0x8113
-   0x810d:    mov    $0x812d,%si
-   0x8110:    call   0x8141
-   0x8113:    mov    $0x8132,%si
 
------------------------------------------------------------------------
 
-grub-core/boot/i386/pc/diskboot.S:297
-
-LOCAL(bootit):
-        /* print a newline */
-        MSG(notification_done)
-        popw    %dx     /* this makes sure %dl is our "boot" drive */
-        ljmp    $0, $(GRUB_BOOT_MACHINE_KERNEL_ADDR + 0x200)
-```
 
 # Links
 
