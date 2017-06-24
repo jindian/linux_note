@@ -6,7 +6,7 @@ In my environment, it boot from hard disk, disk boot image introduced only in th
 
 Disk boot image is the first sector of grub core image when boot from a hard disk. It's use to read rest of grub core image into memory and starts the kernel, size of disk boot image is 512 bytes.
 
-Parameters used to read rest grub core image start at address 0x81f4. 
+Parameters used to read rest grub core image start at address 0x81f4.
 
 Instructions start from address 0x81f4, it's `firstlist`.
 
@@ -14,20 +14,20 @@ Instructions start from address 0x81f4, it's `firstlist`.
 grub-core/boot/i386/pc/diskboot.S:365
 
 
-	. = _start + 0x200 - GRUB_BOOT_MACHINE_LIST_SIZE
-LOCAL(firstlist):	/* this label has to be before the first list entry!!! */
+    . = _start + 0x200 - GRUB_BOOT_MACHINE_LIST_SIZE
+LOCAL(firstlist):    /* this label has to be before the first list entry!!! */
         /* fill the first data listing with the default */
 blocklist_default_start:
-	/* this is the sector start parameter, in logical sectors from
-	   the start of the disk, sector 0 */
-	.long 2, 0
+    /* this is the sector start parameter, in logical sectors from
+       the start of the disk, sector 0 */
+    .long 2, 0
 blocklist_default_len:
-	/* this is the number of sectors to read.  grub-mkimage
-	   will fill this up */
-	.word 0
+    /* this is the number of sectors to read.  grub-mkimage
+       will fill this up */
+    .word 0
 blocklist_default_seg:
-	/* this is the segment of the starting address to load the data into */
-	.word (GRUB_BOOT_MACHINE_KERNEL_SEG + 0x20)
+    /* this is the segment of the starting address to load the data into */
+    .word (GRUB_BOOT_MACHINE_KERNEL_SEG + 0x20)
 ```
 
 memory map of disk boot image
@@ -175,7 +175,6 @@ LOCAL(bootloop):
 
         /* if zero, go to the start function */
         je      LOCAL(bootit)
-
 ```
 
 In `bootit`, bootstrap prints notification message and jumps to address 0x8200. 0x8200 is the start address of read grub core image from disk.
@@ -218,7 +217,7 @@ LOCAL(bootit):
 
 If the number of sector to be read in `bootloop` is not 0, bootstrap enters `setup_sectors`.
 
-Setup DAP and read rest of kernel with BIOS interrupt, jump to copy buffer\(0x80c9\).
+Before bootstrap invoke BIOS call "INT 0x13 Function 0x42" to read sectors from disk into memory, it prepare DAP. If no error detected after the BIOS call, bootstrap jump to copy buffer\(0x80c9\) procedure.
 
 ```assembly
    0x8017:    cmpb   $0x0,-0x1(%si)
@@ -349,7 +348,7 @@ LOCAL(setup_sectors):
         jmp     LOCAL(copy_buffer)
 ```
 
-Copy data\(60\*512 bytes\) in buffer to address start at 0x8200, jump to bootloop again. In bootloop, now all grub kernel already read from disk image and copy completed, jump to bootit\(0x80f9\)
+Copy read grub kernel\(60\*512 bytes\) to address start at 0x8200. Substract  number of sectors stored in register `di` with `0xc` and jump to `bootloop` again.
 
 ```assembly
    0x80c9:    mov    0xa(%di),%es
@@ -375,15 +374,6 @@ Copy data\(60\*512 bytes\) in buffer to address start at 0x8200, jump to bootloo
    0x80ef:    jne    0x8017
    0x80f3:    sub    $0xc,%di
    0x80f6:    jmp    0x800f
-   0x80f9:    mov    $0x8125,%si
-   0x80fc:    call   0x8141
-   0x80ff:    pop    %dx
-   0x8100:    ljmp   $0x0,$0x8200
-   0x8105:    mov    $0x8128,%si
-   0x8108:    call   0x8141
-   0x810b:    jmp    0x8113
-   0x810d:    mov    $0x812d,%si
-   0x8110:    call   0x8141
 
 -----------------------------------------------------------------------
 
@@ -438,9 +428,7 @@ LOCAL(copy_buffer):
         jmp     LOCAL(bootloop)
 ```
 
-
-
-
+--THE END
 
 # Links
 
