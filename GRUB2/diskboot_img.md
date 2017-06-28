@@ -2,6 +2,8 @@
 
 In my environment, it boot from hard disk, disk boot image introduced only in this chapter. A variety of bootstrap images for starting GRUB in various ways, reference [GRUB image files](https://www.gnu.org/software/grub/manual/html_node/Images.html#Images) for other boot images.
 
+The source code of disk book image is `grub-core/boot/i386/pc/diskboot.S`
+
 # _Disk boot image and its memory map_
 
 Disk boot image is the first sector of grub core image when boot from a hard disk. It's use to read rest of grub core image into memory and starts the kernel, size of disk boot image is 512 bytes.
