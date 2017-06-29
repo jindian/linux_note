@@ -1,10 +1,32 @@
 # decompress grub kernel image
 
+The original code loaded to memory address 0x8200 is `grub-core/boot/i386/pc/startup_raw.S`
 
-Before continuing real mode code, let's check following parameters first.
+Soon after the first jump instruction, there is a special data area followed, variables for example: `compressed_size, uncompressed_size, reed_solomon_redundancy, boot_dev and boot_drive` stored in the data area. They will be used in grub kernel decompress procedure.
+
 ```assembly
+grub-core/boot/i386/pc/startup_raw.S:28
 
-grub-core/boot/i386/pc/startup_raw.S:49
+	.file	"startup_raw.S"
+
+	.text
+
+	/* Tell GAS to generate 16-bit instructions so that this code works
+	   in real mode. */
+	.code16
+
+	.globl	start, _start
+start:
+_start:
+LOCAL (base):
+	/*
+	 *  Guarantee that "main" is loaded at 0x0:0x8200.
+	 */
+#ifdef __APPLE__
+	ljmp $0, $(ABS(LOCAL (codestart)) - 0x10000)
+#else
+	ljmp $0, $ABS(LOCAL (codestart))
+#endif
 
 	/*
 	 *  This is a special data area.
@@ -31,74 +53,53 @@ LOCAL(boot_dev):
 	.byte	0xFF, 0xFF, 0xFF
 LOCAL(boot_drive):
 	.byte	0x00
-
------------------------------------------------------------------------
-
-include/grub/offset.h
-
-/* The offset of GRUB_COMPRESSED_SIZE.  */
-#define GRUB_DECOMPRESSOR_I386_PC_COMPRESSED_SIZE       0x08
-
-/* The offset of GRUB_COMPRESSED_SIZE.  */
-#define GRUB_DECOMPRESSOR_I386_PC_UNCOMPRESSED_SIZE     0x0c
-
-/* Offset of reed_solomon_redundancy.  */
-#define GRUB_KERNEL_I386_PC_REED_SOLOMON_REDUNDANCY     0x10
-
-/* Offset of field holding no reed solomon length.  */
-#define GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_LENGTH      0x14
-
-#define GRUB_DECOMPRESSOR_I386_PC_BOOT_DEVICE           0x18
-
------------------------------------------------------------------------
-
-# compressed_size
-(gdb) x/w 0x8200+0x8
-0x8208:	0x00005db2
-# uncompressed_size
-(gdb) x/w 0x8200+0xc
-0x820c:	0x0000b7d0
-# reed_solomon_redundancy
-(gdb) x/w 0x8200+0x10
-0x8210:	0x00000f1e
-# no reed solomon length
-(gdb) x/w 0x8200+0x14
-0x8214:	0x00000773
-# boot_dev
-(gdb) x/b 0x8200+0x18
-0x8218:	0xff
-(gdb) x/b 0x8200+0x18+0x1
-0x8219:	0xff
-(gdb) x/b 0x8200+0x18+0x2
-0x821a:	0xff
-# boot_drive
-(gdb) x/b 0x8200+0x18+0x3
-0x821b:	0x00
-
 ```
 
-The first instruction in grub kernel is jump to codestart(0x821c), we  go to codestart directly, it set up data sections, real mode stack, save boot drive and reset disk system(INT13H_AH0H), operating mode changed from real mode to protect mode(call 0x82d2).
+The macros used in above special data area defined in `include/grub/offset.h`
+
+With gdb debug information, let's check the exact value of the variables.
+
 ```assembly
-   0x821c:	cli    
-   0x821d:	xor    %ax,%ax
-   0x821f:	mov    %ax,%ds
-   0x8221:	mov    %ax,%ss
-   0x8223:	mov    %ax,%es
-   0x8225:	mov    $0x1ff0,%ebp
-   0x822b:	mov    %ebp,%esp
-   0x822e:	sti    
-   0x822f:	addr32 mov %dl,0x821b
-   0x8236:	int    $0x13
-   0x8238:	calll  0x82d2
-   0x823e:	inc    %ax
-   0x823f:	cld    
-   0x8240:	call   0x88a5
-   0x8243:	add    %al,(%bx,%si)
-   0x8245:	mov    (%di),%dx
-   0x8247:	or     %al,0x0(%bp,%si)
-   0x824b:	add    $0x3bd,%dx
-   0x824f:	add    %al,(%bx,%si)
-   0x8251:	mov    (%di),%cx
+# compressed_size
+(gdb) x/w 0x8200+0x8
+0x8208:    0x00005db2
+# uncompressed_size
+(gdb) x/w 0x8200+0xc
+0x820c:    0x0000b7d0
+# reed_solomon_redundancy
+(gdb) x/w 0x8200+0x10
+0x8210:    0x00000f1e
+# no reed solomon length
+(gdb) x/w 0x8200+0x14
+0x8214:    0x00000773
+# boot_dev
+(gdb) x/b 0x8200+0x18
+0x8218:    0xff
+(gdb) x/b 0x8200+0x18+0x1
+0x8219:    0xff
+(gdb) x/b 0x8200+0x18+0x2
+0x821a:    0xff
+# boot_drive
+(gdb) x/b 0x8200+0x18+0x3
+0x821b:    0x00
+```
+
+The first instruction is jump to `codestart(0x821c)`. 
+
+At the beginning of `codestart`, it set up data sections, real mode stack, save boot drive and reset disk system\(INT13H\_AH0H\), operating mode changed from real mode to protect mode\(call 0x82d2\).
+
+```assembly
+   0x821c:    cli    
+   0x821d:    xor    %ax,%ax
+   0x821f:    mov    %ax,%ds
+   0x8221:    mov    %ax,%ss
+   0x8223:    mov    %ax,%es
+   0x8225:    mov    $0x1ff0,%ebp
+   0x822b:    mov    %ebp,%esp
+   0x822e:    sti    
+   0x822f:    addr32 mov %dl,0x821b
+   0x8236:    int    $0x13
+   0x8238:    calll  0x82d2
 
 -----------------------------------------------------------------------
 
@@ -130,7 +131,8 @@ LOCAL (codestart):
         DATA32  call real_to_prot
 ```
 
-Before step into real_to_prot function, here are some special variables we need pay attention. In which gdt is a simple structure describing real mode and protected mode memory area.
+Before step into `real_to_prot` function, some special variables we need to know. `gdt(Global Descriptor Table)` describes real mode and protected mode data and code sections in boot process. `gdtdesc(GDT descriptor)` will be used when loading GDT to specific register. `LOCAL(realidt) and protidt` represent interrupt descriptor table of real mode and protected mode, they will be used in operation mode switch from real mode to protect mode and vise versa.
+
 ```assembly
 grub-core/kern/i386/realmode.S:45
 /*
@@ -215,56 +217,59 @@ protidt:
         .long 0
 ```
 
-In real_to_prot, it loads gdt descriptor, enables protected mode, saves real mode stack, set stack registers with protected mode stack, stores real mode idt(interrupt descriptor table) and load protected mode idt instead.
+In `real_to_prot`, it loads GDT descriptor, enables protected mode, saves real mode stack, set stack registers with protected mode stack, stores real mode idt\(interrupt descriptor table\) and load protected mode idt instead.
+
+Why need to switch operation mode from real mode to protect mode?  Reference the links of real mode and protect mode, maybe you can find the answer by yourself.
+
 ```assembly
-   0x82d2:	cli    
-   0x82d3:	xor    %ax,%ax
-   0x82d5:	mov    %ax,%ds
-   0x82d7:	addr32 lgdtl 0x82c0
-   0x82e0:	mov    %cr0,%eax
-   0x82e3:	or     $0x1,%eax
-   0x82e7:	mov    %eax,%cr0
-   0x82ea:	ljmpl  $0x8,$0x82f2
-   0x82f2:	mov    $0xd88e0010,%eax
-   0x82f8:	mov    %ax,%es
-   0x82fa:	mov    %ax,%fs
-   0x82fc:	mov    %ax,%gs
-   0x82fe:	mov    %ax,%ss
-   0x8300:	mov    (%si),%ax
-   0x8302:	and    $0xa3,%al
-   0x8304:	lock pop %ds
-   0x8306:	add    %al,(%bx,%si)
-   0x8308:	mov    0x8268,%ax
-   0x830b:	add    %al,(%bx,%si)
-   0x830d:	mov    %ax,%sp
-   0x830f:	mov    %ax,%bp
-   0x8311:	mov    0x1ff0,%ax
-   0x8314:	add    %al,(%bx,%si)
-   0x8316:	mov    %ax,(%si)
-   0x8319:	xor    %ax,%ax
-   0x831b:	sidtw  (%di)
-   0x8322:	lidtw  (%di)
+   0x82d2:    cli    
+   0x82d3:    xor    %ax,%ax
+   0x82d5:    mov    %ax,%ds
+   0x82d7:    addr32 lgdtl 0x82c0
+   0x82e0:    mov    %cr0,%eax
+   0x82e3:    or     $0x1,%eax
+   0x82e7:    mov    %eax,%cr0
+   0x82ea:    ljmpl  $0x8,$0x82f2
+   0x82f2:    mov    $0xd88e0010,%eax
+   0x82f8:    mov    %ax,%es
+   0x82fa:    mov    %ax,%fs
+   0x82fc:    mov    %ax,%gs
+   0x82fe:    mov    %ax,%ss
+   0x8300:    mov    (%si),%ax
+   0x8302:    and    $0xa3,%al
+   0x8304:    lock pop %ds
+   0x8306:    add    %al,(%bx,%si)
+   0x8308:    mov    0x8268,%ax
+   0x830b:    add    %al,(%bx,%si)
+   0x830d:    mov    %ax,%sp
+   0x830f:    mov    %ax,%bp
+   0x8311:    mov    0x1ff0,%ax
+   0x8314:    add    %al,(%bx,%si)
+   0x8316:    mov    %ax,(%si)
+   0x8319:    xor    %ax,%ax
+   0x831b:    sidtw  (%di)
+   0x8322:    lidtw  (%di)
 (gdb) info registers 
-eax            0x0	0
-ecx            0x0	0
-edx            0x80	128
-ebx            0x1	1
-esp            0x7fff0	0x7fff0
-ebp            0x7fff0	0x7fff0
-esi            0x8127	33063
-edi            0x81e8	33256
-eip            0x8329	0x8329
-eflags         0x46	[ PF ZF ]
-cs             0x8	8
-ss             0x10	16
-ds             0x10	16
-es             0x10	16
-fs             0x10	16
-gs             0x10	16
+eax            0x0    0
+ecx            0x0    0
+edx            0x80    128
+ebx            0x1    1
+esp            0x7fff0    0x7fff0
+ebp            0x7fff0    0x7fff0
+esi            0x8127    33063
+edi            0x81e8    33256
+eip            0x8329    0x8329
+eflags         0x46    [ PF ZF ]
+cs             0x8    8
+ss             0x10    16
+ds             0x10    16
+es             0x10    16
+fs             0x10    16
+gs             0x10    16
 (gdb) x/w 0x7fff0
-0x7fff0:	0x0000823e
+0x7fff0:    0x0000823e
 (gdb) 
-   0x8329:	ret
+   0x8329:    ret
 
 -----------------------------------------------------------------------
 
@@ -320,38 +325,34 @@ protcseg:
         ret
 ```
 
-Continue previous codestart, call routine grub_gate_a20 at address 0x88a5 to enable address line 20 for high memory, the input parameter stored in ax.
-```assembly
-   0x823e:	inc    %ax
-   0x823f:	cld    
-(gdb) info registers 
-eax            0x1	1
-ecx            0x0	0
-edx            0x80	128
-ebx            0x1	1
-esp            0x7fff4	0x7fff4
-ebp            0x7fff0	0x7fff0
-esi            0x8127	33063
-edi            0x81e8	33256
-eip            0x8240	0x8240
-eflags         0x2	[ ]
-cs             0x8	8
-ss             0x10	16
-ds             0x10	16
-es             0x10	16
-fs             0x10	16
-gs             0x10	16
-(gdb) x/w 0x7fff4
-0x7fff4:	0x00000000
-   0x8240:	call   0x88a5
-   0x8243:	add    %al,(%bx,%si)
-   0x8245:	mov    (%di),%dx
-   0x8247:	or     %al,0x0(%bp,%si)
-   0x824b:	add    $0x3bd,%dx
-   0x824f:	add    %al,(%bx,%si)
-   0x8251:	mov    (%di),%cx
-   0x8253:	adc    %al,0x0(%bp,%si)
+After called `real_to_prot`, bootstrap enters protect mode, it's not 16-bit mode any more. 
 
+bootstrap invokes routine `grub_gate_a20` to enable address line A20, with A20 enabled, higher memory could be accessed by bootstap.
+
+```assembly
+   0x823e:    inc    %ax
+   0x823f:    cld    
+(gdb) info registers 
+eax            0x1    1
+ecx            0x0    0
+edx            0x80    128
+ebx            0x1    1
+esp            0x7fff4    0x7fff4
+ebp            0x7fff0    0x7fff0
+esi            0x8127    33063
+edi            0x81e8    33256
+eip            0x8240    0x8240
+eflags         0x2    [ ]
+cs             0x8    8
+ss             0x10    16
+ds             0x10    16
+es             0x10    16
+fs             0x10    16
+gs             0x10    16
+(gdb) x/w 0x7fff4
+0x7fff4:    0x00000000
+   0x8240:    call   0x88a5
+  
 -----------------------------------------------------------------------
 
 grub-core/boot/i386/pc/startup_raw.S:100
@@ -362,39 +363,39 @@ grub-core/boot/i386/pc/startup_raw.S:100
         incl    %eax
         cld
         call    grub_gate_a20
-
 ```
 
-Actually the first instruction after step in grub_gate_a20 locate at address 0x88a7(It's because I set architecture in gdb as 8086 for real mode code debug, set as i386 could correct it). I checked register information, address of next instruction after routine grub_gate_a20 complete stored at the top of stack as below. Let's step into grub_gate_a20, how grub kernel enable address line 20. First of all, it check the state of a20 line with routine gate_a20_check_state at address 0x8930.
+In `grub_gate_a20`, it checks the state of A20 with routine `gate_a20_check_state` to see if A20 already enabled by BIOS, if not enabled yet, invokes gate\_a20\_try\_bios to enable it.
+
 ```assembly
 (gdb) info registers 
-eax            0x1	1
-ecx            0x0	0
-edx            0x80	128
-ebx            0x1	1
-esp            0x7fff0	0x7fff0
-ebp            0x7fff0	0x7fff0
-esi            0x8127	33063
-edi            0x81e8	33256
-eip            0x88a7	0x88a7
-eflags         0x2	[ ]
-cs             0x8	8
-ss             0x10	16
-ds             0x10	16
-es             0x10	16
-fs             0x10	16
-gs             0x10	16
+eax            0x1    1
+ecx            0x0    0
+edx            0x80    128
+ebx            0x1    1
+esp            0x7fff0    0x7fff0
+ebp            0x7fff0    0x7fff0
+esi            0x8127    33063
+edi            0x81e8    33256
+eip            0x88a7    0x88a7
+eflags         0x2    [ ]
+cs             0x8    8
+ss             0x10    16
+ds             0x10    16
+es             0x10    16
+fs             0x10    16
+gs             0x10    16
 (gdb) x/w 0x7fff0
-0x7fff0:	0x00008245
-   0x88a7:	mov    %ax,%dx
-   0x88a9:	call   0x8930
-   0x88ae:	cmp    %al,%dl
-   0x88b0:	jne    0x88b3
-   0x88b2:	ret    
-   0x88b3:	push   %bp
-   0x88b4:	call   0x832a
-   0x88b7:	(bad)  
-   0x88b8:	(bad)  
+0x7fff0:    0x00008245
+   0x88a7:    mov    %ax,%dx
+   0x88a9:    call   0x8930
+   0x88ae:    cmp    %al,%dl
+   0x88b0:    jne    0x88b3
+   0x88b2:    ret    
+   0x88b3:    push   %bp
+   0x88b4:    call   0x832a
+   0x88b7:    (bad)  
+   0x88b8:    (bad)  
 
 -----------------------------------------------------------------------
 
@@ -421,52 +422,55 @@ gate_a20_test_current_state:
         ret
 ```
 
-Check if the a20 line was already enable by BIOS. Boot loader set less value at 0x8000, obtain the value at 0x108000 which is 1 MiB higher than 0x8000, values store in above two adresses is different, a20 line already enabled by BIOS. Return to codestart(0x8245) finally.
+How to check A20 is enabled or not? routine `gate_a20_check_state` set less value at 0x8000, obtain the value at 0x108000 which is 1 MiB higher than 0x8000, if values store in above two adresses is different it reflexs A20 already enabled by BIOS.
+
+And how to enable A20, the routine `gate_a20_try_bios` is used to do it, it's bypassed because bootstrap doesn't invoke it.
+
 ```assembly
-   0x8930:	mov    $0x64,%cx
-   0x8935:	call   0x8941
-   0x893a:	cmp    %al,%dl
+   0x8930:    mov    $0x64,%cx
+   0x8935:    call   0x8941
+   0x893a:    cmp    %al,%dl
 (gdb) info registers al dl
-al             0x1	1
-dl             0x1	1
-   0x893c:	je     0x8940
-   0x893e:	loop   0x8935
-   0x8940:	ret    
+al             0x1    1
+dl             0x1    1
+   0x893c:    je     0x8940
+   0x893e:    loop   0x8935
+   0x8940:    ret    
 (gdb) info registers esp
-esp            0x7ffe8	0x7ffe8
+esp            0x7ffe8    0x7ffe8
 (gdb) x/w 0x7ffe8
-0x7ffe8:	0x0000893a
-   0x8941:	push   %ebx
-   0x8942:	push   %ecx
-   0x8943:	xor    %eax,%eax
-   0x8945:	mov    $0x8000,%ebx
-   0x894a:	push   %ebx
-   0x894b:	mov    (%ebx),%cl
-   0x894d:	add    $0x100000,%ebx
-   0x8953:	mov    (%ebx),%al
-   0x8955:	pop    %ebx
+0x7ffe8:    0x0000893a
+   0x8941:    push   %ebx
+   0x8942:    push   %ecx
+   0x8943:    xor    %eax,%eax
+   0x8945:    mov    $0x8000,%ebx
+   0x894a:    push   %ebx
+   0x894b:    mov    (%ebx),%cl
+   0x894d:    add    $0x100000,%ebx
+   0x8953:    mov    (%ebx),%al
+   0x8955:    pop    %ebx
 (gdb) info registers cl al
-cl             0x52	82
-al             0x0	0
-   0x8956:	mov    %al,%ch
+cl             0x52    82
+al             0x0    0
+   0x8956:    mov    %al,%ch
 (gdb) info registers ch
-ch             0x0	0
-   0x8958:	dec    %ch
+ch             0x0    0
+   0x8958:    dec    %ch
 info registers ch
-ch             0xff	-1
-   0x895a:	mov    %ch,(%ebx)
-   0x895c:	out    %al,$0x80
-   0x895e:	out    %al,$0x80
-   0x8960:	push   %ebx
-   0x8961:	add    $0x100000,%ebx
-   0x8967:	mov    (%ebx),%ch
-   0x8969:	sub    %ch,%al
-   0x896b:	xor    $0x1,%al
-   0x896d:	pop    %ebx
-   0x896e:	mov    %cl,(%ebx)
-   0x8970:	pop    %ecx
-   0x8971:	pop    %ebx
-   0x8972:	ret  
+ch             0xff    -1
+   0x895a:    mov    %ch,(%ebx)
+   0x895c:    out    %al,$0x80
+   0x895e:    out    %al,$0x80
+   0x8960:    push   %ebx
+   0x8961:    add    $0x100000,%ebx
+   0x8967:    mov    (%ebx),%ch
+   0x8969:    sub    %ch,%al
+   0x896b:    xor    $0x1,%al
+   0x896d:    pop    %ebx
+   0x896e:    mov    %cl,(%ebx)
+   0x8970:    pop    %ecx
+   0x8971:    pop    %ebx
+   0x8972:    ret  
 
 -----------------------------------------------------------------------
 
@@ -517,18 +521,22 @@ gate_a20_check_state:
         ret
 ```
 
-Prepare parameters for routine grub_reed_solomon_recover located at address 0x85a7. grub_reed_solomon_recover written in C(grub-core/lib/reed_solomon.c), compile result is rs_decoder.S which included by startup_raw.S. I will ignore this routine, jump to post_reed_solomon(located at 0x89ce).
+After completed `grub_gate_a20`, next instruction prepares parameters for routine `grub_reed_solomon_recover`. `grub_reed_solomon_recover` is written in C: `grub-core/lib/reed_solomon.c`, compile output is `rs_decoder.S` which is included by `startup_raw.S`. 
+
+Why bootstrap invokes `grub_reed_solomon_recover`?
+
+It's used to recover data in disk from sector 6 or 7. From GRUB's point of view, these areas could be corrupted. The detail procedure of the routine is bypassed.
+
+After `grub_reed_solomon_recover` completed, bootstrap jumps to `post_reed_solomon`.
+
 ```assembly
-   0x8245:	mov    0x8208,%edx
-   0x824b:	add    $0x3bd,%edx
-   0x8251:	mov    0x8210,%ecx
-   0x8257:	lea    0x8973,%eax
-   0x825d:	cld    
-   0x825e:	call   0x85a7
-   0x8263:	jmp    0x89ce
-   0x8268:	lock incl (%edi)
-   0x826b:	add    %ch,%bl
-   0x826d:	adc    -0x6f6f6f70(%eax),%dl
+   0x8245:    mov    0x8208,%edx
+   0x824b:    add    $0x3bd,%edx
+   0x8251:    mov    0x8210,%ecx
+   0x8257:    lea    0x8973,%eax
+   0x825d:    cld    
+   0x825e:    call   0x85a7
+   0x8263:    jmp    0x89ce
 
 -----------------------------------------------------------------------
 
@@ -548,47 +556,48 @@ grub-core/boot/i386/pc/startup_raw.S:107
         jmp     post_reed_solomon
 ```
 
-We are at the first instruction after label post_reed_solomon, here it saves decompressed grub core image destination address(0x100000) to edi, decompressed image start address(0x8d30) to esi, decompressed core image size(0xb7d0) to ecx and address after grub kernel decompressed region(0x10b7d0) to ebx, from address 0x10b7d0, it's a dictionary used in decompression. Values of all registers before calling _LzmaDecodeA list in following debug context, next call _LzmaDecodeA(0x8ac7) to do the decompression.  Detail of _LzmaDecodeA put in the next chapter. After completed decompression, jump to address 0x100000 start the next stage of grub initialization.
+At the beginning of `post_reed_solomon`, it saves decompressed grub core image destination address\(0x100000\) to `edi`, decompressed image start address\(0x8d30\) to `esi`, decompressed core image size\(0xb7d0\) to `ecx` and address after grub kernel decompressed region\(0x10b7d0\) to `ebx`, at address 0x10b7d0, it's a dictionary used in decompression procedure. Values of all registers before calling `_LzmaDecodeA` listed in following debug information, next invokes `_LzmaDecodeA` to do the decompression.
 
+After decompression completed, jumps to address 0x100000 to start the next stage of grub initialization. Switch operation mode from protect mode to real mode and prepare idt before jump to next stage of grub initialization.
 
 ```assembly
-   0x89ce:	mov    $0x100000,%edi
-   0x89d3:	mov    $0x8d30,%esi
-   0x89d8:	push   %edi
-   0x89d9:	mov    0x820c,%ecx
-   0x89df:	lea    (%edi,%ecx,1),%ebx
-   0x89e2:	push   %ecx
+   0x89ce:    mov    $0x100000,%edi
+   0x89d3:    mov    $0x8d30,%esi
+   0x89d8:    push   %edi
+   0x89d9:    mov    0x820c,%ecx
+   0x89df:    lea    (%edi,%ecx,1),%ebx
+   0x89e2:    push   %ecx
 (gdb) info registers 
-eax            0x616f	24943
-ecx            0xb7d0	47056
-edx            0xffffff90	-112
-ebx            0x10b7d0	1095632
-esp            0x7ffec	0x7ffec
-ebp            0x7fff0	0x7fff0
-esi            0x8d30	36144
-edi            0x100000	1048576
-eip            0x89e3	0x89e3
-eflags         0x2	[ ]
-cs             0x8	8
-ss             0x10	16
-ds             0x10	16
-es             0x10	16
-fs             0x10	16
-gs             0x10	16
-   0x89e3:	call   0x8ac7
-   0x89e8:	pop    %ecx
+eax            0x616f    24943
+ecx            0xb7d0    47056
+edx            0xffffff90    -112
+ebx            0x10b7d0    1095632
+esp            0x7ffec    0x7ffec
+ebp            0x7fff0    0x7fff0
+esi            0x8d30    36144
+edi            0x100000    1048576
+eip            0x89e3    0x89e3
+eflags         0x2    [ ]
+cs             0x8    8
+ss             0x10    16
+ds             0x10    16
+es             0x10    16
+fs             0x10    16
+gs             0x10    16
+   0x89e3:    call   0x8ac7
+   0x89e8:    pop    %ecx
 (gdb) info registers ecx
-ecx            0xb7d0	47056
-   0x89e9:	pop    %esi
+ecx            0xb7d0    47056
+   0x89e9:    pop    %esi
 (gdb) info registers esi
-esi            0x100000	1048576
-   0x89ea:	mov    0x8218,%edx
+esi            0x100000    1048576
+   0x89ea:    mov    0x8218,%edx
 (gdb) x/w 0x8218
-0x8218:	0x80ffffff
-   0x89f0:	mov    $0x832a,%edi
-   0x89f5:	mov    $0x82d2,%ecx
-   0x89fa:	mov    $0x82c6,%eax
-   0x89ff:	jmp    *%esi
+0x8218:    0x80ffffff
+   0x89f0:    mov    $0x832a,%edi
+   0x89f5:    mov    $0x82d2,%ecx
+   0x89fa:    mov    $0x82c6,%eax
+   0x89ff:    jmp    *%esi
 
 -----------------------------------------------------------------------
 
@@ -621,11 +630,14 @@ post_reed_solomon:
         jmp     *%esi
 ```
 
-Links:
-------------------------------------
-  * [Real mode](https://en.wikipedia.org/wiki/Real_mode)
-  * [Protected mode](https://en.wikipedia.org/wiki/Protected_mode)
-  * [Instruction Prefixes: addr32](http://www.delorie.com/gnu/docs/binutils/as_265.html)
-  * [Global Descriptor Table](https://en.wikipedia.org/wiki/Global_Descriptor_Table)
-  * [A20 line](https://en.wikipedia.org/wiki/A20_line)
-  * [Test A20 line](http://wiki.osdev.org/A20_Line)
+## Links:
+
+* [Real mode](https://en.wikipedia.org/wiki/Real_mode)
+* [Protected mode](https://en.wikipedia.org/wiki/Protected_mode)
+* [Instruction Prefixes: addr32](http://www.delorie.com/gnu/docs/binutils/as_265.html)
+* [Global Descriptor Table](https://en.wikipedia.org/wiki/Global_Descriptor_Table)
+* [A20 line](https://en.wikipedia.org/wiki/A20_line)
+* [Test A20 line](http://wiki.osdev.org/A20_Line)
+
+
+
