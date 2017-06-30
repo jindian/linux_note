@@ -1,25 +1,30 @@
-Preparation before get to C code grub_main
-================================
-Save routines' address, copy back decompressed part to address start from 0x9000, then jump to LOCAL (cont) located at address 0x9025, the address of LOCAL (cont) changed after copied back. After jumped to LOCAL (cont), initialize BSS and call C code entrance grub_main.
+# Preparation before get to C code grub\_main
+
+In previous chapter, after decompressed grub kernel, bootstrap jump to address 0x10000.
+
+The original code loaded at address 0x10000 is `grub-core/kern/i386/pc/startup.S`.
+
+Save routines' address, copy back decompressed part to address start from 0x9000, then jump to LOCAL \(cont\) located at address 0x9025, the address of LOCAL \(cont\) changed after copied back. After jumped to LOCAL \(cont\), initialize BSS and call C code entrance grub\_main.
+
 ```assembly
-   0x100000:	mov    %ecx,0x41(%esi)
-   0x100006:	mov    %edi,0x45(%esi)
-   0x10000c:	mov    %eax,0x160(%esi)
-   0x100012:	mov    $0x6e54,%ecx
-   0x100017:	mov    $0x9000,%edi
-   0x10001c:	rep movsb %ds:(%esi),%es:(%edi)
-   0x10001e:	mov    $0x9025,%esi
+   0x100000:    mov    %ecx,0x41(%esi)
+   0x100006:    mov    %edi,0x45(%esi)
+   0x10000c:    mov    %eax,0x160(%esi)
+   0x100012:    mov    $0x6e54,%ecx
+   0x100017:    mov    $0x9000,%edi
+   0x10001c:    rep movsb %ds:(%esi),%es:(%edi)
+   0x10001e:    mov    $0x9025,%esi
 (gdb) info registers esi
-esi            0x9025	36901
-   0x100023:	jmp    *%esi
-   0x100025:	mov    $0xfe54,%edi
-   0x10002a:	mov    $0x17508,%ecx
-   0x10002f:	sub    %edi,%ecx
-   0x100031:	xor    %eax,%eax
-   0x100033:	cld    
-   0x100034:	rep stos %al,%es:(%edi)
-   0x100036:	mov    %edx,0xfe58
-   0x10003c:	call   0x1039fb
+esi            0x9025    36901
+   0x100023:    jmp    *%esi
+   0x100025:    mov    $0xfe54,%edi
+   0x10002a:    mov    $0x17508,%ecx
+   0x10002f:    sub    %edi,%ecx
+   0x100031:    xor    %eax,%eax
+   0x100033:    cld    
+   0x100034:    rep stos %al,%es:(%edi)
+   0x100036:    mov    %edx,0xfe58
+   0x10003c:    call   0x1039fb
 
 -----------------------------------------------------------------------
 
@@ -96,3 +101,6 @@ LOCAL(cont):
          */
         call EXT_C(grub_main)
 ```
+
+
+
