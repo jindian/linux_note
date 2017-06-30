@@ -5,7 +5,7 @@
   * [Master Boot Record](GRUB2/Master_Boot_Record.md)
   * [disk boot image](GRUB2/diskboot_img.md)
   * [decompress grub kernel image](GRUB2/decompress_core_image.md)
-  * [decompress grub kernel: lzma decode](GRUB2/lzma_decode.md)
+  * [~~decompress grub kernel: lzma decode~~](GRUB2/lzma_decode.md)
   * [preparation before grub\_main](GRUB2/before_grub_main.md)
   * [grub\_main: grub\_machine\_init](GRUB2/grub_main_grub_machine_init.md)
   * [grub\_main: grub\_load\_moules](GRUB2/grub_main_grub_load_modules.md)
