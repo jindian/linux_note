@@ -1,6 +1,6 @@
 # grub\_main: grub\_load\_modules
 
-
+All loaded modules stored in grub\_dl\_head, it's a global variable. Before executing grub\_load\_modules, no modules stored in it, after load first module successfully, check it again, we can find fshelp stored in it. GRUB consists of several images: a variety of bootstrap images for starting GRUB in various ways, a kernel image, and a set of modules which are combined with the kernel image to form a core image, what grub\_load\_modules do is load modules included in core image.
 
 The startup address of modules stored in grub\_modbase. grub\_load\_modules involves grub\_dl\_load\_core to load single module, inside grub\_dl\_load\_core, it allocates memory for mode information, load module segments and resolve symbols for specific modules, if initialization function exists, calls the init function for mode initialization, finally adds mode information to global variable grub\_dl\_head.
 
