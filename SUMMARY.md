@@ -6,10 +6,7 @@
   * [disk boot image](/GRUB2/1.2 diskboot_img.md)
   * [decompress grub kernel image](/GRUB2/1.3 decompress_core_image.md)
   * [grub\_main](/GRUB2/1.4 grub_main.md)
-  * [grub\_main: grub\_machine\_init](GRUB2/grub_main_grub_machine_init.md)
-  * [grub\_main: grub\_load\_moules](GRUB2/grub_main_grub_load_modules.md)
-  * [grub\_main: before grub\_load\_normal\_mode](GRUB2/grub_main_before_grub_load_normal_mode.md)
-  * [grub\_main: grub\_load\_normal\_mode](GRUB2/grub_main_grub_load_normal_mode.md)
+
   * [execute commands in grub configuration](GRUB2/execute_commands_in_grub_configuration.md)
   * [load linux mode part I](GRUB2/load_linux_mode_part_I.md)
   * [load linux mode part II](GRUB2/load_linux_mode_part_II.md)
