@@ -307,7 +307,7 @@ grub_memmove (void *dest, const void *src, grub_size_t n)
 ```
 Result of grub\_memmove in destination, address start from 0x9df000 size 0xd0
 
-![grub_memmove_in_grub_relocator32_boot](/GRUB2/grub_memmove_in_grub_relocator32_boot.png)
+![grub_memmove_in_grub_relocator32_boot](/GRUB2/resource/grub_memmove_in_grub_relocator32_boot.png)
 
 Instructions starting from 0x9df000 as follow:
 

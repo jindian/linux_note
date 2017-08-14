@@ -59,7 +59,7 @@ grub_load_normal_mode:
 ```
 
 Result of grub_show_menu:
-![result of grub_show_menu](/GRUB2/result_of_grub_show_menu.png)
+![result of grub_show_menu](/GRUB2/resource/result_of_grub_show_menu.png)
 
 ```grub_load_normal_mode:
 

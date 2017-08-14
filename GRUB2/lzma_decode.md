@@ -5,7 +5,7 @@ Default compression algorithm of grub is lzma(Lempel–Ziv–Markov chain algori
 
 After decompression completed, the content of memory start from 0x100000 as followed screen shot
 
-![](decompressed_grub_core_image.png)
+![](/GRUB2/resource/decompressed_grub_core_image.png)
 
 Initialize stack, reserve data area used in decompress procedure as follow:
 ```assembly
