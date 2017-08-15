@@ -2,15 +2,19 @@
 
 * [Introduction](README.md)
 * [1. GRUB 2](GRUB2/README.md)
-  * [1.1 Master Boot Record](GRUB2/1.1%20Master_Boot_Record.md)
-  * [1.2 disk boot image](GRUB2/1.2%20diskboot_img.md)
-  * [1.3 decompress grub kernel image](GRUB2/1.3%20decompress_core_image.md)
-  * [1.4 grub\_main](GRUB2/1.4%20grub_main.md)
-  * [1.4.1 preparation ahead of grub\_main](GRUB2/1.4.1%20before_grub_main.md)
-  * [1.4.2 from grub\_machine\_init to grub\_register\_exported\_symbols](GRUB2/1.4.2%20from%20grub_machine_init%20to%20grub_register_exported_symbols.md)
-  * [1.4.3 from grub\_load\_modules to grub\_load\_config](GRUB2/1.4.3%20from%20grub_load_modules%20to%20grub_load_config.md)
+
+  * [1.1 Master Boot Record](GRUB2/1.1 Master_Boot_Record.md)
+  * [1.2 disk boot image](GRUB2/1.2 diskboot_img.md)
+  * [1.3 decompress grub kernel image](GRUB2/1.3 decompress_core_image.md)
+  * [1.4 grub\_main](GRUB2/1.4 grub_main.md)
+  * [1.4.1 preparation ahead of grub\_main](GRUB2/1.4.1 before_grub_main.md)
+  * [1.4.2 from grub\_machine\_init to grub\_register\_exported\_symbols](GRUB2/1.4.2 from grub_machine_init to grub_register_exported_symbols.md)
+  * [1.4.3 from grub\_load\_modules to grub\_load\_config](GRUB2/1.4.3 from grub_load_modules to grub_load_config.md)
+
+  * [1.4.4 grub\_load\_normal\_mode](/GRUB2/1.4.4 grub_load_normal_mode.md)
 
   * [execute commands in grub configuration](GRUB2/execute_commands_in_grub_configuration.md)
+
   * [load linux mode part I](GRUB2/load_linux_mode_part_I.md)
   * [load linux mode part II](GRUB2/load_linux_mode_part_II.md)
   * [load initrd mode](GRUB2/load_initrd_mode.md)
@@ -18,6 +22,7 @@
   * [relocate Instructions](GRUB2/relocate_instructions.md)
   * [jump to linux](GRUB2/jump_to_linux.md)
   * [grub file system](GRUB2/grub_file_system.md)
+
 * [linux startup](linux_startup/README.md)
   * [linux real mode code](linux_startup/linux_real_mode_code.md)
   * [linux protocol](linux_startup/decompress_linux_kernel.md)
