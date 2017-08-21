@@ -11,6 +11,7 @@
   * [1.4.2 from grub\_machine\_init to grub\_register\_exported\_symbols](GRUB2/1.4.2 from grub_machine_init to grub_register_exported_symbols.md)
   * [1.4.3 from grub\_load\_modules to grub\_load\_config](GRUB2/1.4.3 from grub_load_modules to grub_load_config.md)
   * [1.4.4 grub\_load\_normal\_mode](/GRUB2/1.4.4 grub_load_normal_mode.md)
+  * [1.4.5 grub\_load\_normal\_mode second half](/GRUB2/1.4.5 grub_load_normal_mode second half.md)
   * [execute commands in grub configuration](GRUB2/execute_commands_in_grub_configuration.md)
   * [load linux mode part I](GRUB2/load_linux_mode_part_I.md)
   * [load linux mode part II](GRUB2/load_linux_mode_part_II.md)
